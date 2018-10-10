@@ -7,6 +7,7 @@
 *.rda
 *.csv
 *.txt
+*.zip
 *.dat
 *.xls*
 *.sas7bdat

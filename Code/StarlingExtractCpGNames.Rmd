@@ -1,0 +1,93 @@
+---
+title: "StarlingExtractCpGNames"
+author: "Harry Smith"
+date: "10/1/2018"
+output: html_document
+---
+## Introduction
+
+The purpose of this program is extract a list of the most significant CpGs for
+each significant (FDR < 0.05) DMR. We will only select CpGs from male subjects. 
+The raw data was sent to Harry Smith by Weiming and received on 10/01/18. Harry
+extracted the list of most significant CpG names based on the p - value for 
+males which can be found in the column labeled 'P value M'. This program will also 
+contain the code used to subset the matrix of M-values for the Cord blood in the
+Healthy Start Cohort. This code was run on the Lead server. 
+
+Data in and out for CpG list generation - Local machine
+Input data: "/Users/harry/Documents/CIDA/Projects/Starling/dataRaw/CpG_from_DMR_adjusted_M.txt"
+Output data: "/Users/harry/Documents/CIDA/Projects/Starling/dataProcessed/CpGList_Males.txt"
+
+```{r}
+knitr::opts_chunk$set(echo = T)
+knitr::opts_chunk$set(message = F)
+knitr::opts_chunk$set(warning = F)
+```
+
+```{r setup}
+## set up workspace
+library(knitr)
+library(dplyr)
+library(data.table)
+options(stringsAsFactors = F)
+options(dplyr.width = Inf)
+
+dir <- "/Users/harry/Documents/CIDA/Projects/Starling/"
+draw <- "dataRaw/"
+dpro <- "dataProcessed/"
+rawdata <- "CpG_from_DMR_adjusted_M.txt"
+processed <- "CpGList_Males.txt"
+```
+
+```{r data_read}
+## read in raw data
+cpgRaw <- fread(file = paste0(dir, draw, rawdata))
+sum(!duplicated(cpgRaw$dmr_num)) # 300 DMRs
+
+## extract the CpG with the most significant male pvalue - Should have 300 rows
+cpgFilt <- cpgRaw %>% 
+  group_by(dmr_num) %>%
+  slice(which.min(`P value M`))
+
+## put CpG names in a vector
+cpgNames <- cpgFilt$CpG
+
+## Save as text file for subsetting m-values on lead server
+write.table(cpgNames, file = paste0(dir, dpro, processed), 
+            row.names = F, 
+            col.names = F, 
+            quote = F)
+```
+
+Data in and out for M-value subsetting - Lead server
+Input data: "/home/datasets/For_DWH/HS_450K_CB_Mval_normbatch_02-10-16.csv"
+            "/home/smiharry/ECHO/methylation/data/CpGList_Males.txt"
+Output data: "/home/datasets/For_DWH/HS_450K_CB_Mval_normbatch_StarlingSubset_10-01-18.csv"
+
+```{r data_subset, eval = F}
+## set up workspace on lead server
+library(dplyr)
+library(data.table)
+options(stringsAsFactors = F)
+options(dplyr.width = Inf)
+
+dir <- "/home/datasets/For_DWH/"
+cpglist <- "/home/smiharry/ECHO/methylation/data/CpGList_Males.txt"
+rawdata <- "HS_450K_CB_Mval_normbatch_02-10-16.csv"
+processed <- "HS_450K_CB_Mval_normbatch_StarlingSubset_10-01-18.csv"
+## read in M-val matrix
+mval <- fread(paste0(dir, rawdata), header = T)
+cpg <- read.table(file = cpglist, header = F)
+
+## add pid to cpg names list
+cpg <- c("pid", as.character(cpg$V1))
+
+## Filter mvalues based on cpg names from list generated above
+mvalfilt <- mval %>%
+  select(one_of(cpg))
+
+## Write out dataset
+write.csv(mvalfilt, file = paste0("/home/smiharry/ECHO/methylation/data/", processed), row.names = F, quote = T)
+
+```
+

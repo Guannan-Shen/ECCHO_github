@@ -1,0 +1,106 @@
+---
+title: "Linear Regression CpG & Obesity"
+author: "Guannan Shen"
+date: "October 2, 2018"
+output:
+  word_document:
+    toc: yes
+    toc_depth: '5'
+  pdf_document:
+    latex_engine: lualatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 5
+  html_document:
+    number_sections: yes
+    theme: united
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+---
+
+```{r setup, include=FALSE, cache = FALSE}
+require("knitr")
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+opts_chunk$set(engine = "R")
+knitr::opts_chunk$set(echo = T)
+knitr::opts_chunk$set(message = F)
+knitr::opts_chunk$set(warning = F)
+## setting working directory in asus 
+opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_Guannan/Code/")
+## setting working directory in ubuntu
+## opts_knit$set(root.dir = "~/Documents/Stats/gitlab/ECCHO_Guannan/Code/")
+                                                 
+## cache = F, if cache = T, will not revaluate code chunk everytime
+## double or more space to insert a line break
+```
+
+
+```{r libs}
+## set up workspace
+library(knitr)
+library(tidyverse)
+options(stringsAsFactors = F)
+options(dplyr.width = Inf)
+getwd()
+```
+# ECCHO_Guannan
+
+ECCHO grant (chemicals and methylation project of the Healthy Start cohort).
+
+## 9/27/2018
+linear regression model for 9 outcomes on obesity and CpG  
+$ y = CpG + maternal age + race + CellTypes(7) (All Male)$  
+The linear models, each has 10 covariates in the   
+Outcomes: "birth_weight", "ipv3_pp_fm_pct", "Chol_IPV3", "FFA_IPV3", "Gluc_IPV3", "HDL_IPV3", "Insu_IPV3", "Trig_IPV3", "Leptin_actual__ng_ml_".  
+Although we discussed include the variable “infant sex” as a covariate, we actually did the chemicals-methylation analysis stratified by sex. So the DMRs were only detected among male offspring. Therefore we should probably restrict our analysis to individuals with infant_sex = 2 (males), at least to begin with.  
+There will be missing data for some outcomes, I think it is OK if the sample size differs for each model.  
+
+
+## Methods
+### Data Pre-processing
+The dataset to model the association between obesity and CpG M-value was generated from three dataset: cordblood cell counts, obesity related outcomes and top300 CpG list. The final dataset was the inner join product 
+
+```{r data process}
+# readin data in ASUS
+# largest dataset is 3Mb
+celltype <- read_csv("C:/Users/hithr/Documents/Stats/gitlab/ECCHO_Guannan/DataProcessed/healthy_start_cordblood_cellcounts_id.txt")
+m300 <- read_csv("C:/Users/hithr/Documents/Stats/gitlab/ECCHO_Guannan/DataRaw/HS_450K_CB_Mval_normbatch_StarlingSubset_10-01-18.csv")
+pfas <- read_csv("C:/Users/hithr/Documents/Stats/gitlab/ECCHO_Guannan/DataRaw/pfas_methyl_di.csv")
+summary(pfas)
+dim(pfas)
+outcomes <- colnames(pfas)[-c(1,3:5)]
+paste(outcomes)
+
+
+## merge dataset by ID, inner join
+pfas_cell <- merge(pfas, celltype, by = "pid")
+obs_cpg <- merge(pfas_cell, m300, by = "pid")
+dim(obs_cpg)
+# compare m300 and celltype
+m300$pid[!(m300$pid == celltype$pid)]
+
+# check final sujects with outcomes
+pfas$pid[!(obs_cpg$pid == pfas$pid)]
+
+pfas$pid[-c(1:577)]
+obs_cpg$pid[-c(1:577)]
+
+message("The subject with PID 30568 is in Outcomes but not in celltype and top 300 CpG")
+
+# filter based on gender
+cpg_male <- obs_cpg %>% filter(infant_sex == 2) %>% mutate(race_4 = as.factor(race_4) )
+head(cpg_male[1:10], 6)
+dim(cpg_male)
+
+
+  
+```
+
+
+
+  
+  
+  
+  
+  
