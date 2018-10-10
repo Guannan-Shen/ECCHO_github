@@ -3,14 +3,14 @@ title: "Linear Regression CpG & Obesity"
 author: "Guannan Shen"
 date: "October 2, 2018"
 output:
-  word_document:
-    toc: yes
-    toc_depth: '5'
   pdf_document:
     latex_engine: lualatex
     number_sections: yes
     toc: yes
     toc_depth: 5
+  word_document:
+    toc: yes
+    toc_depth: '5'
   html_document:
     number_sections: yes
     theme: united
@@ -27,9 +27,9 @@ knitr::opts_chunk$set(echo = T)
 knitr::opts_chunk$set(message = F)
 knitr::opts_chunk$set(warning = F)
 ## setting working directory in asus 
-opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_Guannan/Code/")
+## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_Guannan/Code/")
 ## setting working directory in ubuntu
-## opts_knit$set(root.dir = "~/Documents/Stats/gitlab/ECCHO_Guannan/Code/")
+opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/Code/")
                                                  
 ## cache = F, if cache = T, will not revaluate code chunk everytime
 ## double or more space to insert a line break
@@ -59,47 +59,577 @@ There will be missing data for some outcomes, I think it is OK if the sample siz
 
 ## Methods
 ### Data Pre-processing
-The dataset to model the association between obesity and CpG M-value was generated from three dataset: cordblood cell counts, obesity related outcomes and top300 CpG list. The final dataset was the inner join product 
+The dataset to model the association between obesity and CpG M-value was generated from three dataset: cordblood cell counts (celltype), obesity related outcomes (pfas) and top300 CpG list (m300). The final dataset was the inner join product (the intersection) of these 3 datasets and was joint by "pid" (participants ID). The "celltype" and "m300" datasets share the same collection of participants with sample size 600. The outcome data set contains 589 subjects, and 588 out of 589 subjects are shared across all 3 dataset. The subject with pid 30568 is only in the "pfas" dataset.  
+In this way, the final dataset obs_cpg contains 588 rows (subjects) and 320 columns. After the dataset was filtered by "infant_sex == 2 (males)", 308 participants left.  
+Regarding the male only dataset, "cpg_male", there are 308 rows and 320 columns. Missing values only occur in outcomes, thus there are different sample sizes for different outcomes. The first 2 columns, pid and infant_sex would not be included in the linear regression model. The 3rd and 4th columns are "maternal_age" and categorical variable "race_4", which would always be included in the model. From column 5 to 13, these are 9 outcomes. From column 14 to 20, these are 7 celltypes, "Bcell", "CD4T", "CD8T", "Gran", "Mono", "NK" and "nRBC",  which would always be included in the model. From column 21 to 320, these are 300 CpG M values. Each linear regression model would contain 1 out of 300 CpGs. 
 
 ```{r data process}
 # readin data in ASUS
 # largest dataset is 3Mb
-celltype <- read_csv("C:/Users/hithr/Documents/Stats/gitlab/ECCHO_Guannan/DataProcessed/healthy_start_cordblood_cellcounts_id.txt")
-m300 <- read_csv("C:/Users/hithr/Documents/Stats/gitlab/ECCHO_Guannan/DataRaw/HS_450K_CB_Mval_normbatch_StarlingSubset_10-01-18.csv")
-pfas <- read_csv("C:/Users/hithr/Documents/Stats/gitlab/ECCHO_Guannan/DataRaw/pfas_methyl_di.csv")
+# celltype <- read_csv("C:/Users/hithr/Documents/Stats/gitlab/ECCHO_Guannan/DataProcessed/healthy_start_cordblood_cellcounts_id.txt")
+# m300 <- read_csv("C:/Users/hithr/Documents/Stats/gitlab/ECCHO_Guannan/DataRaw/HS_450K_CB_Mval_normbatch_StarlingSubset_10-01-18.csv")
+# pfas <- read_csv("C:/Users/hithr/Documents/Stats/gitlab/ECCHO_Guannan/DataRaw/pfas_methyl_di.csv")
+
+## readin data in Ubuntu
+celltype <- read_csv("~/Documents/gitlab/ECCHO_github/DataProcessed/healthy_start_cordblood_cellcounts_id.txt")
+
+m300 <- read_csv("~/Documents/gitlab/ECCHO_github/DataRaw/HS_450K_CB_Mval_normbatch_StarlingSubset_10-01-18.csv")
+pfas <- read_csv("~/Documents/gitlab/ECCHO_github/DataRaw/pfas_methyl_di.csv")
+
+# Exploratory Data Analysis
+dim(celltype)
+colnames(celltype)
+##
+dim(m300)
+##
 summary(pfas)
 dim(pfas)
 outcomes <- colnames(pfas)[-c(1,3:5)]
 paste(outcomes)
+
+# compare m300 and celltype, the subjects
+m300$pid[!(m300$pid == celltype$pid)]
+sum(m300$pid %in% celltype$pid)
 
 
 ## merge dataset by ID, inner join
 pfas_cell <- merge(pfas, celltype, by = "pid")
 obs_cpg <- merge(pfas_cell, m300, by = "pid")
 dim(obs_cpg)
-# compare m300 and celltype
-m300$pid[!(m300$pid == celltype$pid)]
 
 # check final sujects with outcomes
 pfas$pid[!(obs_cpg$pid == pfas$pid)]
 
-pfas$pid[-c(1:577)]
-obs_cpg$pid[-c(1:577)]
+#
+pfas$pid[!(pfas$pid %in% m300$pid)]
 
 message("The subject with PID 30568 is in Outcomes but not in celltype and top 300 CpG")
 
-# filter based on gender
-cpg_male <- obs_cpg %>% filter(infant_sex == 2) %>% mutate(race_4 = as.factor(race_4) )
-head(cpg_male[1:10], 6)
+
+# filter based on gender, make race_4 as catrgorical variable. 
+cpg_male <- obs_cpg %>% filter(infant_sex == 2) %>% 
+  mutate(race_4 = as.factor(race_4) ) %>% 
+  select(pid, infant_sex, maternal_age, race_4, everything())
+
 dim(cpg_male)
 
+############### missing data  ####################
+kable(apply(cpg_male[, 5:13], 2, function(x){sum(is.na(x))}) , 
+      caption = "Missing Data Summary",
+      col.names = "# Missing Values")
 
-  
+
+##################################################
+## to build up the lm model, get the variables' name
+
+## "maternal_age", "race_4" 
+colnames(cpg_male)[3:4]
+
+## outcomes
+## "birth_weight", "ipv3_pp_fm_pct", "Chol_IPV3", "FFA_IPV3", "Gluc_IPV3", "HDL_IPV3", "Insu_IPV3"             "Trig_IPV3", "Leptin_actual__ng_ml_"
+colnames(cpg_male)[5:13]
+
+## cell types names
+## "Bcell", "CD4T", "CD8T", "Gran", "Mono", "NK" and "nRBC" 
+colnames(cpg_male)[14: 20]
+
+message("loop over 21 to 320")
+
+
+
 ```
 
 
+```{r looplm, echo = FALSE}
+################# loop for birth_weight #################################
+birth_weight_lm <- lapply(21:320, function(i){
+  lm = lm(birth_weight ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+birth_weight_lm <- data.frame(matrix(unlist(birth_weight_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
 
-  
+# adjusted p-value
+birth_weight_lm <-  birth_weight_lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything())
+birth_weight_lm <- birth_weight_lm[order(birth_weight_lm$FDR), ]
+
+## sample size 
+size1 <- length(cpg_male$birth_weight) - sum(is.na(cpg_male$birth_weight))
+
+## summary table 
+kable(head(birth_weight_lm,10), caption = paste("Top10 FDR birth_weight ", "n = ", size1, sep = ""))
+
+
+
+
+####################### ipv3_pp_fm_pct ####################
+ipv3_pp_fm_pct_lm <- lapply(21:320, function(i){
+  lm = lm(ipv3_pp_fm_pct ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+ipv3_pp_fm_pct_lm <- data.frame(matrix(unlist(ipv3_pp_fm_pct_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+# adjusted p-value
+ipv3_pp_fm_pct_lm <-  ipv3_pp_fm_pct_lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything()) 
+
+ipv3_pp_fm_pct_lm <- ipv3_pp_fm_pct_lm[order(ipv3_pp_fm_pct_lm$FDR), ]
+
+## sample size 
+size2 <- length(cpg_male$ipv3_pp_fm_pct) - sum(is.na(cpg_male$ipv3_pp_fm_pct))
+
+## summary table 
+kable(head(ipv3_pp_fm_pct_lm,10), caption = paste("Top10 FDR ipv3_pp_fm_pct ", "n = ", size2, sep = ""))
+
+########################## Chol_IPV3 ###############################
+Chol_IPV3_lm <- lapply(21:320, function(i){
+  lm = lm(Chol_IPV3 ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+Chol_IPV3_lm <- data.frame(matrix(unlist(Chol_IPV3_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+# adjusted p-value
+Chol_IPV3_lm <-  Chol_IPV3_lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything()) 
+Chol_IPV3_lm <- Chol_IPV3_lm[order(Chol_IPV3_lm$FDR), ]
+
+
+## sample size 
+size3 <- length(cpg_male$Chol_IPV3) - sum(is.na(cpg_male$Chol_IPV3))
+
+## summary table 
+kable(head(Chol_IPV3_lm,10), caption = paste("Top10 FDR Chol_IPV3 ", "n = ", size3, sep = ""))
+
+###################### FFA_IPV3 ##################################
+FFA_IPV3_lm <- lapply(21:320, function(i){
+  lm = lm(FFA_IPV3 ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+FFA_IPV3_lm <- data.frame(matrix(unlist(FFA_IPV3_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+# adjusted p-value
+FFA_IPV3_lm <-  FFA_IPV3_lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything()) 
+FFA_IPV3_lm <- FFA_IPV3_lm[order(FFA_IPV3_lm$FDR), ]
+
+
+## sample size 
+size4 <- length(cpg_male$FFA_IPV3) - sum(is.na(cpg_male$FFA_IPV3))
+
+## summary table 
+kable(head(FFA_IPV3_lm, 10), caption = paste("Top10 FDR FFA_IPV3 ", "n = ", size4, sep = ""))
+
+####################### Gluc_IPV3 ##########################
+Gluc_IPV3_lm <- lapply(21:320, function(i){
+  lm = lm(Gluc_IPV3 ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+Gluc_IPV3_lm <- data.frame(matrix(unlist(Gluc_IPV3_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+# adjusted p-value
+Gluc_IPV3_lm <-  Gluc_IPV3_lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything()) 
+Gluc_IPV3_lm <- Gluc_IPV3_lm[order(Gluc_IPV3_lm$FDR), ]
+
+## sample size 
+size5 <- length(cpg_male$Gluc_IPV3) - sum(is.na(cpg_male$Gluc_IPV3))
+
+## summary table 
+kable(head(Gluc_IPV3_lm, 10), caption = paste("Top10 FDR Gluc_IPV3 ", "n = ", size5, sep = ""))
+
+
+##################### HDL_IPV3 ######################
+HDL_IPV3_lm <- lapply(21:320, function(i){
+  lm = lm(HDL_IPV3 ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+HDL_IPV3_lm <- data.frame(matrix(unlist(HDL_IPV3_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+# adjusted p-value
+HDL_IPV3_lm <-  HDL_IPV3_lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything())
+HDL_IPV3_lm <- HDL_IPV3_lm[order(HDL_IPV3_lm$FDR), ]
+
+
+## sample size 
+size6 <- length(cpg_male$HDL_IPV3) - sum(is.na(cpg_male$HDL_IPV3))
+
+## summary table 
+kable(head(HDL_IPV3_lm, 10), caption = paste("Top10 FDR HDL_IPV3 ", "n = ", size6, sep = ""))
+
+################### Insu_IPV3 ###############################
+Insu_IPV3_lm <- lapply(21:320, function(i){
+  lm = lm(Insu_IPV3 ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+Insu_IPV3_lm <- data.frame(matrix(unlist(Insu_IPV3_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+# adjusted p-value
+Insu_IPV3_lm <-  Insu_IPV3_lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything()) 
+Insu_IPV3_lm <- Insu_IPV3_lm[order(Insu_IPV3_lm$FDR), ]
+
+## sample size 
+size7 <- length(cpg_male$Insu_IPV3) - sum(is.na(cpg_male$Insu_IPV3))
+
+## summary table 
+kable(head(Insu_IPV3_lm, 10), caption = paste("Top10 FDR Insu_IPV3 ", "n = ", size7, sep = ""))
+
+############## Trig_IPV3 #########################
+Trig_IPV3_lm <- lapply(21:320, function(i){
+  lm = lm(Trig_IPV3 ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+Trig_IPV3_lm <- data.frame(matrix(unlist(Trig_IPV3_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+# adjusted p-value
+Trig_IPV3_lm <-  Trig_IPV3_lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything()) 
+Trig_IPV3_lm <- Trig_IPV3_lm[order(Trig_IPV3_lm$FDR), ]
+
+
+## sample size 
+size8 <- length(cpg_male$Trig_IPV3) - sum(is.na(cpg_male$Trig_IPV3))
+
+## summary table 
+kable(head(Trig_IPV3_lm, 10), caption = paste("Top10 FDR Trig_IPV3 ", "n = ", size8, sep = ""))
+
+############# Leptin_actual__ng_ml_ #####################
+Leptin_actual__ng_ml__lm <- lapply(21:320, function(i){
+  lm = lm(Leptin_actual__ng_ml_ ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+Leptin_actual__ng_ml__lm <- data.frame(matrix(unlist(Leptin_actual__ng_ml__lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+# adjusted p-value
+Leptin_actual__ng_ml__lm <-  Leptin_actual__ng_ml__lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything())
+
+Leptin_actual__ng_ml__lm <- Leptin_actual__ng_ml__lm[order(Leptin_actual__ng_ml__lm$FDR), ]
+
+
+## sample size 
+size9 <- length(cpg_male$Leptin_actual__ng_ml_) - sum(is.na(cpg_male$Leptin_actual__ng_ml_))
+
+## summary table 
+kable(head(Leptin_actual__ng_ml__lm, 10), caption = paste("Top10 FDR Leptin_actual__ng_ml ", "n = ", size9, sep = ""))
+
+### Double check 
+check_lm <- lm(Leptin_actual__ng_ml_ ~ cpg_male[ , 42] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+summary(check_lm)
+
+
+```
+
+```{r code, eval = FALSE}
+################# loop for birth_weight #################################
+birth_weight_lm <- lapply(21:320, function(i){
+  lm = lm(birth_weight ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+birth_weight_lm <- data.frame(matrix(unlist(birth_weight_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+# adjusted p-value
+birth_weight_lm <-  birth_weight_lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything())
+birth_weight_lm <- birth_weight_lm[order(birth_weight_lm$FDR), ]
+
+## sample size 
+size1 <- length(cpg_male$birth_weight) - sum(is.na(cpg_male$birth_weight))
+
+## summary table 
+kable(head(birth_weight_lm,10), caption = paste("Top10 FDR birth_weight ", "n = ", size1, sep = ""))
+
+
+
+
+####################### ipv3_pp_fm_pct ####################
+ipv3_pp_fm_pct_lm <- lapply(21:320, function(i){
+  lm = lm(ipv3_pp_fm_pct ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+ipv3_pp_fm_pct_lm <- data.frame(matrix(unlist(ipv3_pp_fm_pct_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+# adjusted p-value
+ipv3_pp_fm_pct_lm <-  ipv3_pp_fm_pct_lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything()) 
+
+ipv3_pp_fm_pct_lm <- ipv3_pp_fm_pct_lm[order(ipv3_pp_fm_pct_lm$FDR), ]
+
+## sample size 
+size2 <- length(cpg_male$ipv3_pp_fm_pct) - sum(is.na(cpg_male$ipv3_pp_fm_pct))
+
+## summary table 
+kable(head(ipv3_pp_fm_pct_lm,10), caption = paste("Top10 FDR ipv3_pp_fm_pct ", "n = ", size2, sep = ""))
+
+########################## Chol_IPV3 ###############################
+Chol_IPV3_lm <- lapply(21:320, function(i){
+  lm = lm(Chol_IPV3 ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+Chol_IPV3_lm <- data.frame(matrix(unlist(Chol_IPV3_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+# adjusted p-value
+Chol_IPV3_lm <-  Chol_IPV3_lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything()) 
+Chol_IPV3_lm <- Chol_IPV3_lm[order(Chol_IPV3_lm$FDR), ]
+
+
+## sample size 
+size3 <- length(cpg_male$Chol_IPV3) - sum(is.na(cpg_male$Chol_IPV3))
+
+## summary table 
+kable(head(Chol_IPV3_lm,10), caption = paste("Top10 FDR Chol_IPV3 ", "n = ", size3, sep = ""))
+
+###################### FFA_IPV3 ##################################
+FFA_IPV3_lm <- lapply(21:320, function(i){
+  lm = lm(FFA_IPV3 ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+FFA_IPV3_lm <- data.frame(matrix(unlist(FFA_IPV3_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+# adjusted p-value
+FFA_IPV3_lm <-  FFA_IPV3_lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything()) 
+FFA_IPV3_lm <- FFA_IPV3_lm[order(FFA_IPV3_lm$FDR), ]
+
+
+## sample size 
+size4 <- length(cpg_male$FFA_IPV3) - sum(is.na(cpg_male$FFA_IPV3))
+
+## summary table 
+kable(head(FFA_IPV3_lm, 10), caption = paste("Top10 FDR FFA_IPV3 ", "n = ", size4, sep = ""))
+
+####################### Gluc_IPV3 ##########################
+Gluc_IPV3_lm <- lapply(21:320, function(i){
+  lm = lm(Gluc_IPV3 ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+Gluc_IPV3_lm <- data.frame(matrix(unlist(Gluc_IPV3_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+# adjusted p-value
+Gluc_IPV3_lm <-  Gluc_IPV3_lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything()) 
+Gluc_IPV3_lm <- Gluc_IPV3_lm[order(Gluc_IPV3_lm$FDR), ]
+
+## sample size 
+size5 <- length(cpg_male$Gluc_IPV3) - sum(is.na(cpg_male$Gluc_IPV3))
+
+## summary table 
+kable(head(Gluc_IPV3_lm, 10), caption = paste("Top10 FDR Gluc_IPV3 ", "n = ", size5, sep = ""))
+
+
+##################### HDL_IPV3 ######################
+HDL_IPV3_lm <- lapply(21:320, function(i){
+  lm = lm(HDL_IPV3 ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+HDL_IPV3_lm <- data.frame(matrix(unlist(HDL_IPV3_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+# adjusted p-value
+HDL_IPV3_lm <-  HDL_IPV3_lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything())
+HDL_IPV3_lm <- HDL_IPV3_lm[order(HDL_IPV3_lm$FDR), ]
+
+
+## sample size 
+size6 <- length(cpg_male$HDL_IPV3) - sum(is.na(cpg_male$HDL_IPV3))
+
+## summary table 
+kable(head(HDL_IPV3_lm, 10), caption = paste("Top10 FDR HDL_IPV3 ", "n = ", size6, sep = ""))
+
+################### Insu_IPV3 ###############################
+Insu_IPV3_lm <- lapply(21:320, function(i){
+  lm = lm(Insu_IPV3 ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+Insu_IPV3_lm <- data.frame(matrix(unlist(Insu_IPV3_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+# adjusted p-value
+Insu_IPV3_lm <-  Insu_IPV3_lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything()) 
+Insu_IPV3_lm <- Insu_IPV3_lm[order(Insu_IPV3_lm$FDR), ]
+
+## sample size 
+size7 <- length(cpg_male$Insu_IPV3) - sum(is.na(cpg_male$Insu_IPV3))
+
+## summary table 
+kable(head(Insu_IPV3_lm, 10), caption = paste("Top10 FDR Insu_IPV3 ", "n = ", size7, sep = ""))
+
+############## Trig_IPV3 #########################
+Trig_IPV3_lm <- lapply(21:320, function(i){
+  lm = lm(Trig_IPV3 ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+Trig_IPV3_lm <- data.frame(matrix(unlist(Trig_IPV3_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+# adjusted p-value
+Trig_IPV3_lm <-  Trig_IPV3_lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything()) 
+Trig_IPV3_lm <- Trig_IPV3_lm[order(Trig_IPV3_lm$FDR), ]
+
+
+## sample size 
+size8 <- length(cpg_male$Trig_IPV3) - sum(is.na(cpg_male$Trig_IPV3))
+
+## summary table 
+kable(head(Trig_IPV3_lm, 10), caption = paste("Top10 FDR Trig_IPV3 ", "n = ", size8, sep = ""))
+
+############# Leptin_actual__ng_ml_ #####################
+Leptin_actual__ng_ml__lm <- lapply(21:320, function(i){
+  lm = lm(Leptin_actual__ng_ml_ ~ cpg_male[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+  coef = round(summary(lm)$coefficients[2, ],4)
+  return(coef)
+})
+Leptin_actual__ng_ml__lm <- data.frame(matrix(unlist(Leptin_actual__ng_ml__lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(cpg_male)[21:320]),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+# adjusted p-value
+Leptin_actual__ng_ml__lm <-  Leptin_actual__ng_ml__lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
+                                               FWER = p.adjust(p.value,"bonferroni", 300),
+                                               names = colnames(cpg_male)[21:320] ) %>% 
+                                               select(names, everything())
+
+Leptin_actual__ng_ml__lm <- Leptin_actual__ng_ml__lm[order(Leptin_actual__ng_ml__lm$FDR), ]
+
+
+## sample size 
+size9 <- length(cpg_male$Leptin_actual__ng_ml_) - sum(is.na(cpg_male$Leptin_actual__ng_ml_))
+
+## summary table 
+kable(head(Leptin_actual__ng_ml__lm, 10), caption = paste("Top10 FDR Leptin_actual__ng_ml ", "n = ", size9, sep = ""))
+
+### Double check 
+check_lm <- lm(Leptin_actual__ng_ml_ ~ cpg_male[ , 42] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = cpg_male)
+summary(check_lm)
+
+
+
+```
   
   
   
