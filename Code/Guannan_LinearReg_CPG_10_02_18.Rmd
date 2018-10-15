@@ -630,7 +630,8 @@ summary(check_lm)
 
 
 ```
-  
-  
+
+
+
   
   
