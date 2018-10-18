@@ -43,6 +43,7 @@ library(tidyverse)
 options(stringsAsFactors = F)
 options(dplyr.width = Inf)
 getwd()
+'%nin%' <- Negate('%in%')
 ```
 
 ```{r DataProcessed, echo = FALSE}
@@ -62,6 +63,13 @@ head(pfas_cpg[,1])
 ## wrong subs
 message("The subject with PID 30568 is in Outcomes but not in celltype and top 300 CpG")
 
+## check the wrong gender subject
+wrong_sex_id <- c(10661, 10696, 10723, 10791, 11408, 40568)
+pfas_cpg$pid[pfas_cpg$pid %in% wrong_sex_id]
+
+pfas_cpg <- pfas_cpg %>% filter(pid %nin% wrong_sex_id)
+dim(pfas_cpg)
+
 ## get data for male and female 
 pfas_male <- pfas_cpg %>% filter(infant_sex == 2) %>% 
   mutate(race_4 = as.factor(race_4) ) %>% 
@@ -80,6 +88,49 @@ write_csv(pfas_cpg, "~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_cpg.csv"
 write_csv(pfas_male, "~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_male.csv")
 write_csv(pfas_female, "~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_female.csv")
 
+#########################################################
+##########  CpG FDR cutoff to reduce list to Top121 (120)
+#########################################################
+
+## CPG FDR 0.05
+cpg_FDR_005 <- read.delim("~/Documents/gitlab/ECCHO_github/DataRaw/top_CpG_from_DMR_adjusted_M005.txt")
+cpg_005list <- cpg_FDR_005$CpG
+out_co <- colnames(pfas_cpg)[1:20]
+
+## find the intersection of cpg_FDR005 and cpgTOP 300
+cpg_match <- cpg_005list[ cpg_005list %in% colnames(pfas_cpg) ]
+
+cpg_005list[ cpg_005list %nin% colnames(pfas_cpg) ]
+paste( cpg_005list[ cpg_005list %nin% colnames(pfas_cpg) ], 
+       " are not in the TOP300 M values CpG list", sep = "")
+
+pfas_cpg_FDR <- pfas_cpg %>% select(out_co, cpg_match)
+dim(pfas_cpg_FDR)
+
+paste("now the CpGs are 120 and whole sample size is 583")
+
+###### generate male and female data
+
+pfas_male_FDRcpg <- pfas_cpg_FDR %>% filter(infant_sex == 2) %>% 
+  mutate(race_4 = as.factor(race_4) ) %>% 
+  select(pid, infant_sex, maternal_age, race_4, everything())
+
+dim(pfas_male_FDRcpg)
+
+pfas_female_FDRcpg <- pfas_cpg_FDR %>% filter(infant_sex == 1) %>% 
+  mutate(race_4 = as.factor(race_4) ) %>% 
+  select(pid, infant_sex, maternal_age, race_4, everything())
+
+dim(pfas_female_FDRcpg)
+
+
+## save processed data 
+write_csv(pfas_cpg_FDR, "~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_cpg_FDR.csv")
+write_csv(pfas_male_FDRcpg, "~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_male_FDRcpg")
+write_csv(pfas_female_FDRcpg, "~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_female_FDRcpg")
+
+
+
 ```
 
 ```{r functionReg, results='asis'}
@@ -89,10 +140,10 @@ write_csv(pfas_female, "~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_femal
 ##################################################
 ## function for 1 out of 300 CpGs and other covariates
 ## equal length of outcomes and covariates
-cpg_reg <- function(outcome, data, name, Topn, Gender){
+cpg_reg <- function(outcome, data, name, Topn, Gender, ncpg){
   
   ## outcome lm
-  outcome_lm = lapply(21:320, function(i){
+  outcome_lm = lapply(21:(ncpg + 20), function(i){
   lm = lm(outcome ~ data[ ,i] + maternal_age + race_4 + Bcell + CD4T +
             CD8T + Gran + Mono + NK + nRBC , data = data)
   coef = round(summary(lm)$coefficients[2, ],4)
@@ -100,12 +151,12 @@ cpg_reg <- function(outcome, data, name, Topn, Gender){
 })
    outcome_lm = data.frame(matrix(unlist(outcome_lm), ncol = 4, byrow = TRUE,
                           dimnames = list(
-                     c(colnames(data)[21:320]),
+                     c(colnames(data)[21:(ncpg + 20)]),
                         c("Estimate", "Std.Error", "t.statistic", "p.value"))))
 
    # adjusted p-value
-    outcome_lm =  outcome_lm %>% mutate(FDR = p.adjust(p.value, "BH", 300 ),
-                                               names = colnames(data)[21:320] ) %>% 
+    outcome_lm =  outcome_lm %>% mutate(FDR = p.adjust(p.value, "BH", ncpg ),
+                                               names = colnames(data)[21:(ncpg + 20)] ) %>% 
                                                select(names, everything())
    # sort by p.value
     outcome_lm = outcome_lm[order(outcome_lm$p.value), ]
@@ -115,14 +166,14 @@ cpg_reg <- function(outcome, data, name, Topn, Gender){
 
    ## summary table 
    kable(head(outcome_lm, Topn), 
-         caption = paste("Top10 CpGs for ", name, " of ", Gender," by p.value",
+         caption = paste("Top10 CpGs from ", ncpg, " for ", name, " of ", Gender," by p.value",
                          " (Sample Size = ", size, ") ", sep = "" , collapse = ""))
   
 }
 
 ## test with birthweight_ no log tran
 # outcome, data, name, Topn
-## cpg_reg(pfas_male$birth_weight, pfas_male, "birth_weight", 15, "Male")
+## cpg_reg(pfas_male$birth_weight, pfas_male, "birth_weight", 10, "Male")
 
 ## outcomes
 ## "birth_weight", "ipv3_pp_fm_pct", "Chol_IPV3", "FFA_IPV3", "Gluc_IPV3", "HDL_IPV3", "Insu_IPV3"             "Trig_IPV3", "Leptin_actual__ng_ml_"
@@ -130,17 +181,17 @@ Outcomes <- colnames(pfas_male)[5:13]
 
 # the regression summary table for original outcomes 
 lapply(Outcomes, function(x){
- cpg_reg(pfas_male[, x], pfas_male, x, 15, "Male")
+ cpg_reg(pfas_male[, x], pfas_male, x, 10, "Male", 300)
 })
 
 
 
 ```
 
-```{r log, results='asis'}
+```{r log, results='asis', fig.width= 10, fig.height=8}
 
 ## raw outcomes 
-par(mfrow = c(1,2))
+par(mfrow = c(2,2))
 lapply(Outcomes, function(x){
   hist(pfas_male[,x], freq = TRUE, breaks = 30
        , main = paste(x, " (Male)",sep = ""), xlab = x)
@@ -148,7 +199,7 @@ lapply(Outcomes, function(x){
 )
 
 ## log10
-par(mfrow = c(1,2))
+par(mfrow = c(2,2))
 lapply(Outcomes, function(x){
   hist(log10(pfas_male[,x]), freq = TRUE, breaks = 30
        , main = paste(x, " (Male log10)",sep = ""), xlab = x)
@@ -157,7 +208,7 @@ lapply(Outcomes, function(x){
 
 ## check the distribution of cell types 
 cellnames <- colnames(pfas_male[, 14:20])
-par(mfrow = c(1,2))
+par(mfrow = c(2,2))
 lapply(cellnames, function(x){
   hist(pfas_male[,x], freq = TRUE, breaks = 30
        , main = paste(x, " Cell (Male)",sep = ""), xlab = x)
@@ -172,28 +223,40 @@ paste("It seems like the slope of this outcome vs NK is 0")
 paste(Outcomes[-c(1,2)], " should be log10 transformed. ", sep = "")
 
 ## # the regression summary table for log10 outcomes 
-lapply(Outcomes[3:9], function(x){
-  cpg_reg(log10(pfas_male[, x]), pfas_male, x, 15, "Male log10")
+lapply(Outcomes[1:9], function(x){
+  cpg_reg(log10(pfas_male[, x]), pfas_male, x, 10, "Male log10", 300)
 })
 
-lapply(Outcomes[1:2], function(x){
-  cpg_reg(log10(pfas_male[, x]), pfas_male, x, 15, "Male log10")
-})
+
 
 ```
 
-```{r female, results='asis'}
+```{r female, results='asis', fig.width= 10, fig.height=8}
 ## raw outcomes 
-par(mfrow = c(1,2))
+par(mfrow = c(2,2))
 lapply(Outcomes, function(x){
   hist(pfas_female[,x], freq = TRUE, breaks = 30
-       , main = paste(x, " (feMale)",sep = ""), xlab = x)
+       , main = paste(x, " (Female)",sep = ""), xlab = x)
   }
 )
 
 ## log10 of feMale
 lapply(Outcomes, function(x){
-  cpg_reg(log10(pfas_female[, x]), pfas_female, x, 15, "Female log10")
+  cpg_reg(log10(pfas_female[, x]), pfas_female, x, 10, "Female log10", 300)
+})
+
+
+```
+```{r top120CpG, results='asis'}
+#######################################
+##### using pfas_male_FDRcpg pfas_female_FDRcpg
+#######################################
+lapply(Outcomes[1:9], function(x){
+  cpg_reg(log10(pfas_male_FDRcpg[, x]), pfas_male_FDRcpg, x, 10, "Male log10", 120)
+})
+
+lapply(Outcomes[1:9], function(x){
+  cpg_reg(log10(pfas_female_FDRcpg[, x]), pfas_female_FDRcpg, x, 10, "Female log10", 120)
 })
 
 
