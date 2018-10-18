@@ -82,14 +82,14 @@ write_csv(pfas_female, "~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_femal
 
 ```
 
-```{r functionReg}
+```{r functionReg, results='asis'}
 ##################################################
 ###### fix the kable format with lapply ##########
 ###### add the male/female tag          ##########
 ##################################################
 ## function for 1 out of 300 CpGs and other covariates
 ## equal length of outcomes and covariates
-cpg_reg <- function(outcome, data, name, Topn){
+cpg_reg <- function(outcome, data, name, Topn, Gender){
   
   ## outcome lm
   outcome_lm = lapply(21:320, function(i){
@@ -115,29 +115,29 @@ cpg_reg <- function(outcome, data, name, Topn){
 
    ## summary table 
    kable(head(outcome_lm, Topn), 
-         caption = paste("Top10 CpGs for ", name, " by p.value",
+         caption = paste("Top10 CpGs for ", name, " of ", Gender," by p.value",
                          " (Sample Size = ", size, ") ", sep = "" , collapse = ""))
   
 }
 
 ## test with birthweight_ no log tran
 # outcome, data, name, Topn
-cpg_reg(pfas_male$birth_weight, pfas_male, "birth_weight", 15)
+## cpg_reg(pfas_male$birth_weight, pfas_male, "birth_weight", 15, "Male")
 
 ## outcomes
 ## "birth_weight", "ipv3_pp_fm_pct", "Chol_IPV3", "FFA_IPV3", "Gluc_IPV3", "HDL_IPV3", "Insu_IPV3"             "Trig_IPV3", "Leptin_actual__ng_ml_"
 Outcomes <- colnames(pfas_male)[5:13]
 
 # the regression summary table for original outcomes 
-unlist(lapply(Outcomes, function(x){
-  cpg_reg(pfas_male[, x], pfas_male, c(x, "Male"), 15)
+lapply(Outcomes, function(x){
+ cpg_reg(pfas_male[, x], pfas_male, x, 15, "Male")
 })
-)
+
 
 
 ```
 
-```{r log}
+```{r log, results='asis'}
 
 ## raw outcomes 
 par(mfrow = c(1,2))
@@ -173,16 +173,16 @@ paste(Outcomes[-c(1,2)], " should be log10 transformed. ", sep = "")
 
 ## # the regression summary table for log10 outcomes 
 lapply(Outcomes[3:9], function(x){
-  cpg_reg(log10(pfas_male[, x]), pfas_male, c(x, "Male log10"), 15)
+  cpg_reg(log10(pfas_male[, x]), pfas_male, x, 15, "Male log10")
 })
 
 lapply(Outcomes[1:2], function(x){
-  cpg_reg(log10(pfas_male[, x]), pfas_male, c(x, "Male log10"), 15)
+  cpg_reg(log10(pfas_male[, x]), pfas_male, x, 15, "Male log10")
 })
 
 ```
 
-```{r female}
+```{r female, results='asis'}
 ## raw outcomes 
 par(mfrow = c(1,2))
 lapply(Outcomes, function(x){
@@ -193,7 +193,7 @@ lapply(Outcomes, function(x){
 
 ## log10 of feMale
 lapply(Outcomes, function(x){
-  cpg_reg(log10(pfas_female[, x]), pfas_female, c(x, "Female log10"), 15)
+  cpg_reg(log10(pfas_female[, x]), pfas_female, x, 15, "Female log10")
 })
 
 
