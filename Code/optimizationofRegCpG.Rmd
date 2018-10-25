@@ -177,8 +177,9 @@ cpg_reg <- function(outcome, data, name, Topn, Gender, ncpg){
 
 ## outcomes
 ## "birth_weight", "ipv3_pp_fm_pct", "Chol_IPV3", "FFA_IPV3", "Gluc_IPV3", "HDL_IPV3", "Insu_IPV3"             "Trig_IPV3", "Leptin_actual__ng_ml_"
+pfas_male <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_male.csv")
 Outcomes <- colnames(pfas_male)[5:13]
-
+dim(pfas_male)
 # the regression summary table for original outcomes 
 lapply(Outcomes, function(x){
  cpg_reg(pfas_male[, x], pfas_male, x, 10, "Male", 300)
