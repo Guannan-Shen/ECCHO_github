@@ -51,12 +51,18 @@ getwd()
 pfas_cpg <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_cpg.csv")
 pfas_male <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_male.csv")
 pfas_female <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_female.csv")
+pid583 <- read.csv("~/Documents/gitlab/ECCHO_github/DataRaw/pid583.csv")
+pid583 <- as.vector(unlist(pid583))
+
 ### check sample size
 dim(pfas_cpg)
 dim(pfas_male)
 dim(pfas_female)
 
+pid583[pid583 %nin% pfas_cpg$pid]
+all(pid583 %in% pfas_cpg$pid)
 
+ 
 
 
 ```
