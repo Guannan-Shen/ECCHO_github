@@ -47,22 +47,63 @@ getwd()
 ```
 
 ```{r readinData}
-## 
+## import data 
 pfas_cpg <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_cpg.csv")
-pfas_male <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_male.csv")
-pfas_female <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_female.csv")
 pid583 <- read.csv("~/Documents/gitlab/ECCHO_github/DataRaw/pid583.csv")
+m300 <- read_csv("~/Documents/gitlab/ECCHO_github/DataRaw/HS_450K_CB_Mval_normbatch_StarlingSubset_10-01-18.csv")
 pid583 <- as.vector(unlist(pid583))
+
+## top CpG for male and female
+## male 103 and female 38
+cpg_male <- read.delim("~/Documents/gitlab/ECCHO_github/DataRaw/583_top_CpG_from_DMR_adjusted_M005.txt")
+dim(cpg_male)
+cpg_female <- read.delim("~/Documents/gitlab/ECCHO_github/DataRaw/583_top_CpG_from_DMR_adjusted_F005.txt")
+dim(cpg_female)
+## the list of top cpg 
+male103 <-  cpg_male$CpG
+female38 <- cpg_female$CpG
+
 
 ### check sample size
 dim(pfas_cpg)
-dim(pfas_male)
-dim(pfas_female)
 
+## check the sample IDs
 pid583[pid583 %nin% pfas_cpg$pid]
 all(pid583 %in% pfas_cpg$pid)
 
- 
+## the outcomes vector
+Outcomes <- colnames(pfas_2)[5:13]
+## not cpg part
+out_cov <- colnames(pfas_2)[1:20]
+
+## get male and female dataset 
+## race as two-level categorical variables. 
+pfas_2 <- pfas_cpg %>% rename(Race = race_4) %>% 
+  select(pid, infant_sex, maternal_age, Race, everything()) %>% 
+  mutate(Race = fct_collapse(as.factor(Race), 
+                             "Non-Hispanic white" = "2",
+                             "All others" = c("1", "3", "4")))
+## check the cpg match with TOP300\
+# male 
+all(male103 %in% colnames(pfas_2))
+sum(male103 %in% colnames(pfas_2))
+## female 
+all(female38 %in% colnames(pfas_2))
+sum(female38 %in% colnames(pfas_2))
+
+###############################################
+###### Not all CpGs are in the Top300 list 
+###############################################
+
+## top cpg
+pfas_male_2 <-  pfas_2 %>% filter(infant_sex == 2) %>% select()
+
+pfas_female_2 <-  pfas_2 %>% filter(infant_sex == 1) 
+
+### save new dataset as race levels 2
+write_csv(pfas_2, "~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_2.csv")
+write_csv(pfas_male_2, "~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_male_2.csv")
+write_csv(pfas_female_2, "~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_female_2.csv")
 
 
 ```
@@ -109,20 +150,54 @@ cpg_FunReg <- function(outcome, CpGdata, Xs, Outcome_name, Topn, Gender){
 
 ```
 
-```{r testFun, results='asis'}
-## CpGdata 
-CpGdata <- pfas_male[ ,21:320]
-## the covariates dataset
-Xs <- pfas_male[ ,1:20]
 
-## test
-Outcomes <- colnames(pfas_male)[5:13]
-Outcomes
-
-# the regression summary table for original outcomes 
-lapply(Outcomes, function(x){
- cpg_FunReg(log10(pfas_male[, x]), CpGdata, Xs, x, 10, "Male")
+```{r FunReg_min}
+cpg_FunReg_min <- function(outcome, CpGdata, Xs, Outcome_name, Topn, Gender){
+  ## number of CpG to test, also the number of multiple test
+  n_cpg = ncol(CpGdata)
+  ## outcome lm
+  outcome_lm = lapply(1:n_cpg, function(i){
+  lm = lm(outcome ~ CpGdata[ ,i] + maternal_age + race_4 + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC , data = Xs)
+  coef = summary(lm)$coefficients[2, ]
+  return(coef)
 })
+   outcome_lm = data.frame(matrix(unlist(outcome_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(CpGdata)),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+   # adjusted p-value
+    outcome_lm =  outcome_lm %>% 
+                              mutate(FDR = p.adjust(p.value, "BH", n_cpg ),
+                                               names = colnames(CpGdata)) %>% 
+                                               mutate(Estimate = round(Estimate ,4),
+                                                      Std.Error = round(Std.Error,4),
+                                                      t.statistic = round(t.statistic,4)
+                                                      )%>% 
+                                               select(names, everything())
+   # sort by p.value
+    outcome_lm = outcome_lm[order(outcome_lm$p.value), ]
+ 
+   ## sample size 
+    size = length(outcome) - sum(is.na(outcome))
+
+   ## summary table 
+   kable(head(outcome_lm, Topn), 
+         caption = paste("Top CpGs from ", n_cpg, " for Outcome: ", Outcome_name, " of ", Gender," by p.value",
+                         " (Sample Size = ", size, ") ", sep = "" , collapse = ""))
+  
+}
+
+
+```
+
+
+```{r Reg_min, results='asis'}
+
+
+## require log10 transformation for all outcomes
+## load the 
 
 
 ```
