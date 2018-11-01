@@ -22,6 +22,7 @@ Output data: "/Users/harry/Documents/CIDA/Projects/Starling/dataProcessed/CpGLis
 knitr::opts_chunk$set(echo = T)
 knitr::opts_chunk$set(message = F)
 knitr::opts_chunk$set(warning = F)
+'%!in%' <- function(x,y)!('%in%'(x,y))
 ```
 
 ```{r setup}
@@ -88,6 +89,56 @@ mvalfilt <- mval %>%
 
 ## Write out dataset
 write.csv(mvalfilt, file = paste0("/home/smiharry/ECHO/methylation/data/", processed), row.names = F, quote = T)
+
+```
+
+## Final M-value subset
+
+Per the discussion from our meeting on 10/25/18, we will perform the untargeted
+analysis on the CpGs with FDR < 0.05 as reported in the dataset sent from 
+Weiming's DMR analysis for both Males and Females. There are 103 CpGs in the 
+Male dataset that meet this criteria, and 38 CpGs in the female dataset. Harry
+will use the CpG probe IDs from the data sets below to subset the M-value dataset 
+on the LEAD server, and transfer this data set to Guannan for the linear regression
+analysis.
+
+```{r Final_Data_Subset, eval = FALSE}
+## set up workspace on lead server
+library(dplyr)
+library(data.table)
+options(stringsAsFactors = F)
+options(dplyr.width = Inf)
+
+dir <- "/home/datasets/For_DWH/"
+cpgdir <- "/home/smiharry/ECHO/methylation/data/"
+cpgfemale <- "top_CpG_from_DMR_adjusted_F005.txt"
+cpgmale <- "top_CpG_from_DMR_adjusted_M005.txt"
+rawdata <- "HS_450K_CB_Mval_normbatch_02-10-16.csv"
+processed_F <- "HS_450K_CB_Mval_normbatch_StarlingSubset_FEMALE_10-29-18.csv"
+processed_M <- "HS_450K_CB_Mval_normbatch_StarlingSubset_MALE_10-29-18.csv"
+
+## read in M-val matrix
+mval <- fread(paste0(dir, rawdata), header = T)
+## read in CpG data for males and females
+cpg_F <- read.delim(file = paste0(cpgdir, cpgfemale), header = T, sep = "\t")
+dim(cpg_F)
+cpg_M <- read.delim(file = paste0(cpgdir, cpgmale), header = T, sep = "\t")
+dim(cpg_M)
+
+
+## Filter mvalues based on cpg names from list generated above
+#Female
+mvalfilt_F <- mval %>%
+  select(one_of("pid", cpg_F$CpG))
+#Male
+mvalfilt_M <- mval %>%
+  select(one_of("pid", cpg_M$CpG))
+
+## Write out dataset
+write.csv(mvalfilt_F, file = paste0("/home/smiharry/ECHO/methylation/data/", processed_F), row.names = F, quote = T)
+write.csv(mvalfilt_M, file = paste0("/home/smiharry/ECHO/methylation/data/", processed_M), row.names = F, quote = T)
+```
+
 
 ```
 
