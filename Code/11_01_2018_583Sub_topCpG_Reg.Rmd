@@ -1,0 +1,81 @@
+---
+title: "583 top CpG"
+author: "Guannan Shen"
+date: "November 1, 2018"
+output: 
+  word_document:
+    toc: yes
+    toc_depth: '5'
+  pdf_document:
+    latex_engine: lualatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 5
+  html_document:
+    number_sections: yes
+    theme: united
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+---
+
+```{r setup, include=FALSE, cache = FALSE}
+require("knitr")
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+opts_chunk$set(engine = "R")
+knitr::opts_chunk$set(echo = T)
+knitr::opts_chunk$set(message = F)
+knitr::opts_chunk$set(warning = F)
+## setting working directory in asus 
+## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_Guannan/Code/")
+## setting working directory in ubuntu
+opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/Reports/")
+                                                 
+## cache = F, if cache = T, will not revaluate code chunk everytime
+## double or more space to insert a line break
+```
+
+
+```{r libs}
+## set up workspace
+library(knitr)
+library(tidyverse)
+options(stringsAsFactors = F)
+options(dplyr.width = Inf)
+getwd()
+'%nin%' <- Negate('%in%')
+```
+
+```{r readinData}
+## import data 
+pfas_cpg <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_cpg.csv")
+dim(pfas_cpg)
+## not cpg part
+out_cov <- colnames(pfas_cpg)[1:20]
+
+## top CpG for male and female
+## male 103 and female 38
+cpg_male <- read.delim("~/Documents/gitlab/ECCHO_github/DataRaw/583_top_CpG_from_DMR_adjusted_M005.txt")
+dim(cpg_male)
+cpg_female <- read.delim("~/Documents/gitlab/ECCHO_github/DataRaw/583_top_CpG_from_DMR_adjusted_F005.txt")
+dim(cpg_female)
+## the list of top cpg 
+male103 <-  cpg_male$CpG
+female38 <- cpg_female$CpG
+
+### import M values 
+m103 <- read_csv("~/Documents/gitlab/ECCHO_github/DataRaw/HS_450K_CB_Mval_normbatch_StarlingSubset_MALE_10-29-18.csv")
+dim(m103)
+m38  <- read_csv("~/Documents/gitlab/ECCHO_github/DataRaw/HS_450K_CB_Mval_normbatch_StarlingSubset_FEMALE_10-29-18.csv")
+dim(m38)
+
+## double check
+
+
+
+```
+
+
+
+
+
