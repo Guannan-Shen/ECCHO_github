@@ -176,7 +176,7 @@ cpg_RegSimRaw <- function(outcome, CpGdata, Xs, Outcome_name, Topn, Gender){
     size = length(outcome) - sum(is.na(outcome))
 
    ## raw_data
-   head(outcome_lm, Topn)
+   head(outcome_lm, max(c(sum(outcome_lm$p.value <= 0.05)) ) )
 }
 
 ```
