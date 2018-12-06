@@ -1,0 +1,160 @@
+---
+title: "Plots_PFOA"
+author: "Guannan Shen"
+date: "December 5, 2018"
+output: 
+  pdf_document:
+    latex_engine: lualatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 5
+  word_document:
+    toc: yes
+    toc_depth: '5'
+  html_document:
+    number_sections: yes
+    theme: united
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+---
+
+```{r setup, include=FALSE, cache = FALSE}
+require("knitr")
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+opts_chunk$set(engine = "R")
+knitr::opts_chunk$set(echo = T)
+knitr::opts_chunk$set(message = F)
+knitr::opts_chunk$set(warning = F)
+## setting wd in DELL
+## opts_knit$set(root.dir = "~/Stats/CIDA_OMICs/CIDA_OMICS/7659Stats_Genetics/HW5/")
+## setting working directory in asus 
+## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/CIDA_OMICs/7659Stats_Genetics/HW9/") 
+## setting working directory in ubuntu
+opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataRaw/")
+                                                 
+## cache = F, if cache = T, will not revaluate code chunk everytime
+## double or more space to insert a line break
+```
+
+
+```{r libs}
+## set up workspace
+library(data.table)
+library(EnhancedVolcano)
+library(knitr)
+library(tidyverse)
+library(magrittr)
+library(stats)
+library(gtable)
+library(grid) # low-level grid functions are required
+options(stringsAsFactors = F)
+options(dplyr.width = Inf)
+getwd()
+## not in function
+'%nin%' <- Negate('%in%')
+
+# ######## clean memory ######################
+# rm(list = ls())
+# gc()
+# slotNames(x)
+# getSlots(x)
+
+```
+
+
+```{r importdata}
+# the result of pfoa concentration and all 450k cpgs
+pfoa_coef <- fread("CpG_all_pfoa.txt", header = T)
+head(pfoa_coef)
+print("the coef of pfoa, means change in M values")
+colnames(pfoa_coef)
+
+## pid, pfoa concentration and cpg M values, and clinical gender information 
+pid583 <- fread("pid583.csv")
+pid583 <- as.vector(unlist(pid583))
+
+pfoa_conc <- fread("pid583_pfoa.csv")
+m300 <- fread("HS_450K_CB_Mval_normbatch_StarlingSubset_10-01-18.csv")
+pfas_clinical <- read_csv("pfas_methyl_di.csv")
+
+## get pid for male and female 583 subjects
+## infant_sex == 2 male infant_sex == 1 female 
+pid_female <- pfas_clinical %>% filter(pid %in% pid583) %>% filter(infant_sex == 1) %>% select(pid)
+pid_male <- pfas_clinical %>% filter(pid %in% pid583) %>% filter(infant_sex == 2) %>% select(pid)
+
+```
+
+```{r scatter}
+## top 3 cpg based on the association with pfoa concentration
+paste("cg00803922, cg18587484 in males, and cg19425295 in females")
+## check m values 
+"cg00803922" %in% colnames(m300)
+"cg18587484" %in% colnames(m300)
+"cg19425295" %in% colnames(m300)
+
+## top CpG for male and female
+## male 103 and female 38
+cpg_male <- read.delim("~/Documents/gitlab/ECCHO_github/DataRaw/583_top_CpG_from_DMR_adjusted_M005.txt")
+cpg_female <- read.delim("~/Documents/gitlab/ECCHO_github/DataRaw/583_top_CpG_from_DMR_adjusted_F005.txt")
+"cg00803922" %in% cpg_male$CpG
+"cg18587484" %in% cpg_male$CpG
+"cg19425295" %in% cpg_male$CpG
+
+"cg00803922" %in% cpg_female$CpG
+"cg18587484" %in% cpg_female$CpG
+"cg19425295" %in% cpg_female$CpG
+
+
+## m values for female top cpg 
+f38  <- read_csv("~/Documents/gitlab/ECCHO_github/DataRaw/HS_450K_CB_Mval_normbatch_StarlingSubset_FEMALE_10-29-18.csv")
+# get the index
+which( colnames(f38) %in% "cg19425295")
+pfoa_cpg_female <- as.data.frame(f38[, c(1,24)]) %>% filter(pid %in%  as.vector(unlist(pid_female))  )
+pfoa_M_Beta_female <- merge(pfoa_cpg_female, pfoa_conc, by = "pid") %>%
+                    rename(M = cg19425295) %>%
+                    mutate(Beta = 2^M/(1 + 2^M))
+colnames(pfoa_M_Beta_female)
+# plot separately
+p1 <-  ggplot(data = pfoa_M_Beta_female, mapping = aes(x = PFOA_ng_ml, y = M)) + 
+  geom_point() +
+  xlab("PFOA Concentration ng/ml") +
+  ylab("M Values of cg19425295 (Female)") +
+  theme_bw()
+
+p2 <-  ggplot(data = pfoa_M_Beta_female, mapping = aes(x = PFOA_ng_ml, y = Beta)) + 
+  geom_point() +
+  xlab("PFOA Concentration ng/ml") +
+  ylab("% Methylation of cg19425295 (Female)") +
+  theme_bw()
+p1
+p2
+## convert plots to gtable objects
+
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(p2)
+g <- base::rbind(g1, g2, size="last") # stack the two plots
+g$widths <- unit.pmax(g1$widths, g2$widths) # use the largest widths
+# center the legend vertically
+g$layout[grepl("guide", g$layout$name),c("t","b")] <- c(1,nrow(g))
+grid.newpage()
+grid.draw(g)
+
+```
+
+
+```{r volcano}
+# using the volcano plot to demonstrate the significance and the scope of the association
+pfoa_vol <- pfoa_coef %>% dplyr::rename( rawp = `P value F` ) %>% 
+                   dplyr::select(Chr, CpG, coefF, rawp, qf) %>% 
+                   mutate( ORbeta = 2^coefF,
+                           posP = -log10(rawp) )
+head(pfoa_vol)
+
+
+
+```
+
+
+
+
