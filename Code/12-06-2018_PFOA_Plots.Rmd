@@ -106,15 +106,23 @@ cpg_female <- read.delim("~/Documents/gitlab/ECCHO_github/DataRaw/583_top_CpG_fr
 "cg19425295" %in% cpg_female$CpG
 
 
-## m values for female top cpg 
+## m values for female top cpg cg19425295
 f38  <- read_csv("~/Documents/gitlab/ECCHO_github/DataRaw/HS_450K_CB_Mval_normbatch_StarlingSubset_FEMALE_10-29-18.csv")
+
+## m values for top cpg in male cg00803922, cg18587484
+m2cpg <- read_csv("~/Documents/gitlab/ECCHO_github/DataRaw/HS_450K_CB_Mval_normbatch_StarlingSubset_MALE_12-6-18.csv")
+head(m2cpg)
+dim(m2cpg)
+
 # get the index
 which( colnames(f38) %in% "cg19425295")
+# the index is 24
 pfoa_cpg_female <- as.data.frame(f38[, c(1,24)]) %>% filter(pid %in%  as.vector(unlist(pid_female))  )
 pfoa_M_Beta_female <- merge(pfoa_cpg_female, pfoa_conc, by = "pid") %>%
                     rename(M = cg19425295) %>%
                     mutate(Beta = 2^M/(1 + 2^M))
 colnames(pfoa_M_Beta_female)
+head(pfoa_M_Beta_female)
 # plot separately
 p1 <-  ggplot(data = pfoa_M_Beta_female, mapping = aes(x = PFOA_ng_ml, y = M)) + 
   geom_point() +
@@ -140,6 +148,126 @@ g$layout[grepl("guide", g$layout$name),c("t","b")] <- c(1,nrow(g))
 grid.newpage()
 grid.draw(g)
 
+#################################
+## scatter plots for male 
+pfoa_cpg_male <- as.data.frame(m2cpg) %>% filter(pid %in%  as.vector(unlist(pid_male))  )
+dim(pfoa_cpg_male)
+head(pfoa_cpg_male)
+pfoa_M_Beta_male <- merge(pfoa_cpg_male, pfoa_conc, by = "pid") %>% 
+                    mutate(Beta1 = 2^cg00803922/(1 + 2^cg00803922),
+                           Beta2 = 2^cg18587484/(1 + 2^cg18587484))
+colnames(pfoa_M_Beta_male)
+head(pfoa_M_Beta_male)
+
+pfoa_M_Beta_male_noout <- pfoa_M_Beta_male %>% filter(PFOA_ng_ml <= 5)
+########### cg00803922 ################
+# plot separately
+p1 <-  ggplot(data = pfoa_M_Beta_male, mapping = aes(x = PFOA_ng_ml, y = cg00803922)) + 
+  geom_point() +
+  xlab("PFOA Concentration ng/ml") +
+  ylab("M Values of cg00803922 (Male)") +
+  theme_bw()
+
+p2 <-  ggplot(data = pfoa_M_Beta_male, mapping = aes(x = PFOA_ng_ml, y = Beta1)) + 
+  geom_point() +
+  xlab("PFOA Concentration ng/ml") +
+  ylab("% Methylation of cg00803922 (Male)") +
+  theme_bw()
+p1
+p2
+## convert plots to gtable objects
+
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(p2)
+g <- base::rbind(g1, g2, size="last") # stack the two plots
+g$widths <- unit.pmax(g1$widths, g2$widths) # use the largest widths
+# center the legend vertically
+g$layout[grepl("guide", g$layout$name),c("t","b")] <- c(1,nrow(g))
+grid.newpage()
+grid.draw(g)
+
+#############################  cg18587484 ############################
+# plot separately
+p1 <-  ggplot(data = pfoa_M_Beta_male, mapping = aes(x = PFOA_ng_ml, y = cg18587484)) + 
+  geom_point() +
+  xlab("PFOA Concentration ng/ml") +
+  ylab("M Values of cg18587484 (Male)") +
+  theme_bw()
+
+p2 <-  ggplot(data = pfoa_M_Beta_male, mapping = aes(x = PFOA_ng_ml, y = Beta2)) + 
+  geom_point() +
+  xlab("PFOA Concentration ng/ml") +
+  ylab("% Methylation of cg18587484 (Male)") +
+  theme_bw()
+p1
+p2
+## convert plots to gtable objects
+
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(p2)
+g <- base::rbind(g1, g2, size="last") # stack the two plots
+g$widths <- unit.pmax(g1$widths, g2$widths) # use the largest widths
+# center the legend vertically
+g$layout[grepl("guide", g$layout$name),c("t","b")] <- c(1,nrow(g))
+grid.newpage()
+grid.draw(g)
+
+
+########### cg00803922 ################
+# plot separately
+p1 <-  ggplot(data = pfoa_M_Beta_male_noout, mapping = aes(x = PFOA_ng_ml, y = cg00803922)) + 
+  geom_point() +
+  xlab("PFOA Concentration ng/ml") +
+  ylab("M Values of cg00803922 (Male)") +
+  theme_bw()
+
+p2 <-  ggplot(data = pfoa_M_Beta_male_noout, mapping = aes(x = PFOA_ng_ml, y = Beta1)) + 
+  geom_point() +
+  xlab("PFOA Concentration ng/ml") +
+  ylab("% Methylation of cg00803922 (Male)") +
+  theme_bw()
+p1
+p2
+## convert plots to gtable objects
+
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(p2)
+g <- base::rbind(g1, g2, size="last") # stack the two plots
+g$widths <- unit.pmax(g1$widths, g2$widths) # use the largest widths
+# center the legend vertically
+g$layout[grepl("guide", g$layout$name),c("t","b")] <- c(1,nrow(g))
+grid.newpage()
+grid.draw(g)
+
+#################### no outliers #################333
+#############################  cg18587484 ############################
+# plot separately
+p1 <-  ggplot(data = pfoa_M_Beta_male_noout, mapping = aes(x = PFOA_ng_ml, y = cg18587484)) + 
+  geom_point() +
+  xlab("PFOA Concentration ng/ml") +
+  ylab("M Values of cg18587484 (Male)") +
+  theme_bw()
+
+p2 <-  ggplot(data = pfoa_M_Beta_male_noout, mapping = aes(x = PFOA_ng_ml, y = Beta2)) + 
+  geom_point() +
+  xlab("PFOA Concentration ng/ml") +
+  ylab("% Methylation of cg18587484 (Male)") +
+  theme_bw()
+p1
+p2
+## convert plots to gtable objects
+
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(p2)
+g <- base::rbind(g1, g2, size="last") # stack the two plots
+g$widths <- unit.pmax(g1$widths, g2$widths) # use the largest widths
+# center the legend vertically
+g$layout[grepl("guide", g$layout$name),c("t","b")] <- c(1,nrow(g))
+grid.newpage()
+grid.draw(g)
+
+
+
 ```
 
 
@@ -150,6 +278,27 @@ pfoa_vol <- pfoa_coef %>% dplyr::rename( rawp = `P value F` ) %>%
                    mutate( ORbeta = 2^coefF,
                            posP = -log10(rawp) )
 head(pfoa_vol)
+dim(pfoa_vol)
+
+#  EnhancedVolcano plot
+## Modify cut-offs for coefF and P value; add title; adjust point and label size
+    EnhancedVolcano(pfoa_vol,
+
+        lab = "CpG",
+
+        x = "coefF",
+
+        y = "rawp",
+
+        pCutoff = 10e-6,
+
+        FCcutoff = 0.3,
+
+        transcriptPointSize = 1.5,
+
+        transcriptLabSize = 3.0,
+
+        title = "M Values")
 
 
 
