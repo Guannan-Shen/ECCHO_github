@@ -29,9 +29,9 @@ knitr::opts_chunk$set(warning = F)
 ## setting wd in DELL
 ## opts_knit$set(root.dir = "~/Stats/CIDA_OMICs/CIDA_OMICS/7659Stats_Genetics/HW5/")
 ## setting working directory in asus 
-opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_github/DataRaw/") 
+## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_github/DataRaw/") 
 ## setting working directory in ubuntu
-## opts_knit$set(root.dir = "~/Documents/gitlab/Cario_RNASeq_Microbiom_Inte/DataRaw/")
+opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataRaw/")
                                                  
 ## cache = F, if cache = T, will not revaluate code chunk everytime
 ## double or more space to insert a line break
@@ -65,6 +65,44 @@ getwd()
 # Unsupervised
 
 ```{r hierKmeans}
+## import the chems data
+phthal <- read.csv("phthal_di.csv")
+chems <- t(phthal[,-1])
+colnames(chems) <- phthal$PID
 
+## take a look
+head(chems[,1:5])
+dim(chems)
+length(phthal$PID)
+
+##for hier clustering
+chems <- as.matrix(chems)
+dist.chems <- dist(chems, method = "euclidean")
+plot(hclust(dist.chems, method = "complete"),
+     main = "Cluster Dendrogram of Chemicals")
+
+
+## kmeans cluster
+
+## kmeans and try k
+maxk <- 10
+k_c <- 1:maxk
+k_sws <- NULL
+
+k_wsm <- NULL
+for(i in k_c){
+km <- kmeans(chems, i, iter.max = 10)
+k_sws[i] <- sum(km$withinss)
+ if(i == 1){
+   k_wsm <- c(km$withinss)
+ }else{
+   k_wsm <- c(k_wsm, km$withinss)
+ }
+}
+plot(k_c, k_sws, type = "o", 
+     xlab = "Number of Clusters of Chemicals", ylab = "Sum of Within cluster sum of squares")
+
+km.chem5 <- kmeans(chems, 5, iter.max = 10)
+km.chem5$cluster
 
 ```
