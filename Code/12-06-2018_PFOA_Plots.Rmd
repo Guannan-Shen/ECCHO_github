@@ -29,10 +29,10 @@ knitr::opts_chunk$set(warning = F)
 ## setting wd in DELL
 ## opts_knit$set(root.dir = "~/Stats/CIDA_OMICs/CIDA_OMICS/7659Stats_Genetics/HW5/")
 ## setting working directory in asus 
-opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_github/DataRaw/") 
+## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_github/DataRaw/") 
 ## setting working directory in ubuntu
 
-## opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataRaw/")
+opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataRaw/")
                                                  
 ## cache = F, if cache = T, will not revaluate code chunk everytime
 ## double or more space to insert a line break
@@ -48,6 +48,7 @@ library(tidyverse)
 library(magrittr)
 library(stats)
 library(gtable)
+library(RColorBrewer)
 library(grid) # low-level grid functions are required
 options(stringsAsFactors = F)
 options(dplyr.width = Inf)
@@ -127,16 +128,33 @@ colnames(pfoa_M_Beta_female)
 head(pfoa_M_Beta_female)
 # plot separately
 p1 <-  ggplot(data = pfoa_M_Beta_female, mapping = aes(x = PFOA_ng_ml, y = M)) + 
-  geom_point() +
-  xlab("PFOA Concentration ng/ml") +
   ylab("M Values of cg19425295 (Female)") +
-  theme_bw()
+  geom_point(colour = "gray15", size = 2, shape = 20) +
+  geom_smooth(method = "loess", se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, colour = "tomato") +
+  xlab("PFOA Concentration ng/ml") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(color="black", size=14, face="bold.italic"),
+    axis.title.x = element_text(color="black", size=12, face="bold"),
+    axis.title.y = element_text(color="black", size=12, face="bold"),
+    axis.text.x = element_text(face="bold", color="black", size=10, angle=0),
+    axis.text.y = element_text(face="bold", color="black", size=10, angle=0) )
 
 p2 <-  ggplot(data = pfoa_M_Beta_female, mapping = aes(x = PFOA_ng_ml, y = Beta)) + 
-  geom_point() +
-  xlab("PFOA Concentration ng/ml") +
   ylab("% Methylation of cg19425295 (Female)") +
-  theme_bw()
+  geom_point(colour = "gray15", size = 2, shape = 20) +
+  geom_smooth(method = "loess", se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, colour = "tomato") +
+  xlab("PFOA Concentration ng/ml") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(color="black", size=14, face="bold.italic"),
+    axis.title.x = element_text(color="black", size=12, face="bold"),
+    axis.title.y = element_text(color="black", size=12, face="bold"),
+    axis.text.x = element_text(face="bold", color="black", size=10, angle=0),
+    axis.text.y = element_text(face="bold", color="black", size=10, angle=0) )
+  
 p1
 p2
 ## convert plots to gtable objects
@@ -149,6 +167,49 @@ g$widths <- unit.pmax(g1$widths, g2$widths) # use the largest widths
 g$layout[grepl("guide", g$layout$name),c("t","b")] <- c(1,nrow(g))
 grid.newpage()
 grid.draw(g)
+
+###
+# plot separately log e of x
+p1 <-  ggplot(data = pfoa_M_Beta_female, mapping = aes(x = log(PFOA_ng_ml), y = M)) + 
+  ylab("M Values of cg19425295 (Female)") +
+  geom_point(colour = "gray15", size = 2, shape = 20) +
+  geom_smooth(method = "loess", se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, colour = "tomato") +
+  xlab("PFOA Concentration ng/ml") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(color="black", size=14, face="bold.italic"),
+    axis.title.x = element_text(color="black", size=12, face="bold"),
+    axis.title.y = element_text(color="black", size=12, face="bold"),
+    axis.text.x = element_text(face="bold", color="black", size=10, angle=0),
+    axis.text.y = element_text(face="bold", color="black", size=10, angle=0) )
+
+p2 <-  ggplot(data = pfoa_M_Beta_female, mapping = aes(x = log(PFOA_ng_ml), y = Beta)) + 
+  ylab("% Methylation of cg19425295 (Female)") +
+  geom_point(colour = "gray15", size = 2, shape = 20) +
+  geom_smooth(method = "loess", se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, colour = "tomato") +
+  xlab("PFOA Concentration ng/ml") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(color="black", size=14, face="bold.italic"),
+    axis.title.x = element_text(color="black", size=12, face="bold"),
+    axis.title.y = element_text(color="black", size=12, face="bold"),
+    axis.text.x = element_text(face="bold", color="black", size=10, angle=0),
+    axis.text.y = element_text(face="bold", color="black", size=10, angle=0) )
+  
+p1
+p2
+
+g1 <- ggplotGrob(p1)
+g2 <- ggplotGrob(p2)
+g <- base::rbind(g1, g2, size="last") # stack the two plots
+g$widths <- unit.pmax(g1$widths, g2$widths) # use the largest widths
+# center the legend vertically
+g$layout[grepl("guide", g$layout$name),c("t","b")] <- c(1,nrow(g))
+grid.newpage()
+grid.draw(g)
+
 
 #################################
 ## scatter plots for male 
