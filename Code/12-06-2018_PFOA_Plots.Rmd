@@ -336,36 +336,57 @@ grid.draw(g)
 
 ```{r volcano, fig.width= 8, fig.height= 6}
 # using the volcano plot to demonstrate the significance and the scope of the association
-pfoa_vol <- pfoa_coef %>% dplyr::rename( rawp = `P value F` ) %>% 
-                   dplyr::select(Chr, CpG, coefF, rawp, qf) %>% 
-                   mutate( ORbeta = 2^coefF,
-                           posP = -log10(rawp) ) %>% column_to_rownames("CpG")
-head(pfoa_vol)
-dim(pfoa_vol)
+## the 3 cpgs
+c("cg18587484","cg00803922", "Male", "cg19425295", "Female")
+colnames(pfoa_coef)
+##
+pfoa_vol <- pfoa_coef %>% dplyr::rename( rawpF = `P value F` ,
+                                         rawpM = `P value M`) %>% 
+                   dplyr::select(Chr, CpG, coefF, rawpF, qf, coefM, rawpM, qm)  %>% 
+                       column_to_rownames("CpG")
+dim(pfoa_vol)   
+## top cpg
+paste("Female")
+head(pfoa_vol[order(pfoa_vol$rawpF), ], 8)
+paste("Male")
+head(pfoa_vol[order(pfoa_vol$rawpM), ], 8)
+
 
 #  EnhancedVolcano plot
 ## Modify cut-offs for coefF and P value; add title; adjust point and label size
+## Female
     EnhancedVolcano(pfoa_vol,
-
         lab = rownames(pfoa_vol),
-
         x = "coefF",
-
-        y = "rawp",
-
+        y = "rawpF",
+        xlab = bquote("Change in M Value per 1 ng/ml increase of PFOA (Female)"),
+        title = "Association: M Value and PFOA Concentration in Female",
+                ## select labels to show
+        selectLab = c(
+          ## based on the top q value
+          "cg19425295",
+          # not q sig
+          "cg19729649","ch.7.54842076F",
+          ## two cutoffs
+          "cg14554788",
+          "cg24636332",
+          "cg17588704",
+          "cg20040891"),
+        # two cutoffs
         pCutoff = 10e-4,
 
         FCcutoff = 0.25,
-        ## select labels to show
-        selectLab = c("cg18587484","cg00803922","cg19425295"),
+        xlim = c(-0.45, 0.45),
+        ylim = c(0, -log10(10e-9)),
+        # adjust the legend
+        legend=c("NS","Effect Size","Raw p-value",
+            "Raw p-value & Effect Size"),
+
         ## point and label size 
         transcriptPointSize = 2.0,
 
         transcriptLabSize = 3.5,
-        
-        xlab = bquote("Change in M Value per 1 ng/ml increase of PFOA"),
 
-        title = "Change in M Value as 1 ng/ml increase of PFOA Concentration",
         #Modify border and remove gridlines
         gridlines.major = FALSE,
 
@@ -378,11 +399,7 @@ dim(pfoa_vol)
         borderColour = "black",
         # the transparence of the dots
         colAlpha = 0.7,
-        xlim = c(-0.45, 0.4),
-        ylim = c(0, -log10(10e-9)),
-        # adjust the legend
-        legend=c("NS","Effect Size","Raw p-value",
-            "Raw p-value & Effect Size"),
+
 
         legendPosition = "bottom",
 
@@ -390,7 +407,7 @@ dim(pfoa_vol)
 
         legendIconSize = 3.5,
         # connectors
-        ## drawConnectors = FALSE,
+        DrawConnectors = TRUE,
         # 
         widthConnectors = 0.2,
         # 
@@ -398,27 +415,36 @@ dim(pfoa_vol)
         )
     
 ####### default labels
+
+
+####################### Male ##############################
+####### default labels
 EnhancedVolcano(pfoa_vol,
 
         lab = rownames(pfoa_vol),
 
-        x = "coefF",
+        x = "coefM",
 
-        y = "rawp",
+        y = "rawpM",
 
         pCutoff = 10e-4,
 
         FCcutoff = 0.25,
         ## select labels to show
-        # selectLab = c("cg18587484","cg00803922", " cg19425295"),
+        selectLab = c(############ qm significant
+          "cg18587484","cg00803922", "cg02819404", "cg08617337", "cg07818713",
+          # not q sig
+          "cg24446932", "cg13699963", "cg19055098",
+          ############ based on two cut-offs
+                      "cg23208443","cg17480035"),
         ## point and label size 
         transcriptPointSize = 2.0,
 
         transcriptLabSize = 3.5,
         
-        xlab = bquote("Change in M Value per 1 ng/ml increase of PFOA"),
+        xlab = bquote("Change in M Value per 1 ng/ml increase of PFOA (Male)"),
 
-        title = "Change in M Value as 1 ng/ml increase of PFOA Concentration",
+        title = "Association: M Value and PFOA Concentration in Male",
         #Modify border and remove gridlines
         gridlines.major = FALSE,
 
@@ -431,8 +457,8 @@ EnhancedVolcano(pfoa_vol,
         borderColour = "black",
         # the transparence of the dots
         colAlpha = 0.7,
-        xlim = c(-0.45, 0.4),
-        ylim = c(0, -log10(10e-9)),
+        xlim = c(-0.4, 0.4),
+        ylim = c(0, -log10(10e-10)),
         # adjust the legend
         legend=c("NS","Effect Size","Raw p-value",
             "Raw p-value & Effect Size"),
@@ -443,7 +469,62 @@ EnhancedVolcano(pfoa_vol,
 
         legendIconSize = 3.5,
         # connectors
-        ## drawConnectors = FALSE,
+        DrawConnectors = TRUE,
+        # 
+        widthConnectors = 0.2,
+        # 
+        colConnectors = "grey30"
+        )
+    
+EnhancedVolcano(pfoa_vol,
+
+        lab = rownames(pfoa_vol),
+
+        x = "coefM",
+
+        y = "rawpM",
+
+        pCutoff = 10e-4,
+
+        FCcutoff = 0.25,
+        ## select labels to show
+        selectLab = c(############ qm significant
+          "cg18587484","cg00803922",
+          ############ based on two cut-offs
+                      "cg23208443","cg17480035"),
+        ## point and label size 
+        transcriptPointSize = 2.0,
+
+        transcriptLabSize = 3.5,
+        
+        xlab = bquote("Change in M Value per 1 ng/ml increase of PFOA (Male)"),
+
+        title = "Association: M Value and PFOA Concentration in Male",
+        #Modify border and remove gridlines
+        gridlines.major = FALSE,
+
+        gridlines.minor = FALSE,
+        
+        border = "full",
+
+        borderWidth = 1.0,
+
+        borderColour = "black",
+        # the transparence of the dots
+        colAlpha = 0.7,
+        xlim = c(-0.4, 0.4),
+        ylim = c(0, -log10(10e-10)),
+        # adjust the legend
+        legend=c("NS","Effect Size","Raw p-value",
+            "Raw p-value & Effect Size"),
+
+        legendPosition = "bottom",
+
+        legendLabSize = 12,
+
+        legendIconSize = 3.5,
+        # connectors
+        DrawConnectors = TRUE,
         # 
         widthConnectors = 0.2,
         # 
@@ -481,7 +562,7 @@ EnhancedVolcano(beta_pfoadiff_f,
 
         x = "beta",
 
-        y = "rawp",
+        y = "rawpF",
 
         pCutoff = 10e-4,
 
@@ -508,8 +589,8 @@ EnhancedVolcano(beta_pfoadiff_f,
         borderColour = "black",
         # the transparence of the dots
         colAlpha = 0.7,
-        xlim = c(-10, 10),
-        ylim = c(0, -log10(10e-9)),
+        xlim = c(-11, 11),
+        ylim = c(0, -log10(10e-10)),
         # adjust the legend
         legend=c("NS","Effect Size","Raw p-value",
             "Raw p-value & Effect Size"),
@@ -521,6 +602,7 @@ EnhancedVolcano(beta_pfoadiff_f,
         legendIconSize = 3.5,
         # connectors
         ## drawConnectors = FALSE,
+        DrawConnectors = TRUE,
         # 
         widthConnectors = 0.2,
         # 
@@ -534,13 +616,13 @@ EnhancedVolcano(beta_pfoadiff_f,
 
         x = "beta",
 
-        y = "rawp",
+        y = "rawpF",
 
         pCutoff = 10e-4,
 
         FCcutoff = 4,
         ## select labels to show
-        selectLab = c("cg19425295"),
+        selectLab = c("cg19425295","cg05313263"),
         ## point and label size 
         transcriptPointSize = 2.0,
 
@@ -561,8 +643,8 @@ EnhancedVolcano(beta_pfoadiff_f,
         borderColour = "black",
         # the transparence of the dots
         colAlpha = 0.7,
-        xlim = c(-10, 10),
-        ylim = c(0, -log10(10e-9)),
+        xlim = c(-11, 11),
+        ylim = c(0, -log10(10e-10)),
         # adjust the legend
         legend=c("NS","Effect Size","Raw p-value",
             "Raw p-value & Effect Size"),
@@ -574,6 +656,7 @@ EnhancedVolcano(beta_pfoadiff_f,
         legendIconSize = 3.5,
         # connectors
         ## drawConnectors = FALSE,
+        DrawConnectors = TRUE,
         # 
         widthConnectors = 0.2,
         # 
@@ -598,13 +681,13 @@ EnhancedVolcano(beta_pfoadiff_m,
 
         x = "beta",
 
-        y = "rawp",
+        y = "rawpM",
 
         pCutoff = 10e-4,
 
         FCcutoff = 4,
         ## select labels to show
-        # selectLab = c("cg18587484","cg00803922", " cg19425295"),
+        # selectLab = c("cg18587484","cg00803922", "cg19425295"),
         ## point and label size 
         transcriptPointSize = 2.0,
 
@@ -625,8 +708,8 @@ EnhancedVolcano(beta_pfoadiff_m,
         borderColour = "black",
         # the transparence of the dots
         colAlpha = 0.7,
-        xlim = c(-10, 10),
-        ylim = c(0, -log10(10e-9)),
+        xlim = c(-12, 12),
+        ylim = c(0, -log10(10e-10)),
         # adjust the legend
         legend=c("NS","Effect Size","Raw p-value",
             "Raw p-value & Effect Size"),
@@ -640,6 +723,7 @@ EnhancedVolcano(beta_pfoadiff_m,
         ## drawConnectors = FALSE,
         # 
         widthConnectors = 0.2,
+        DrawConnectors = TRUE,
         # 
         colConnectors = "grey30"
         )
@@ -651,13 +735,14 @@ EnhancedVolcano(beta_pfoadiff_m,
 
         x = "beta",
 
-        y = "rawp",
+        y = "rawpM",
 
         pCutoff = 10e-4,
 
         FCcutoff = 4,
         ## select labels to show
-        selectLab = c("cg18587484","cg00803922"),
+        selectLab = c("cg18587484","cg00803922",
+                      "cg17480035", "cg02819404"),
         ## point and label size 
         transcriptPointSize = 2.0,
 
@@ -678,8 +763,8 @@ EnhancedVolcano(beta_pfoadiff_m,
         borderColour = "black",
         # the transparence of the dots
         colAlpha = 0.7,
-        xlim = c(-10, 10),
-        ylim = c(0, -log10(10e-9)),
+        xlim = c(-12, 12),
+        ylim = c(0, -log10(10e-10)),
         # adjust the legend
         legend=c("NS","Effect Size","Raw p-value",
             "Raw p-value & Effect Size"),
@@ -693,6 +778,7 @@ EnhancedVolcano(beta_pfoadiff_m,
         ## drawConnectors = FALSE,
         # 
         widthConnectors = 0.2,
+        DrawConnectors = TRUE,
         # 
         colConnectors = "grey30"
         )
@@ -700,5 +786,32 @@ EnhancedVolcano(beta_pfoadiff_m,
 
 
 ```
+## Questions
+```{r questions}
+paste("1. M values of more selected CpGs.", 
+      "2. Why the number of CpGs diff between the association with PFOA data and the Diff between quartiles data",
+      "3. Why the patterns of %Methylation volcano plot are wrong",
+      sep = "\n")
 
-
+## More M-values
+############# Female
+c(
+          ## based on the top q value
+          "cg19425295",
+          # not q sig
+          "cg19729649","ch.7.54842076F",
+          ## two cutoffs
+          "cg14554788",
+          "cg24636332",
+          "cg17588704",
+          "cg20040891",
+          ## beta values
+          "cg05313263")
+################# Male
+c(############ qm significant
+          "cg18587484","cg00803922", "cg02819404", "cg08617337", "cg07818713",
+          # not q sig
+          "cg24446932", "cg13699963", "cg19055098",
+          ############ based on two cut-offs
+                      "cg23208443","cg17480035")
+```
