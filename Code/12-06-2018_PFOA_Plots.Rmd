@@ -829,4 +829,5 @@ c(############ qm significant
           "cg24446932", "cg13699963", "cg19055098",
           ############ based on two cut-offs
                       "cg23208443","cg17480035")
+"ch.7.54842076F" %in% pfoa_coef$CpG
 ```
