@@ -686,7 +686,7 @@ dim(beta_pfoadiff_m)
 head(beta_pfoadiff_m)
 
 ## top cpgs male
-head(beta_pfoadiff_m[ order(beta_pfoadiff_m$rawpM),])
+head(beta_pfoadiff_m[ order(beta_pfoadiff_m$rawpM), ], 8)
 head(beta_pfoadiff_m)
 ## volcano plot of beta values 
 EnhancedVolcano(beta_pfoadiff_m,
