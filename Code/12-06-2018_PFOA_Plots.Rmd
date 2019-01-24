@@ -29,10 +29,10 @@ knitr::opts_chunk$set(warning = F)
 ## setting wd in DELL
 ## opts_knit$set(root.dir = "~/Stats/CIDA_OMICs/CIDA_OMICS/7659Stats_Genetics/HW5/")
 ## setting working directory in asus 
-## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_github/DataRaw/") 
+opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_github/DataRaw/") 
 ## setting working directory in ubuntu
 
-opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataRaw/")
+## opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataRaw/")
                                                  
 ## cache = F, if cache = T, will not revaluate code chunk everytime
 ## double or more space to insert a line break
@@ -350,6 +350,7 @@ paste("Female")
 head(pfoa_vol[order(pfoa_vol$rawpF), ], 8)
 paste("Male")
 head(pfoa_vol[order(pfoa_vol$rawpM), ], 8)
+head(pfoa_coef[order(pfoa_coef$`P value M` ), ] , 8)
 
 
 #  EnhancedVolcano plot
@@ -547,6 +548,9 @@ head(pfoa_vol_a)
 ######## female ###########
 beta_diff_f <- fread("MeanBeta_ExtremePFOA_M/MeanBeta_ExtremePFOA_F.txt", header = F)
 head(beta_diff_f)
+##
+dim(beta_diff_f)
+
 colnames(beta_diff_f) <- c("CpG", "mean_25pct_female", 
                            "mean_75pct_female", "diff_75minus25_female")
 
@@ -671,9 +675,19 @@ colnames(beta_diff_m) <- c("CpG", "mean_25pct_male",
 
 beta_pfoadiff_m <- merge(beta_diff_m, pfoa_vol_a, by = "CpG") %>% mutate(beta = diff_75minus25_male*100)
 rownames(beta_pfoadiff_m) <- beta_pfoadiff_m$CpG
+
+##
+dim(beta_diff_f)
+dim(beta_diff_m)
+head(beta_diff_f)
+
 dim(beta_pfoadiff_m)
+
 head(beta_pfoadiff_m)
 
+## top cpgs male
+head(beta_pfoadiff_m[ order(beta_pfoadiff_m$rawpM), ], 8)
+head(beta_pfoadiff_m)
 ## volcano plot of beta values 
 EnhancedVolcano(beta_pfoadiff_m,
 
@@ -783,7 +797,8 @@ EnhancedVolcano(beta_pfoadiff_m,
         colConnectors = "grey30"
         )
 
-
+## 
+c( "cg18587484","cg00803922", "cg02819404", "cg08617337", "cg07818713") %in% beta_diff_m$CpG
 
 ```
 ## Questions
@@ -814,4 +829,5 @@ c(############ qm significant
           "cg24446932", "cg13699963", "cg19055098",
           ############ based on two cut-offs
                       "cg23208443","cg17480035")
+"ch.7.54842076F" %in% pfoa_coef$CpG
 ```
