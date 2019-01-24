@@ -29,10 +29,10 @@ knitr::opts_chunk$set(warning = F)
 ## setting wd in DELL
 ## opts_knit$set(root.dir = "~/Stats/CIDA_OMICs/CIDA_OMICS/7659Stats_Genetics/HW5/")
 ## setting working directory in asus 
-opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_github/DataRaw/") 
+## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_github/DataRaw/") 
 ## setting working directory in ubuntu
 
-## opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataRaw/")
+opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataRaw/")
                                                  
 ## cache = F, if cache = T, will not revaluate code chunk everytime
 ## double or more space to insert a line break
@@ -83,6 +83,7 @@ pfas_clinical <- read_csv("pfas_methyl_di.csv")
 ## get pid for male and female 583 subjects
 ## infant_sex == 2 male infant_sex == 1 female 
 pid_female <- pfas_clinical %>% filter(pid %in% pid583) %>% filter(infant_sex == 1) %>% select(pid)
+
 pid_male <- pfas_clinical %>% filter(pid %in% pid583) %>% filter(infant_sex == 2) %>% select(pid)
 
 ```
@@ -335,12 +336,25 @@ grid.draw(g)
 
 
 ```{r volcano, fig.width= 8, fig.height= 6}
+
+## the pfoa concentrations were categorized 
+# the mean of beta values in each quartile
+## the difference in beta value % methylation between the first and the fourth quartile 
+## of the 583 pfoa concentrations 
+## then straitified by gender 
+######## female ###########
+beta_diff_f <- fread("MeanBeta_ExtremePFOA_M/MeanBeta_ExtremePFOA_F.txt", header = F)
+head(beta_diff_f)
+##
+dim(beta_diff_f)
+
+
 # using the volcano plot to demonstrate the significance and the scope of the association
 ## the 3 cpgs
 c("cg18587484","cg00803922", "Male", "cg19425295", "Female")
 colnames(pfoa_coef)
 ##
-pfoa_vol <- pfoa_coef %>% dplyr::rename( rawpF = `P value F` ,
+pfoa_vol <- pfoa_coef %>% filter(CpG %in% beta_diff_f$V1) %>% dplyr::rename( rawpF = `P value F` ,
                                          rawpM = `P value M`) %>% 
                    dplyr::select(Chr, CpG, coefF, rawpF, qf, coefM, rawpM, qm)  %>% 
                        column_to_rownames("CpG")
@@ -366,22 +380,24 @@ head(pfoa_coef[order(pfoa_coef$`P value M` ), ] , 8)
         selectLab = c(
           ## based on the top q value
           "cg19425295",
-          # not q sig
-          "cg19729649","ch.7.54842076F",
+          # # not q sig
+          # "cg19729649","ch.7.54842076F",
           ## two cutoffs
           "cg14554788",
           "cg24636332",
           "cg17588704",
-          "cg20040891"),
-        # two cutoffs
+          "cg20040891",
+          "cg10875794",
+          "cg03858121"),
+        ### two cutoffs
         pCutoff = 10e-4,
 
-        FCcutoff = 0.25,
+        FCcutoff = 0.15,
         xlim = c(-0.45, 0.45),
         ylim = c(0, -log10(10e-9)),
         # adjust the legend
-        legend=c("NS","Effect Size","Raw p-value",
-            "Raw p-value & Effect Size"),
+        legend=c("NS","Slope","Raw p-value",
+            "Raw p-value & Slope"),
 
         ## point and label size 
         transcriptPointSize = 2.0,
@@ -430,12 +446,13 @@ EnhancedVolcano(pfoa_vol,
 
         pCutoff = 10e-4,
 
-        FCcutoff = 0.25,
+        FCcutoff = 0.15,
         ## select labels to show
         selectLab = c(############ qm significant
-          "cg18587484","cg00803922", "cg02819404", "cg08617337", "cg07818713",
-          # not q sig
-          "cg24446932", "cg13699963", "cg19055098",
+          "cg18587484","cg00803922", 
+          # "cg02819404", "cg08617337", "cg07818713",
+          # # not q sig
+          # "cg24446932", "cg13699963", "cg19055098",
           ############ based on two cut-offs
                       "cg23208443","cg17480035"),
         ## point and label size 
@@ -461,8 +478,8 @@ EnhancedVolcano(pfoa_vol,
         xlim = c(-0.4, 0.4),
         ylim = c(0, -log10(10e-10)),
         # adjust the legend
-        legend=c("NS","Effect Size","Raw p-value",
-            "Raw p-value & Effect Size"),
+        legend=c("NS","Slope","Raw p-value",
+            "Raw p-value & Slope"),
 
         legendPosition = "bottom",
 
@@ -487,10 +504,10 @@ EnhancedVolcano(pfoa_vol,
 
         pCutoff = 10e-4,
 
-        FCcutoff = 0.25,
+        FCcutoff = 0.2,
         ## select labels to show
         selectLab = c(############ qm significant
-          "cg18587484","cg00803922",
+          "cg18587484","cg00803922","cg21209948" , "cg12472218",  "cg09331106",
           ############ based on two cut-offs
                       "cg23208443","cg17480035"),
         ## point and label size 
@@ -516,8 +533,8 @@ EnhancedVolcano(pfoa_vol,
         xlim = c(-0.4, 0.4),
         ylim = c(0, -log10(10e-10)),
         # adjust the legend
-        legend=c("NS","Effect Size","Raw p-value",
-            "Raw p-value & Effect Size"),
+        legend=c("NS","Slope","Raw p-value",
+            "Raw p-value & Slope"),
 
         legendPosition = "bottom",
 
@@ -826,8 +843,311 @@ c(
 c(############ qm significant
           "cg18587484","cg00803922", "cg02819404", "cg08617337", "cg07818713",
           # not q sig
-          "cg24446932", "cg13699963", "cg19055098",
+          "cg24446932", "cg13699963", "cg19055098", "cg21209948" , "cg12472218",  "cg09331106", 
           ############ based on two cut-offs
                       "cg23208443","cg17480035")
 "ch.7.54842076F" %in% pfoa_coef$CpG
+
+## more cpg female
+c("cg10875794", "cg03858121")
+```
+
+```{r morescatter}
+##  using previous loaded pid_male and pid_female
+pid_female <- as.vector(unlist(pid_female)) 
+pid_male <- as.vector(unlist(pid_male)) 
+head(pfoa_conc)
+## scatter plot function
+
+scatter_gender_mb <- function(cpgname, gender, mvalue_df, pfoa_conc){
+    ## select corresponding mvalue and pid
+   mvalue_df = data.frame(mvalue_df)
+  df = mvalue_df[, colnames(mvalue_df) %in% c("pid", cpgname)]
+  if(gender == "Male")
+    {
+    ##  using previous loaded pid_male
+    ########## get dataset ready for scatter plot ################
+    df_male = df %>% filter(pid %in% pid_male)
+    df_male = merge(df_male, pfoa_conc, by = "pid") 
+    df_male$Beta = 2^df_male[,2]/(1 + 2^df_male[,2])
+    
+    ################ scatter plot ###########################
+    p1 =  ggplot(data = df_male , mapping = aes(x = df_male[,3], y = df_male$cpgname )) + 
+  ylab( paste("M Values of ",cpgname," ", "(", gender, ")" , sep = "" ) ) +
+  geom_point(colour = "gray15", size = 2, shape = 20) +
+  geom_smooth(method = "loess", se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, colour = "tomato") +
+  xlab("PFOA Concentration ng/ml") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(color="black", size=14, face="bold.italic"),
+    axis.title.x = element_text(color="black", size=12, face="bold"),
+    axis.title.y = element_text(color="black", size=12, face="bold"),
+    axis.text.x = element_text(face="bold", color="black", size=10, angle=0),
+    axis.text.y = element_text(face="bold", color="black", size=10, angle=0) ) +
+    annotate("text", x = max(df_male[,3])*0.85, 
+             y = quantile(df_male$cpgname, 0.95), 
+             label = paste(cpgname, gender, sep = "\n"))
+    
+    p3 = ggplot(data = df_male , mapping = aes(x = df_male[,3], y = df_male[,4] )) + 
+  ylab( paste("% Methylation of ",cpgname," ", "(", gender, ")" , sep = "" ) ) +
+  geom_point(colour = "gray15", size = 2, shape = 20) +
+  geom_smooth(method = "loess", se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, colour = "tomato") +
+  xlab("PFOA Concentration ng/ml") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(color="black", size=14, face="bold.italic"),
+    axis.title.x = element_text(color="black", size=12, face="bold"),
+    axis.title.y = element_text(color="black", size=12, face="bold"),
+    axis.text.x = element_text(face="bold", color="black", size=10, angle=0),
+    axis.text.y = element_text(face="bold", color="black", size=10, angle=0) ) +
+    annotate("text", x = max(df_male[,3])*0.85, 
+             y = quantile(df_male[,4], 0.95), 
+             label =  paste(cpgname, gender, sep = "\n") )
+    
+    return(list(p1,p3))
+  }
+  else if(gender == "Female")
+    {
+     ########## get dataset ready for scatter plot ################
+        df_female = df %>% filter(pid %in% pid_female)
+    df_female = merge(df_female, pfoa_conc, by = "pid")
+     df_female$Beta = 2^df_female[,2]/(1 + 2^df_female[,2])
+    
+    ################ scatter plot ###########################
+p2 =  ggplot(data = df_female , mapping = aes(x = df_female[,3], y = df_female[,2] ) ) + 
+  ylab( paste("M Values of ",cpgname," ", "(", gender, ")" , sep = "" ) ) +
+  geom_point(colour = "gray15", size = 2, shape = 20) +
+  geom_smooth(method = "loess", se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, colour = "tomato") +
+  xlab("PFOA Concentration ng/ml") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(color="black", size=14, face="bold.italic"),
+    axis.title.x = element_text(color="black", size=12, face="bold"),
+    axis.title.y = element_text(color="black", size=12, face="bold"),
+    axis.text.x = element_text(face="bold", color="black", size=10, angle=0),
+    axis.text.y = element_text(face="bold", color="black", size=10, angle=0) ) +
+    annotate("text", x = max(df_female[,3])*0.85, 
+             y = quantile(df_female$cpgname, 0.95), 
+             label =  paste(cpgname, gender, sep = "\n"))
+     
+p4 = ggplot(data = df_female , mapping = aes(x = df_female[,3], y = df_female[,4])) + 
+  ylab( paste("% Methylation of ",cpgname," ", "(", gender, ")" , sep = "" ) ) +
+  geom_point(colour = "gray15", size = 2, shape = 20) +
+  geom_smooth(method = "loess", se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, colour = "tomato") +
+  xlab("PFOA Concentration ng/ml") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(color="black", size=14, face="bold.italic"),
+    axis.title.x = element_text(color="black", size=12, face="bold"),
+    axis.title.y = element_text(color="black", size=12, face="bold"),
+    axis.text.x = element_text(face="bold", color="black", size=10, angle=0),
+    axis.text.y = element_text(face="bold", color="black", size=10, angle=0) ) +
+    annotate("text", x = max(df_female[,3])*0.85, 
+             y = quantile(df_female[,4], 0.95), 
+             label = paste(cpgname, gender, sep = "\n"))
+    
+    return(list(p2,p4))
+  }
+  else 
+    {
+    stop("Gender should be Male or Female")
+  }
+}
+
+## 
+m.cpgs.more <- read.csv("cpgsForGuannan01-22-19.csv")
+head(m.cpgs.more)
+## how to select m.cpgs.more[, colnames(m.cpgs.more) %in% c("pid", "cg19425295")]
+cpgnames.scatter <- data.frame(cpgname = c(  "cg19425295", "cg19729649","ch.7.54842076F", "cg05313263",
+                                             "cg10875794", "cg03858121",
+                                        ## Male
+                                        "cg18587484","cg00803922", "cg21209948" , "cg12472218",  
+                                        "cg09331106","cg17480035"), 
+                          gender = c(rep("Female", 6), 
+                                     rep("Male", 6)) )
+
+
+## more cpg
+c("cg10875794", "cg03858121") ## Female 
+
+# #  
+# 
+# scatter_gender_mb("cg19425295", "Female", m.cpgs.more, pfoa_conc)
+# 
+# # scatter_gender <- function(cpgname, gender, mvalue_df, pfoa_conc){
+#     ## select corresponding mvalue and pid
+# 
+# #     %>% 
+# #       dplyr::mutate(Beta = 2^df_male$cpgname/(1 + 2^df_male$cpgname)) 
+# #     return(df_male) 
+# #     }
+# # head(scatter_gender("cg19425295", "Male", m.cpgs.more, pfoa_conc))
+# 
+## fianl run
+# for( i in nrow(cpgnames.scatter)){
+#   ## cpgname, gender, mvalue_df, pfoa_conc
+#   print( scatter_gender_mb(cpgnames.scatter[i,1], cpgnames.scatter[i,2],
+#                           m.cpgs.more, pfoa_conc) )
+# }
+########################## Male #####################################
+######## M value ############
+for( i in 7:12){
+   mvalue_df = data.frame(m.cpgs.more)
+   cpgname = cpgnames.scatter[i ,1]
+   gender = cpgnames.scatter[i ,2]
+  df = mvalue_df[, colnames(mvalue_df) %in% c("pid", cpgname)]
+df_male = df %>% filter(pid %in% pid_male)
+    df_male = merge(df_male, pfoa_conc, by = "pid")
+    df_male$Beta = 2^df_male[,2]/(1 + 2^df_male[,2])
+
+    ################ scatter plot ###########################
+    p1 =  ggplot(data = df_male , mapping = aes(x = df_male[,3], y = df_male[,2] )) +
+  ylab( paste("M Values of ",cpgname," ", "(", gender, ")" , sep = "" ) ) +
+  geom_point(colour = "gray15", size = 2, shape = 20) +
+  geom_smooth(method = "loess", se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, colour = "tomato") +
+  xlab("PFOA Concentration ng/ml") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(color="black", size=14, face="bold.italic"),
+    axis.title.x = element_text(color="black", size=12, face="bold"),
+    axis.title.y = element_text(color="black", size=12, face="bold"),
+    axis.text.x = element_text(face="bold", color="black", size=10, angle=0),
+    axis.text.y = element_text(face="bold", color="black", size=10, angle=0) ) +
+    annotate("text", x = max(df_male[,3])*0.85,
+             y = quantile(df_male[,2], 0.95),
+             label = paste(cpgname, gender, "M values",sep = "\n"))
+print(p1)
+}
+################ Beta #####################
+for( i in 7:12){
+   mvalue_df = data.frame(m.cpgs.more)
+   cpgname = cpgnames.scatter[i ,1]
+   gender = cpgnames.scatter[i ,2]
+  df = mvalue_df[, colnames(mvalue_df) %in% c("pid", cpgname)]
+df_male = df %>% filter(pid %in% pid_male)
+    df_male = merge(df_male, pfoa_conc, by = "pid")
+    df_male$Beta = 2^df_male[,2]/(1 + 2^df_male[,2])
+
+    ################ scatter plot ###########################
+    p1 =  ggplot(data = df_male , mapping = aes(x = df_male[,3], y = Beta )) +
+  ylab( paste("% Methylation of ",cpgname," ", "(", gender, ")" , sep = "" ) ) +
+  geom_point(colour = "gray15", size = 2, shape = 20) +
+  geom_smooth(method = "loess", se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, colour = "tomato") +
+  xlab("PFOA Concentration ng/ml") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(color="black", size=14, face="bold.italic"),
+    axis.title.x = element_text(color="black", size=12, face="bold"),
+    axis.title.y = element_text(color="black", size=12, face="bold"),
+    axis.text.x = element_text(face="bold", color="black", size=10, angle=0),
+    axis.text.y = element_text(face="bold", color="black", size=10, angle=0) ) +
+    annotate("text", x = max(df_male[,3])*0.85,
+             y = quantile(df_male[,4], 0.95),
+             label = paste(cpgname, gender, "% Methylation",sep = "\n"))
+print(p1)
+    }
+
+
+########################## Female #####################################
+######## M value ############
+for( i in 1:6){
+   mvalue_df = data.frame(m.cpgs.more)
+   cpgname = cpgnames.scatter[i ,1]
+   gender = cpgnames.scatter[i ,2]
+  df = mvalue_df[, colnames(mvalue_df) %in% c("pid", cpgname)]
+  ############ pid_female ###############
+df_male = df %>% filter(pid %in% pid_female)
+    df_male = merge(df_male, pfoa_conc, by = "pid")
+    df_male$Beta = 2^df_male[,2]/(1 + 2^df_male[,2])
+
+    ################ scatter plot ###########################
+    p1 =  ggplot(data = df_male , mapping = aes(x = df_male[,3], y = df_male[,2] )) +
+  ylab( paste("M Values of ",cpgname," ", "(", gender, ")" , sep = "" ) ) +
+  geom_point(colour = "gray15", size = 2, shape = 20) +
+  geom_smooth(method = "loess", se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, colour = "tomato") +
+  xlab("PFOA Concentration ng/ml") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(color="black", size=14, face="bold.italic"),
+    axis.title.x = element_text(color="black", size=12, face="bold"),
+    axis.title.y = element_text(color="black", size=12, face="bold"),
+    axis.text.x = element_text(face="bold", color="black", size=10, angle=0),
+    axis.text.y = element_text(face="bold", color="black", size=10, angle=0) ) +
+    annotate("text", x = max(df_male[,3])*0.85,
+             y = quantile(df_male[,2], 0.95),
+             label = paste(cpgname, gender, "M values",sep = "\n"))
+print(p1)
+}
+################ Beta #####################
+for( i in 1:6){
+   mvalue_df = data.frame(m.cpgs.more)
+   cpgname = cpgnames.scatter[i ,1]
+   gender = cpgnames.scatter[i ,2]
+  df = mvalue_df[, colnames(mvalue_df) %in% c("pid", cpgname)]
+    ############ pid_female ###############
+df_male = df %>% filter(pid %in% pid_female)
+    df_male = merge(df_male, pfoa_conc, by = "pid")
+    df_male$Beta = 2^df_male[,2]/(1 + 2^df_male[,2])
+
+    ################ scatter plot ###########################
+    p1 =  ggplot(data = df_male , mapping = aes(x = df_male[,3], y = Beta )) +
+  ylab( paste("% Methylation of ",cpgname," ", "(", gender, ")" , sep = "" ) ) +
+  geom_point(colour = "gray15", size = 2, shape = 20) +
+  geom_smooth(method = "loess", se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, colour = "tomato") +
+  xlab("PFOA Concentration ng/ml") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(color="black", size=14, face="bold.italic"),
+    axis.title.x = element_text(color="black", size=12, face="bold"),
+    axis.title.y = element_text(color="black", size=12, face="bold"),
+    axis.text.x = element_text(face="bold", color="black", size=10, angle=0),
+    axis.text.y = element_text(face="bold", color="black", size=10, angle=0) ) +
+    annotate("text", x = max(df_male[,3])*0.85,
+             y = quantile(df_male[,4], 0.95),
+             label = paste(cpgname, gender, "% Methylation",sep = "\n"))
+print(p1)
+    }
+
+
+```
+```{r testscatter}
+
+
+mvalue_df = data.frame(m.cpgs.more)
+   cpgname = cpgnames.scatter[5 ,1]
+   cpgname
+   gender = cpgnames.scatter[5 ,2]
+   gender
+  df = mvalue_df[, colnames(mvalue_df) %in% c("pid", cpgname)]
+df_male = df %>% filter(pid %in% pid_male)
+    df_male = merge(df_male, pfoa_conc, by = "pid") 
+    df_male$Beta = 2^df_male[,2]/(1 + 2^df_male[,2])
+    df_male
+    
+    ################ scatter plot ###########################
+    p1 =  ggplot(data = df_male , mapping = aes(x = df_male[,3], y = df_male[,2] )) + 
+  ylab( paste("M Values of ",cpgname," ", "(", gender, ")" , sep = "" ) ) +
+  geom_point(colour = "gray15", size = 2, shape = 20) +
+  geom_smooth(method = "loess", se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, colour = "tomato") +
+  xlab("PFOA Concentration ng/ml") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(color="black", size=14, face="bold.italic"),
+    axis.title.x = element_text(color="black", size=12, face="bold"),
+    axis.title.y = element_text(color="black", size=12, face="bold"),
+    axis.text.x = element_text(face="bold", color="black", size=10, angle=0),
+    axis.text.y = element_text(face="bold", color="black", size=10, angle=0) ) +
+    annotate("text", x = max(df_male[,3])*0.85 , 
+             y = quantile(df_male[,2], 0.95), 
+             label = paste(cpgname, gender, sep = "\n"))
+ print(list(p1))
 ```
