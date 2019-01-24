@@ -789,7 +789,7 @@ EnhancedVolcano(beta_pfoadiff_m,
 ## Questions
 ```{r questions}
 paste("1. M values of more selected CpGs.", 
-      "2. Why the number of CpGs diff between the association with PFOA data and the Diff between quartiles data",
+      "2. Why the number of CpGs diff between the association with PFOA data and the Diff between quartiles data, 484261 vs 433360",
       "3. Why the patterns of %Methylation volcano plot are wrong",
       sep = "\n")
 
