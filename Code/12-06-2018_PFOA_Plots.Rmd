@@ -29,10 +29,10 @@ knitr::opts_chunk$set(warning = F)
 ## setting wd in DELL
 ## opts_knit$set(root.dir = "~/Stats/CIDA_OMICs/CIDA_OMICS/7659Stats_Genetics/HW5/")
 ## setting working directory in asus 
-## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_github/DataRaw/") 
+opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_github/DataRaw/") 
 ## setting working directory in ubuntu
 
-opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataRaw/")
+## opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataRaw/")
                                                  
 ## cache = F, if cache = T, will not revaluate code chunk everytime
 ## double or more space to insert a line break
@@ -77,6 +77,12 @@ pid583 <- fread("pid583.csv")
 pid583 <- as.vector(unlist(pid583))
 
 pfoa_conc <- fread("pid583_pfoa.csv")
+pfoa_conc_log <- pfoa_conc %>% dplyr::mutate(log2pfoa = log2(PFOA_ng_ml),
+                                             lnpfoa = log(PFOA_ng_ml, base = exp(1)) )
+write.csv(pfoa_conc_log,
+          file = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_github/DataProcessed/pid583_pfoa_log.csv",
+          row.names=FALSE)
+
 m300 <- fread("HS_450K_CB_Mval_normbatch_StarlingSubset_10-01-18.csv")
 pfas_clinical <- read_csv("pfas_methyl_di.csv")
 
@@ -85,6 +91,20 @@ pfas_clinical <- read_csv("pfas_methyl_di.csv")
 pid_female <- pfas_clinical %>% filter(pid %in% pid583) %>% filter(infant_sex == 1) %>% select(pid)
 
 pid_male <- pfas_clinical %>% filter(pid %in% pid583) %>% filter(infant_sex == 2) %>% select(pid)
+
+
+### the 433360 cpgs list 
+filtered_cpgs <- fread("MeanBeta_ExtremePFOA_M/MeanBeta_ExtremePFOA_F.txt", header = F)
+dim(filtered_cpgs)
+colnames(filtered_cpgs)
+
+filtered_cpgs <- filtered_cpgs %>% dplyr::select(V1)
+colnames(filtered_cpgs) <- "CpGs"
+head(filtered_cpgs)
+dim(filtered_cpgs)
+write.csv(filtered_cpgs, 
+          file = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_github/DataProcessed/filtered_cpgs.csv"
+          , row.names=FALSE)
 
 ```
 
