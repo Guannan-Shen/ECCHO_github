@@ -1151,3 +1151,30 @@ df_male = df %>% filter(pid %in% pid_male)
              label = paste(cpgname, gender, sep = "\n"))
  print(list(p1))
 ```
+
+
+```{r logpfoa}
+# the result of pfoa concentration and all 450k cpgs
+pfoa_log_raw <- fread("log_CpG_all_logpfoa.txt", header = T)
+head(pfoa_log)
+
+# filter the data from 484261 cpgs to 433360 cpgs
+head(beta_diff_f)
+pfoa_log <- merge(pfoa_log_raw, beta_diff_f, by = "CpG") %>% dplyr::select(- mean_25pct_female, 
+                                                                           - mean_75pct_female,
+                                                                           - diff_75minus25_female)
+dim(pfoa_log)
+colnames(pfoa_log)
+
+## rank the data by qf and qm
+######### female #########
+pfoa_log_f <- pfoa_log[order(pfoa_log$qf), ]
+pfoa_log_f[pfoa_log_f$qf <= 0.05 ,]
+head(pfoa_log_f)
+######### male ############
+pfoa_log_m <- pfoa_log[order(pfoa_log$qm), ]
+pfoa_log_m[pfoa_log_m$qm <= 0.05 ,]
+head(pfoa_log_m)
+
+```
+
