@@ -64,10 +64,12 @@ dim(mval)
 mval_f <- mval[, which(colnames(mval) %in% femaleid )]
 ## Build cpg anno object
 cpganno <- cpg.annotate("array",
+                        ## female 
                         mval_f,
                         what = "M",
                         arraytype = "450K",
                         analysis.type = "differential",
+                        ## female
                         design = design_f,
                         ## only have the intercept and the pfoa concentration
                         coef = 2)
