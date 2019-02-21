@@ -75,11 +75,21 @@ pfas <- read_csv("~/Documents/gitlab/ECCHO_github/DataRaw/pfas_methyl_di.csv")
 celltype <- read_csv("~/Documents/gitlab/ECCHO_github/DataProcessed/healthy_start_cordblood_cellcounts_id.txt")
 
 ## inner joint, in the clinical data, 2 levels Race. 
-pfas_cell <- merge(pfas, celltype, by = "pid") %>% rename(Race = race_4) %>% 
+pfas_cell <- merge(pfas, celltype, by = "pid") %>% dplyr::rename(Race = race_4) %>% 
   select(pid, infant_sex, maternal_age, Race, everything()) %>% 
   mutate(Race = fct_collapse(as.factor(Race), 
                              "Non-Hispanic white" = "2",
                              "All others" = c("1", "3", "4")))
+dim(pfas_cell)
+clindat <- fread(file = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/dmr/forGuannan/pid583_pfoa_log.csv", 
+                 header = T)
+pfas_cell_583 <- pfas_cell[pfas_cell$pid %in% clindat$pid , ]
+barplot(table(pfas_cell_583$Race) )
+sum(clindat$pid != pfas_cell_583$pid)
+clindat$Race <- pfas_cell_583$Race
+write.csv(clindat,
+          file = "~/Documents/gitlab/ECCHO_github/DataProcessed/clindat.csv",
+          row.names=FALSE)
 ## clinical, cell types and 103 CpGs for male
 pfas_malecpg <- merge(pfas_cell, m103, by = "pid") %>% 
   filter(pid %in% pid583) %>% filter(infant_sex == 2)
@@ -95,10 +105,11 @@ dim(pfas_femalecpg)
 out_cov <- colnames(pfas_cell)
 ## the outcomes vector
 Outcomes <- colnames(pfas_cell)[5:13]
-
+Outcomes
 ## save dataset 
-write.csv(pfas_malecpg, "~/Documents/gitlab/ECCHO_github/DataProcessed/11_05_pfas_malecpg.csv")
-write.csv(pfas_femalecpg, "~/Documents/gitlab/ECCHO_github/DataProcessed/11_05_pfas_femalecpg.csv")
+write.csv(pfas_cell_583, "~/Documents/gitlab/ECCHO_github/DataProcessed/11_05_pfas_cell_583.csv", row.names = F)
+write.csv(pfas_malecpg, "~/Documents/gitlab/ECCHO_github/DataProcessed/11_05_pfas_malecpg.csv", row.names = F)
+write.csv(pfas_femalecpg, "~/Documents/gitlab/ECCHO_github/DataProcessed/11_05_pfas_femalecpg.csv", row.names = F)
 
 
 ```

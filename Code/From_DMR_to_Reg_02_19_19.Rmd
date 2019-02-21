@@ -1,0 +1,319 @@
+---
+title: "DMR_583Reg_2_19_2019"
+author: "Guannan Shen"
+date: "February 21, 2019"
+output: 
+  pdf_document:
+    latex_engine: lualatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 5
+  word_document:
+    toc: yes
+    toc_depth: '5'
+  html_document:
+    number_sections: yes
+    theme: united
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+---
+
+```{r setup, include=FALSE, cache = FALSE}
+require("knitr")
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+opts_chunk$set(engine = "R")
+knitr::opts_chunk$set(echo = T)
+knitr::opts_chunk$set(message = F)
+knitr::opts_chunk$set(warning = F)
+## setting wd in DELL
+## opts_knit$set(root.dir = "~/Stats/CIDA_OMICs/CIDA_OMICS/7659Stats_Genetics/HW5/")
+## setting working directory in asus 
+## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/Cario_RNASeq_Microbiom_Inte/DataRaw/") 
+## setting working directory in ubuntu
+opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/")
+                                                 
+## cache = F, if cache = T, will not revaluate code chunk everytime
+## double or more space to insert a line break
+```
+
+
+```{r libs}
+## set up workspace
+rm(list = ls())
+library(data.table)
+library(knitr)
+library(tidyverse)
+library(magrittr)
+library(stats)
+library(DMRcate)
+library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
+library(tibble)
+library(grid) # low-level grid functions are required
+options(stringsAsFactors = F)
+options(dplyr.width = Inf)
+getwd()
+## not in function
+'%nin%' <- Negate('%in%')
+
+# ######## clean memory ######################
+# rm(list = ls())
+# gc()
+# ls()
+# slotNames(x)
+# getSlots(x)
+
+```
+
+## DMR analysis
+
+formula_log2 <-  ~as.numeric(log2pfoa) + Race  
+
+formula_ln <-  ~as.numeric(lnpfoa) + Race
+
+Race is binary. It turns out, log2 pfoa and ln (natural log) pfoa have the same results. 
+
+```{r dmr}
+## need 
+c("clindat_f", "clindat_m", "which has log2pfoa, lnpfoa, Race",
+  "mval_f", "mval_m",
+  "formula_log2", "formula_ln")
+## must put pfoa at the first place 
+formula_log2 <-  ~as.numeric(log2pfoa) + Race
+formula_ln <-  ~as.numeric(lnpfoa) + Race
+## read in data
+
+mval <- fread(file = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/dmr/forGuannan/HS_450K_CB_Mval_normbatch_ForDMR-02-07-19.csv", header = T)
+
+# cpg name as row name
+rnames <- mval$V1
+mval <- as.matrix(mval[, -1])
+rownames(mval) <- rnames
+## Read in clinical data (log2 transformed PFOA)
+clindat <- fread(file = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/dmr/forGuannan/clindat.csv", 
+                 header = T)
+## Filter subjects based on clinical data (N = 583)
+mval <- mval[, which(colnames(mval) %in% clindat$pid)]
+## Filter CpGs based on data from Weiming(N = 433360)
+## GUANNAN: I DID NOT DO THIS HERE, SO DO NOT FORGET THIS STEP ##
+# read in Filter CpGs based on data from Weiming(N = 433360)
+filtered_cpg <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/MeanBeta_ExtremePFOA_M/MeanBeta_ExtremePFOA_M.txt",
+                      header = F)
+dim(filtered_cpg)
+f_cpg <- filtered_cpg$V1 
+mval <- mval[which(rownames(mval) %in% f_cpg ), ]
+dim(mval)
+
+## gender id race 
+clindat_f <-  fread("~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/clindat_f.csv", header = T)
+clindat_m <-  fread("~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/clindat_m.csv", header = T)
+
+mval_f <- mval[, which(colnames(mval) %in% clindat_f$pid )]
+mval_m <- mval[, which(colnames(mval) %in% clindat_m$pid )]
+
+
+
+################ function wrapper for DMR analysis ###################
+DMRcate_wrapper <- function(formula, clindat, mval){
+  ## dataset use , female or male, log2pfoa or lnpfoa ##
+  gender1 = unlist(strsplit( deparse(substitute(clindat)), "_"))[2]
+  gender2 = unlist(strsplit( deparse(substitute(mval)), "_"))[2]
+  if(gender1 != gender2)
+    stop("should use the same gender data")
+  ## the type of pfoa
+  log = unlist(strsplit( deparse(substitute(formula)), "_"))[2]
+  prefix_name = paste(gender1,"_",log, "pfoa",sep = "")
+  ### build design matrix ###
+  str(model <- model.frame(formula, clindat))
+  design = model.matrix(formula, model)
+  
+  ######## DMR analysis ########
+  ## Build cpg anno object
+  cpganno = cpg.annotate("array",
+                          ## female 
+                          mval,
+                          what = "M",
+                          arraytype = "450K",
+                          analysis.type = "differential",
+                          ## female
+                          design = design,
+                          ## only have the intercept and the pfoa concentration
+                          ##  it will still be coef = 2. 
+                          ## We are telling DMRcate that we are interested in the log transformed pfoa.
+                          coef = 2)
+  ## get results ##
+  dmrcoutput = dmrcate(cpganno, 
+                        lambda=1000, 
+                        c=2, 
+                        p.adjust.method="BH", 
+                        consec=FALSE, 
+                        pcutoff=0.05)
+  #######################################
+  # Get list of significant DMRs and CpGs
+  # associated with those DMRs
+  #######################################
+  #get annotation;
+  anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19))
+  
+  #get probes in DMR regions;
+  getDMRprobes = function(a, anno){
+    chr = sapply(strsplit(as.character(a[1]), split=":", fixed=TRUE), "[[", 1)
+    start =  as.numeric(sapply(strsplit(sapply(strsplit(as.character(a[1]), split=":", fixed=TRUE), "[[", 2), split="-", fixed=TRUE), "[[", 1))
+    stop =  as.numeric(sapply(strsplit(as.character(a[1]), split="-", fixed=TRUE), "[[", 2))
+    
+    anno.chr = anno[which(anno$chr==chr),]
+    anno2 = as.data.frame(anno.chr[which(anno.chr$pos >= start & anno.chr$pos <= stop),])
+    
+    return(anno2) 
+  }
+  dmr.results = dmrcoutput$results
+  ########### get detailed DMR level results ############### 
+  ##Build list of annotation data for probes in each DMR
+  DMRprobes = list()
+  for(i in 1:nrow(dmr.results)){
+    DMRprobes[[i]] = getDMRprobes(dmr.results[i,], anno)
+  }
+  
+  names(DMRprobes) = dmr.results$coord
+  names(DMRprobes) = gsub(":", "_", names(DMRprobes))
+  # Write results
+  readme_sheet = data_frame(
+    Columns = c(
+      "Annotations for CpGs assocaited with DMR's unadjusted p-value < 0.05",
+      "", colnames(DMRprobes[[1]])
+    ))
+  
+  readme_sheet = list(README = readme_sheet)
+  names(readme_sheet) = "README"
+  openxlsx::write.xlsx(c(readme_sheet, 
+                         DMRprobes),
+                       paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/dmr/",  prefix_name,
+                             Sys.Date(),"_DMR", ".xlsx", sep= ""))
+  
+  ############# get individual cpgs level results data frame ################
+  n_cpg = sum(dmrcoutput$results$no.cpgs)
+  cpg_sum = (data.frame(matrix(NA, 0,4)))
+  ## generate summary table
+  for(i in 1:nrow(dmr.results)){
+    cpg_sum  = rbind(cpg_sum, 
+                     cbind(dmr.results[i,1], 
+                           dmrcoutput$input [dmrcoutput$input$ID %in% getDMRprobes(dmr.results[i,], anno)[,4], c(1,3,8)]) )
+  }
+  colnames(cpg_sum)[c(1,4)] = c("DMR_Identifier", "raw_p")
+  if(nrow(cpg_sum) != n_cpg)
+    stop("wrong total number of cpgs")
+  cpg_min = cpg_sum %>% group_by(DMR_Identifier) %>% filter(raw_p == min(raw_p))
+  if(nrow(cpg_min) != nrow(dmr.results))
+    stop("wrong number of top1 cpgs in each dmr")
+  write.csv(cpg_sum, 
+            row.names = F,
+            paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/dmr/",  prefix_name,"_", 
+                  Sys.Date(),"_DMR_allCpGs", ".csv", sep= ""))
+  write.csv(cpg_min, 
+            row.names = F,
+            paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/dmr/",  prefix_name,"_", 
+                  Sys.Date(),"_DMR_top1_CpG", ".csv", sep= ""))
+}
+
+########## use the wrapper ############
+DMRcate_wrapper(formula_log2, clindat_f, mval_f)
+
+DMRcate_wrapper(formula_log2, clindat_m, mval_m)
+
+```
+
+## Obesity outcome linear regression
+
+ lm = lm(outcome ~ CpGdata[ ,i] + Race + Bcell + CD4T + CD8T + Gran + Mono + NK + nRBC, data = Xs)
+
+
+```{r FunRegSim}
+####################################
+###### No maternal_age   ###########
+####################################
+
+c("Need:", "outcome_f", "CpGdata_f", "Xs_f")
+## equal length of outcomes and covariates
+cpg_FunRegSim <- function(outcome, CpGdata, Xs, Outcome_name, Topn){
+  ## get the gender 
+  gender1 = unlist(strsplit( deparse(substitute(Xs)), "_", fixed = T))[2]
+  gender2 = unlist(strsplit( deparse(substitute(CpGdata)), "_", fixed = T))[2]
+  if(gender1 != gender2)
+    stop("should use the same gender data")
+  Gender = ifelse(gender1 == "m", "male", "female")
+  ## number of CpG to test, also the number of multiple test
+  n_cpg = ncol(CpGdata)
+  ## outcome lm
+  outcome_lm = lapply(1:n_cpg, function(i){
+  lm = lm(outcome ~ CpGdata[ ,i] + Race + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC, data = Xs)
+  coef = summary(lm)$coefficients[2, ]
+  return(coef)
+})
+   outcome_lm = data.frame(matrix(unlist(outcome_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(CpGdata)),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+   # adjusted p-value
+    outcome_lm =  outcome_lm %>% 
+                              mutate(FDR = p.adjust(p.value, "BH", n_cpg ),
+                                               names = colnames(CpGdata)) %>% 
+                                               mutate(Estimate = round(Estimate ,4),
+                                                      Std.Error = round(Std.Error,4),
+                                                      t.statistic = round(t.statistic,4)
+                                                      )%>% 
+                                               select(names, everything())
+   # sort by p.value
+    outcome_lm = outcome_lm[order(outcome_lm$p.value), ]
+    outcome_lm = data.frame(outcome_lm)
+ 
+   ## sample size 
+    size = length(outcome) - sum(is.na(outcome))
+   ## save results per outcome 
+    fwrite(outcome_lm, row.names = F,
+           paste("~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/results/", Gender,"_",
+                 Outcome_name, "_", Sys.Date(),"_", ".csv", sep=""))
+   ## summary table 
+   kable(head(outcome_lm, Topn), 
+         caption = paste("Top CpGs from ", n_cpg," CpGs" ," for Outcome: ", Outcome_name, " of ", Gender, " (Sample Size = ", size, ") ", sep = "" , collapse = ""))
+}
+
+## read in data 
+pfas_cell_583 <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/11_05_pfas_cell_583.csv")
+Outcomes <- colnames(pfas_cell_583)[5:13]
+Outcomes
+## check gender specific data 
+# gender mval mval_f
+## gender top cpgs
+f_dmr_top1cpg <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/f_log2pfoa_2019-02-21_DMR_top1_CpG.csv")
+m_dmr_top1cpg <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/m_log2pfoa_2019-02-21_DMR_top1_CpG.csv")
+dim(f_dmr_top1cpg)
+dim(m_dmr_top1cpg)
+
+CpGdata_f <- mval_f[ rownames(mval_f) %in% f_dmr_top1cpg$ID,]
+dim(CpGdata_f)
+CpGdata_m<- mval_m[ rownames(mval_m) %in% m_dmr_top1cpg$ID,]
+dim(CpGdata_m)
+
+## clinical outcomes and race and 7 cell types
+sum(clindat_f$pid %nin% colnames(CpGdata_f))
+sum(clindat_m$pid %nin% colnames(CpGdata_m))
+
+outcome_f <- pfas_cell_583[ pfas_cell_583$pid %in% clindat_f$pid, ]
+outcome_m <- pfas_cell_583[ pfas_cell_583$pid %in% clindat_m$pid, ]
+
+########
+CpGdata_m <- t(CpGdata_m)
+CpGdata_f <- t(CpGdata_f)
+## # the regression summary table for log10 outcomes 
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(outcome_m[, x]), CpGdata_m, outcome_m, x, 5)
+})
+
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(outcome_f[, x]), CpGdata_f, outcome_f, x, 5)
+})
+
+
+```

@@ -14,9 +14,10 @@ setwd("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/dmr/")
 getwd()
 
 ## Read in clinical data (log2 transformed PFOA)
-clindat <- fread(file = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/dmr/forGuannan/pid583_pfoa_log.csv", 
+clindat <- fread(file = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/dmr/forGuannan/clindat.csv", 
                  header = T)
 head(clindat)
+dim(clindat)
 
 ## read in male female list
 female <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/11_05_pfas_femalecpg.csv", header = T)
@@ -32,7 +33,8 @@ dim(filtered_cpg)
 f_cpg <- filtered_cpg$V1 
 
 ############## build design matrix
-formula <- ~as.numeric(log2pfoa)
+formula <- ~as.numeric(log2pfoa) + Race
+# formula
 ###### for female
 clindat_f <- clindat[which(clindat$pid %in% femaleid) ,]
 str(model <- model.frame(formula, clindat_f))
@@ -59,9 +61,12 @@ mval <- mval[, which(colnames(mval) %in% clindat$pid)]
 ## GUANNAN: I DID NOT DO THIS HERE, SO DO NOT FORGET THIS STEP ##
 mval <- mval[which(rownames(mval) %in% f_cpg ), ]
 dim(mval)
+mval_f <- mval[, which(colnames(mval) %in% femaleid )]
+mval_m <- mval[, which(colnames(mval) %in% maleid )]
 
 ########### for female ##############
 mval_f <- mval[, which(colnames(mval) %in% femaleid )]
+mval_m <- mval[, which(colnames(mval) %in% maleid )]
 ## Build cpg anno object
 cpganno <- cpg.annotate("array",
                         ## female 
@@ -72,6 +77,8 @@ cpganno <- cpg.annotate("array",
                         ## female
                         design = design_f,
                         ## only have the intercept and the pfoa concentration
+                        ##  it will still be coef = 2. 
+                        ## We are telling DMRcate that we are interested in the log transformed pfoa.
                         coef = 2)
 
 # Loading required package: IlluminaHumanMethylation450kanno.ilmn12.hg19
@@ -117,7 +124,20 @@ for(i in 1:nrow(dmr.results)){
 }
 
 names(DMRprobes) <- dmr.results$coord
+## explore dmr results
+ls(dmrcoutput)
+
+## find the DMR identifier
+dmrcoutput$results$coord == names(DMRprobes)
+length(names(DMRprobes))
+
+## find FDR for individual cpg and merge data
+dmr.results
+
+## format name for naming the sheet
 names(DMRprobes) <- gsub(":", "_", names(DMRprobes))
+
+
 
 ############################################
 # Write results
@@ -215,8 +235,137 @@ openxlsx::write.xlsx(c(readme_sheet,
 ## Try increasing the fdr. Alternatively, set pcutoff manually in dmrcate() to return DMRs, 
 ## but be warned there is an increased risk of Type I errors.
 
+######## transfer a variable name to a string ######
+unlist(strsplit( deparse(substitute(clindat_f)), "_"))[2]
+####### for this analysis Data ###########
+## need 
+c("clindat_f", "clindat_m", "which has log2pfoa, lnpfoa, Race",
+  "mval_f", "mval_m",
+  "formula_log2", "formula_ln")
+## must put pfoa at the first place 
+formula_log2 <-  ~as.numeric(log2pfoa) + Race
+formula_ln <-  ~as.numeric(lnpfoa) + Race
+library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
+library(tibble)
 
+###################################################
+######################################################
+####################################################################
+################ function wrapper for DMR analysis ###################
+DMRcate_wrapper <- function(formula, clindat, mval){
+  ## dataset use , female or male, log2pfoa or lnpfoa ##
+  gender1 = unlist(strsplit( deparse(substitute(clindat)), "_"))[2]
+  gender2 = unlist(strsplit( deparse(substitute(mval)), "_"))[2]
+  if(gender1 != gender2)
+    stop("should use the same gender data")
+  ## the type of pfoa
+  log = unlist(strsplit( deparse(substitute(formula)), "_"))[2]
+  prefix_name = paste(gender1,"_",log, "pfoa",sep = "")
+  ### build design matrix ###
+  str(model <- model.frame(formula, clindat))
+  design = model.matrix(formula, model)
+  
+  ######## DMR analysis ########
+  ## Build cpg anno object
+  cpganno = cpg.annotate("array",
+                          ## female 
+                          mval,
+                          what = "M",
+                          arraytype = "450K",
+                          analysis.type = "differential",
+                          ## female
+                          design = design,
+                          ## only have the intercept and the pfoa concentration
+                          ##  it will still be coef = 2. 
+                          ## We are telling DMRcate that we are interested in the log transformed pfoa.
+                          coef = 2)
+  ## get results ##
+  dmrcoutput = dmrcate(cpganno, 
+                        lambda=1000, 
+                        c=2, 
+                        p.adjust.method="BH", 
+                        consec=FALSE, 
+                        pcutoff=0.05)
+  #######################################
+  # Get list of significant DMRs and CpGs
+  # associated with those DMRs
+  #######################################
+  #get annotation;
+  anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19))
+  
+  #get probes in DMR regions;
+  getDMRprobes = function(a, anno){
+    chr = sapply(strsplit(as.character(a[1]), split=":", fixed=TRUE), "[[", 1)
+    start =  as.numeric(sapply(strsplit(sapply(strsplit(as.character(a[1]), split=":", fixed=TRUE), "[[", 2), split="-", fixed=TRUE), "[[", 1))
+    stop =  as.numeric(sapply(strsplit(as.character(a[1]), split="-", fixed=TRUE), "[[", 2))
+    
+    anno.chr = anno[which(anno$chr==chr),]
+    anno2 = as.data.frame(anno.chr[which(anno.chr$pos >= start & anno.chr$pos <= stop),])
+    
+    return(anno2) 
+  }
+  dmr.results = dmrcoutput$results
+  ########### get detailed DMR level results ############### 
+  ##Build list of annotation data for probes in each DMR
+  DMRprobes = list()
+  for(i in 1:nrow(dmr.results)){
+    DMRprobes[[i]] = getDMRprobes(dmr.results[i,], anno)
+  }
+  
+  names(DMRprobes) = dmr.results$coord
+  names(DMRprobes) = gsub(":", "_", names(DMRprobes))
+  # Write results
+  readme_sheet = data_frame(
+    Columns = c(
+      "Annotations for CpGs assocaited with DMR's unadjusted p-value < 0.05",
+      "", colnames(DMRprobes[[1]])
+    ))
+  
+  readme_sheet = list(README = readme_sheet)
+  names(readme_sheet) = "README"
+  openxlsx::write.xlsx(c(readme_sheet, 
+                         DMRprobes),
+                       paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/dmr/",  prefix_name,
+                             Sys.Date(),"_DMR", ".xlsx", sep= ""))
+  
+  ############# get individual cpgs level results data frame ################
+  n_cpg = sum(dmrcoutput$results$no.cpgs)
+  cpg_sum = (data.frame(matrix(NA, 0,4)))
+  ## generate summary table
+  for(i in 1:nrow(dmr.results)){
+    cpg_sum  = rbind(cpg_sum, 
+                     cbind(dmr.results[i,1], 
+                           dmrcoutput$input [dmrcoutput$input$ID %in% getDMRprobes(dmr.results[i,], anno)[,4], c(1,3,8)]) )
+  }
+  colnames(cpg_sum)[c(1,4)] = c("DMR_Identifier", "raw_p")
+  if(nrow(cpg_sum) != n_cpg)
+    stop("wrong total number of cpgs")
+  cpg_min = cpg_sum %>% group_by(DMR_Identifier) %>% filter(raw_p == min(raw_p))
+  if(nrow(cpg_min) != nrow(dmr.results))
+    stop("wrong number of top1 cpgs in each dmr")
+  write.csv(cpg_sum, 
+            row.names = F,
+            paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/dmr/",  prefix_name,"_", 
+                  Sys.Date(),"_DMR_allCpGs", ".csv", sep= ""))
+  write.csv(cpg_min, 
+            row.names = F,
+            paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/dmr/",  prefix_name,"_", 
+                  Sys.Date(),"_DMR_top1_CpG", ".csv", sep= ""))
+}
 
+DMRcate_wrapper(formula_log2, clindat_f, mval_f)
+DMRcate_wrapper(formula_ln, clindat_f, mval_f)
+DMRcate_wrapper(formula_log2, clindat_m, mval_m)
+DMRcate_wrapper(formula_ln, clindat_m, mval_m)
 
-
+library(data.table)
+## fwrite from data.table 
+fwrite(clindat_f, 
+          row.names = F,
+          paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/",  
+                "clindat_f", ".csv", sep= ""))
+fwrite(clindat_m, 
+          row.names = F,
+          paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/",  
+                "clindat_m", ".csv", sep= ""))
 

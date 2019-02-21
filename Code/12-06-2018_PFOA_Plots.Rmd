@@ -59,6 +59,7 @@ getwd()
 # ######## clean memory ######################
 # rm(list = ls())
 # gc()
+# ls()
 # slotNames(x)
 # getSlots(x)
 
