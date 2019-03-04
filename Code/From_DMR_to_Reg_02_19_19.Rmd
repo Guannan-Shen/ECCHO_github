@@ -103,10 +103,15 @@ filtered_cpg <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/Mean
 dim(filtered_cpg)
 f_cpg <- filtered_cpg$V1 
 mval <- mval[which(rownames(mval) %in% f_cpg ), ]
-## add infant_sex to the mval data
+## save t(mval)
 dim(mval)
 sum(colnames(mval) !=  clindat$pid )
-colnames(mval)
+t_mval <- t(mval)
+sum(colnames(mval) !=  rownames(t_mval) )
+dim(t_mval)
+t_mval <- data.frame(t_mval) %>% mutate(pid = colnames(mval)) %>% select(pid, everything())
+fwrite(t_mval, "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/t_mval.csv", )
+
 ## gender id race 
 clindat_f <-  fread("~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/clindat_f.csv", header = T)
 clindat_m <-  fread("~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/clindat_m.csv", header = T)

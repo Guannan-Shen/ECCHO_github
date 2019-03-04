@@ -66,5 +66,23 @@ getwd()
 ```
 
 ```{r dataprep}
+#### all clinical data but chemical conc
+pfas_cell_583 <- fread(file = "/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/pfas_cell_583.csv", 
+                       header = T)
+head(pfas_cell_583)
+dim(pfas_cell_583)
+#### chemical data and transform
+chems <- fread(file = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/pid583_pfoa_pfos_pfhxs.csv", 
+               header = T)
+
+sum(chems$pid != pfas_cell_583$pid)
+chems_ln <- chems %>% dplyr::mutate(lnpfhxs = log(PFHXS_ng_ml, base = exp(1)),
+                                    lnpfoa = log(PFOA_ng_ml, base = exp(1)),
+                                    lnpfos = log(PFOS_ng_ml, base = exp(1)))
+head(chems_ln)
+dim(chems_ln)
+#### all data but mval
+clin_chem <- inner_join(pfas_cell_583, chems_ln, by = "pid")
+dim(clin_chem)
 
 ```
