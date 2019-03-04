@@ -1,0 +1,96 @@
+---
+title: "GenomeWideDMPForGuannan"
+author: "Harry Smith"
+date: "2/26/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+library(data.table)
+library(tidyverse)
+#library(dplyr)
+library(parallel)
+library(devtools)
+install_github("kvnkuang/pbmcapply", ref = "dev")
+library(pbmcapply)
+library(knitr)
+'%!in%' <- function(x,y)!('%in%'(x,y))
+```
+
+```{r clinical_data}
+## Read in clinical data for cord blood. This data was received by Harry Smith from Kristen Boyle on 01/22/19.
+clinCB <- fread(file = "/home/smiharry/ECHO/methylation/k_boyle/data/pid_bmi_sex_ga_age.csv", header = T) # Use path to your clinical data set
+## Pick the covariates you need here
+clinCB <- clinCB %>%
+  select(pid, infant_sex, maternal_age, pre_preg_bmi)
+dim(clinCB)
+head(clinCB)
+```
+
+```{r mval_data}
+## Read in methylation data for cord blood (450K)
+mval_cb <- fread(file = "/home/filedecode/uploads/HS_450K_CB_Mval_normbatch_02-10-16.csv", header = T) # Use path to you mval data
+dim(mval_cb)
+mval_cb[1:5, 1:5]
+## Generate analysis data set - cord blood
+anal_cb <- merge(clinCB, mval_cb, by = "pid")
+dim(anal_cb)
+cpg.cb <- anal_cb[, -c(1:4)]
+data.cb <- anal_cb[, c(1:4)]
+```
+
+```{r, run_models}
+#############################################
+## run models for cord blood data
+#############################################
+
+##Guannan: Use you best judgement for splitting the data in half. I might even try to run the whole data set firt and see if it works.
+
+cpg.cb.1 <- cpg.cb[, ] # Subset first half of columns
+cpg.cb.2 <- cpg.cb[, ] # Subset second half of columns
+data.cb.1 <- data.cb[, ] # As you pointed out, this should be identical for te split data sets, so you should be able to use the same data set for both
+
+
+## run models
+f <- local(function(x){
+  fit1 <- lm(x ~ pre_preg_bmi+as.factor(infant_sex)+maternal_age, 
+                    data=data.cb.1, na.action = na.omit) # Be sure to use the covariates for Anne's analysis
+  fit.sum <- summary(fit1)
+  cpg.dat <- fit.sum$coefficients[2, ] 
+  return(cpg.dat)
+})
+
+cl <- makeCluster(20)
+clusterExport(cl, "data.cb.1")
+rslts.cb.1 <- do.call("rbind", pbmclapply(cpg.cb.1, FUN = f, mc.cores =getOption("mc.cores", 20L)))
+rslts.cb.2 <- do.call("rbind", pbmclapply(cpg.cb.2, FUN = f, mc.cores =getOption("mc.cores", 20L)))
+
+## bind resulst from split analysis
+rslts.cb <- rbind(rslts.cb.1, rslts.cb.2)
+## calculate FDR
+p_adjust <- p.adjust(rslts.cb[, 4], method = "BH")
+rslts.cb <- as.data.frame(cbind(rownames(rslts.cb), rslts.cb, p_adjust))
+colnames(rslts.cb)[1] <- "CpG"
+rslts.cb <- rslts.cb %>% arrange(p_adjust)
+cols.num <- c(2:6)
+rslts.cb[cols.num] <- sapply(rslts.cb[cols.num],as.character)
+rslts.cb[cols.num] <- sapply(rslts.cb[cols.num],as.numeric)
+
+stopCluster(cl)
+```
+
+```{r create_BED}
+library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
+anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19))
+# Step 1. Merge rslts.cb with annotation
+rslts.merged <- merge(rslts.cb, anno, by.x = "CpG", by.y = "Name")
+rslts.merged$unadjusted <- rslts.merged$`Pr(>|t|)` # Just the same column with a better name
+# Step 2. Generate BED style format
+rslts.bed <- rslts.merged %>%
+  mutate(stop = pos + 1) %>% #There is no stop position in annotation, so generated one by adding 1 to position
+  select(CpG, chr, pos, stop, unadjusted, p_adjust) #NOTE: The p-values are in the 5th and 6th column and the CpGs are included. I don't know if comb-P will like this, or if you will need to remove CpGs and make them the rownames.
+fwrite(rslts.bed, file = "~/Desktop/comp1.csv")
+```

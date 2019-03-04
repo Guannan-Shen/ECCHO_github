@@ -92,6 +92,7 @@ rownames(mval) <- rnames
 ## Read in clinical data (log2 transformed PFOA)
 clindat <- fread(file = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/dmr/forGuannan/clindat.csv", 
                  header = T)
+head(clindat)
 ## Filter subjects based on clinical data (N = 583)
 mval <- mval[, which(colnames(mval) %in% clindat$pid)]
 ## Filter CpGs based on data from Weiming(N = 433360)
@@ -102,8 +103,10 @@ filtered_cpg <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/Mean
 dim(filtered_cpg)
 f_cpg <- filtered_cpg$V1 
 mval <- mval[which(rownames(mval) %in% f_cpg ), ]
+## add infant_sex to the mval data
 dim(mval)
-
+sum(colnames(mval) !=  clindat$pid )
+colnames(mval)
 ## gender id race 
 clindat_f <-  fread("~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/clindat_f.csv", header = T)
 clindat_m <-  fread("~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/clindat_m.csv", header = T)
@@ -112,6 +115,7 @@ mval_f <- mval[, which(colnames(mval) %in% clindat_f$pid )]
 mval_m <- mval[, which(colnames(mval) %in% clindat_m$pid )]
 
 
+head(mval_f[,1:10], 5)
 
 ################ function wrapper for DMR analysis ###################
 DMRcate_wrapper <- function(formula, clindat, mval){

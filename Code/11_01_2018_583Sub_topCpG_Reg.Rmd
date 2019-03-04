@@ -38,6 +38,7 @@ opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/Reports/")
 
 ```{r libs}
 ## set up workspace
+rm(list = ls())
 library(knitr)
 library(tidyverse)
 options(stringsAsFactors = F)
@@ -83,8 +84,21 @@ pfas_cell <- merge(pfas, celltype, by = "pid") %>% dplyr::rename(Race = race_4) 
 dim(pfas_cell)
 clindat <- fread(file = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/dmr/forGuannan/pid583_pfoa_log.csv", 
                  header = T)
+#################
+########### the off set of clinical variables ####################
 pfas_cell_583 <- pfas_cell[pfas_cell$pid %in% clindat$pid , ]
+pfas_cell_583 <- pfas_cell_583 %>% mutate(infant_sex = factor(infant_sex, levels = c(1,2),
+                                                              labels = c("Female", "Male"))  )
+# check
+head(pfas_cell_583)
+nrow(pfas_cell_583[pfas_cell_583$infant_sex == "Male" ,])
+# save
+write.csv(pfas_cell_583,
+          file = "~/Documents/gitlab/ECCHO_github/DataProcessed/pfas_cell_583.csv",
+          row.names=FALSE)
 barplot(table(pfas_cell_583$Race) )
+
+
 sum(clindat$pid != pfas_cell_583$pid)
 clindat$Race <- pfas_cell_583$Race
 write.csv(clindat,
