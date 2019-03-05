@@ -47,6 +47,10 @@ library(tidyverse)
 library(magrittr)
 library(stats)
 library(DMRcate)
+library(parallel)
+library(devtools)
+install_github("kvnkuang/pbmcapply", ref = "dev")
+library(pbmcapply)
 library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
 library(tibble)
 library(grid) # low-level grid functions are required
@@ -84,5 +88,46 @@ dim(chems_ln)
 #### all data but mval
 clin_chem <- inner_join(pfas_cell_583, chems_ln, by = "pid")
 dim(clin_chem)
+## head(clin_chem)
+# typeof(clin_chem)
+# clin_chem <- data.table(clin_chem)
+
+#### mval with each row represents a participant
+t_mval <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/t_mval.csv",
+                 header = T)
+head(t_mval[,1:5])
+## merge two data.table
+# t_mval$pid
+# use data.table merge
+# merge is much faster than inner_join
+dt_all <- merge(clin_chem, t_mval, by = "pid")
+
+dim(dt_all)
+# head(dt_all[,31:40])
+# data.table syntax
+dt_all <- data.table(dt_all)
+dt_all_f <-  dt_all[infant_sex == "Female"]
+# save female data
+dim(dt_all_f)
+fwrite(dt_all_f, "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/dt_all_f.csv", row.names = F)
+x <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/dt_all_f.csv", header = T)
+dim(x)
+# save male data 
+dt_all_m <-  dt_all[infant_sex == "Male"]
+dim(dt_all_m)
+fwrite(dt_all_m, "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/dt_all_m.csv", row.names = F)
+
+```
+
+
+```{r genomewide fitting}
+# if (requireNamespace("broom", quietly = TRUE)) {
+#   iris %>%
+#     group_by(Species) %>%
+#     group_map(~ broom::tidy(lm(Petal.Length ~ Sepal.Length, data = .x)))
+# }
+############ since inner_join is slow, hold on trying the group_map #################
+
+# formula + Race + Bcell + CD4T + CD8T + Gran + Mono + NK + nRBC
 
 ```

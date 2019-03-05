@@ -105,12 +105,17 @@ f_cpg <- filtered_cpg$V1
 mval <- mval[which(rownames(mval) %in% f_cpg ), ]
 ## save t(mval)
 dim(mval)
+rownames(mval)[1:10]
+
 sum(colnames(mval) !=  clindat$pid )
-t_mval <- t(mval)
-sum(colnames(mval) !=  rownames(t_mval) )
-dim(t_mval)
-t_mval <- data.frame(t_mval) %>% mutate(pid = colnames(mval)) %>% select(pid, everything())
-fwrite(t_mval, "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/t_mval.csv", )
+# t_mval <- t(mval)
+# sum(colnames(mval) !=  rownames(t_mval) )
+# dim(t_mval)
+# t_mval <- data.frame(t_mval)
+# t_mval$pid <-  colnames(mval)
+# head(t_mval[,1:5])
+# 
+# fwrite(t_mval, "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/t_mval.csv", row.names = F)
 
 ## gender id race 
 clindat_f <-  fread("~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/clindat_f.csv", header = T)
