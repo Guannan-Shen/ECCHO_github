@@ -116,8 +116,8 @@ dim(dt_all_f)
 # dt_all_m <-  dt_all[infant_sex == "Male"]
 # dim(dt_all_m)
 # fwrite(dt_all_m, "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/dt_all_m.csv", row.names = F)
-dt_all_f <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/dt_all_f.csv", header = T)
-dim(dt_all_f)
+dt_all_m <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/dt_all_m.csv", header = T)
+dim(dt_all_m)
 
 ```
 
