@@ -1,0 +1,150 @@
+---
+title: "Female Chem DMR Corre"
+author: "Guannan Shen"
+date: "March 6, 2019"
+output: 
+  pdf_document:
+    latex_engine: lualatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 5
+  word_document:
+    toc: yes
+    toc_depth: '5'
+  html_document:
+    number_sections: yes
+    theme: united
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+---
+
+```{r setup, include=FALSE, cache = FALSE}
+require("knitr")
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+opts_chunk$set(engine = "R")
+knitr::opts_chunk$set(echo = T)
+knitr::opts_chunk$set(message = F)
+knitr::opts_chunk$set(warning = F)
+## setting wd in DELL
+## opts_knit$set(root.dir = "~/Stats/CIDA_OMICs/CIDA_OMICS/7659Stats_Genetics/HW5/")
+## setting working directory in asus 
+## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/Cario_RNASeq_Microbiom_Inte/DataRaw/") 
+## setting working directory in ubuntu
+opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/")
+                                                 
+## cache = F, if cache = T, will not revaluate code chunk everytime
+## double or more space to insert a line break
+# pid583_pfoa_pfos_pfhxs.csv
+```
+
+```{r libs}
+## set up workspace
+rm(list = ls())
+library(data.table)
+library(knitr)
+library(tidyverse)
+library(magrittr)
+library(stats)
+library(DMRcate)
+library(parallel)
+library(devtools)
+install_github("kvnkuang/pbmcapply", ref = "dev")
+library(pbmcapply)
+library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
+library(tibble)
+library(grid) # low-level grid functions are required
+options(stringsAsFactors = F)
+options(dplyr.width = Inf)
+getwd()
+## not in function
+'%nin%' <- Negate('%in%')
+
+# ######## clean memory ######################
+# rm(list = ls())
+# gc()
+# ls()
+# slotNames(x)
+# getSlots(x)
+
+```
+
+```{r dataprep}
+## all female
+# all clinical data, chemical conc, obesity outcomes
+clin_chem_f <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_f.csv")
+dim(clin_chem_f)
+# mval
+dt_all_f <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/dt_all_f.csv", header = T)
+dim(dt_all_f)
+dt_all_f <- data.frame(dt_all_f)
+# all pids were aligned 
+sum(dt_all_f$pid != clin_chem_f$pid)
+
+# dt_all_f[,-c(1:26)]
+
+```
+
+
+```{r genomewide_linear}
+## all female 
+## chems
+# clin_chem_f$lnpfoa clin_chem_f$lnpfhxs clin_chem_f$lnpfos
+
+# local()  Ensure all your "strict" functions don't have globalenv as environment.
+f <- local(function(mval){
+  fit1 = lm(mval ~ lnpfoa + Race + Bcell + CD4T + CD8T + Gran + Mono + NK + nRBC, 
+                    data = clin_chem_f, na.action = na.omit) # Be sure to use the covariates for Anne's analysis
+  fit.sum = summary(fit1)
+  cpg.dat = fit.sum$coefficients[2, ] 
+  return(cpg.dat)
+})
+
+# parallel
+cl <- makeCluster(10)
+clusterExport(cl, "clin_chem_f")
+rslts.cb.1 <- do.call("rbind", pbmclapply(dt_all_f[,-c(1:26)], FUN = f, mc.cores =getOption("mc.cores", 10L)))
+# 
+head(rslts.cb.1)
+
+```
+
+```{r genomewide}
+# local()  Ensure all your "strict" functions don't have globalenv as environment.
+fchem <- local(function(mval, chem){
+  fit1 = lm(mval ~ chem + Race + Bcell + CD4T + CD8T + Gran + Mono + NK + nRBC, 
+                    data = clin_chem_f, na.action = na.omit) # Be sure to use the covariates for Anne's analysis
+  fit.sum = summary(fit1)
+  cpg.dat = fit.sum$coefficients[2, ] 
+  return(cpg.dat)
+})
+
+#
+# parallel
+cl <- makeCluster(10)
+clusterExport(cl, "clin_chem_f")
+# clin_chem_f$lnpfoa clin_chem_f$lnpfhxs clin_chem_f$lnpfos
+rslts.pfoa <- do.call("rbind", pbmclapply(dt_all_f[,-c(1:26)], FUN = fchem, clin_chem_f$lnpfoa, 
+                                          mc.cores =getOption("mc.cores", 10L)))
+# # 
+# head(rslts.pfoa)
+# # test 
+# sum(rslts.cb.1[, 4] != rslts.pfoa[,4])
+# colnames(rslts.pfoa)[4] <- "raw_p"
+# sum(row.names(rslts.pfoa) != colnames(dt_all_f)[-c(1:26)])
+# #
+# rslts.pfoa <- data.frame(rslts.pfoa) %>% mutate(p_adjust = p.adjust(raw_p, method = "BH"),
+#                                                 CpG = colnames(dt_all_f)[-c(1:26)])
+rslts_format <- function(rslts.cb){
+  p_adjust = p.adjust(rslts.cb[, 4], method = "BH")
+  rslts.cb = as.data.frame(cbind(rownames(rslts.cb), rslts.cb, p_adjust))
+  colnames(rslts.cb)[1] = "CpG"
+  rslts.cb = rslts.cb %>% arrange(p_adjust)
+  cols.num = c(2:6)
+  rslts.cb[cols.num] = sapply(rslts.cb[cols.num],as.character)
+  rslts.cb[cols.num] = sapply(rslts.cb[cols.num],as.numeric)
+}
+rslts_format(rslts.pfoa )
+
+stopCluster(cl)
+```

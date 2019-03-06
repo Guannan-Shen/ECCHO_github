@@ -88,6 +88,17 @@ dim(chems_ln)
 #### all data but mval
 clin_chem <- inner_join(pfas_cell_583, chems_ln, by = "pid")
 dim(clin_chem)
+# by gender
+clin_chem_f <- data.frame(clin_chem) %>% filter(infant_sex == "Female") 
+dim(clin_chem_f)
+write.csv(clin_chem_f, 
+          "/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_f.csv",
+          row.names = F)
+clin_chem_m <- data.frame(clin_chem) %>% filter(infant_sex == "Male") 
+dim(clin_chem_m)
+write.csv(clin_chem_m, 
+          "/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_m.csv",
+          row.names = F)
 ## head(clin_chem)
 # typeof(clin_chem)
 # clin_chem <- data.table(clin_chem)
