@@ -69,6 +69,8 @@ getwd()
 
 ```
 
+## Data Prep
+
 ```{r dataprep}
 ## all female
 # all clinical data, chemical conc, obesity outcomes
@@ -109,6 +111,8 @@ head(rslts.cb.1)
 
 ```
 
+## Pipeline to get the input for comb-p
+
 ```{r genomewide}
 # local()  Ensure all your "strict" functions don't have globalenv as environment.
 fchem <- local(function(mval, chem){
@@ -144,7 +148,54 @@ rslts_format <- function(rslts.cb){
   rslts.cb[cols.num] = sapply(rslts.cb[cols.num],as.character)
   rslts.cb[cols.num] = sapply(rslts.cb[cols.num],as.numeric)
 }
-rslts_format(rslts.pfoa )
+################### work on Asus #########################
+# can be used to find the top CpGs for scatter plot
+pfoa_mval <- rslts_format(rslts.pfoa )
+# create the .bed file for comb-p
+# the annotation for start position of .bed file
+anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19))
+bedfile <- function(chem_mval, chemname){
+  # 
+  paste("Might need to copy the .bed file to the home directory", sep = "\n",
+        "chrom, chromStart, chromEnd, unadjusted, p_adjust, CpG")
+  # Step 1. Merge rslts.cb with annotation
+  chem_mval.merged = merge(chem_mval, anno, by.x = "CpG", by.y = "Name")
+  chem_mval.merged$unadjusted = chem_mval.merged$`Pr(>|t|)` # Just the same column with a better name
+  # Step 2. Generate BED style format
+  chem_mval.bed = chem_mval.merged %>%
+  mutate(stop = pos + 51) %>% # so generated one by adding 51 to position, 50 is the len of probe
+  dplyr::rename(chrom = chr, chromStart = pos, chromEnd = stop) %>%
+  select(chrom, chromStart, chromEnd, unadjusted, p_adjust, CpG)
+  chem_mval.bed = data.frame(chem_mval.bed)
+  write.table(chem_mval.bed, file= paste("~/Documents/gitlab/ECCHO_github/DataProcessed/", 
+                                         chemname, "_mval.bed", sep = ""), 
+              quote=F, sep="\t", row.names=F, col.names=F)
+}
+
+bedfile(chem_m = pfoa_mval, chemname = "lnpfoa")
+
+## repeat the analysis for other chemical 
+# clin_chem_f$lnpfoa clin_chem_f$lnpfhxs clin_chem_f$lnpfos
+# genome wide association
+rslts.pfhxs <- do.call("rbind", pbmclapply(dt_all_f[,-c(1:26)], FUN = fchem, clin_chem_f$lnpfhxs, 
+                                          mc.cores =getOption("mc.cores", 10L)))
+# get BH p-adjusted and reformat
+pfhxs_mval <- rslts_format(rslts.pfhxs)
+# save .bed file
+bedfile(chem_m = pfhxs_mval, chemname = "lnpfhxs")
+
+
+############################# 
+rslts.pfos <- do.call("rbind", pbmclapply(dt_all_f[,-c(1:26)], FUN = fchem, clin_chem_f$lnpfos, 
+                                          mc.cores =getOption("mc.cores", 10L)))
+# get BH p-adjusted and reformat
+pfos_mval <- rslts_format(rslts.pfos)
+# save .bed file
+bedfile(chem_m = pfos_mval, chemname = "lnpfos")
 
 stopCluster(cl)
 ```
+
+
+
+
