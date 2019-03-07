@@ -1,0 +1,206 @@
+---
+title: "03_07_3chem_cpg_obesity"
+author: "Guannan Shen"
+date: "March 7, 2019"
+output: 
+  pdf_document:
+    latex_engine: lualatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 5
+  word_document:
+    toc: yes
+    toc_depth: '5'
+  html_document:
+    number_sections: yes
+    theme: united
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+---
+
+```{r setup, include=FALSE, cache = FALSE}
+require("knitr")
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+opts_chunk$set(engine = "R")
+knitr::opts_chunk$set(echo = T)
+knitr::opts_chunk$set(message = F)
+knitr::opts_chunk$set(warning = F)
+## setting wd in DELL
+## opts_knit$set(root.dir = "~/Stats/CIDA_OMICs/CIDA_OMICS/7659Stats_Genetics/HW5/")
+## setting working directory in asus 
+## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/Cario_RNASeq_Microbiom_Inte/DataRaw/") 
+## setting working directory in ubuntu
+opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/")
+                                                 
+## cache = F, if cache = T, will not revaluate code chunk everytime
+## double or more space to insert a line break
+```
+
+```{r libs}
+## set up workspace
+rm(list = ls())
+library(data.table)
+library(knitr)
+library(tidyverse)
+library(magrittr)
+library(stats)
+library(tibble)
+library(grid) # low-level grid functions are required
+options(stringsAsFactors = F)
+options(dplyr.width = Inf)
+getwd()
+## not in function
+'%nin%' <- Negate('%in%')
+
+# ######## clean memory ######################
+# rm(list = ls())
+# gc()
+# ls()
+# slotNames(x)
+# getSlots(x)
+
+```
+
+
+```{r FunRegSim}
+####################################
+###### No maternal_age   ###########
+####################################
+
+c("Need:", "outcome_f", "CpGdata_f", "Xs_f")
+## equal length of outcomes and covariates
+cpg_FunRegSim <- function(outcome, CpGdata, Xs, Outcome_name, Topn, chemname){
+  ## get the gender 
+  gender1 = unlist(strsplit( deparse(substitute(Xs)), "_", fixed = T))[2]
+  gender2 = unlist(strsplit( deparse(substitute(CpGdata)), "_", fixed = T))[2]
+  if(gender1 != gender2)
+    stop("should use the same gender data")
+  Gender = ifelse(gender1 == "m", "male", "female")
+  ## number of CpG to test, also the number of multiple test
+  n_cpg = ncol(CpGdata)
+  ## outcome lm
+  outcome_lm = lapply(1:n_cpg, function(i){
+  lm = lm(outcome ~ CpGdata[ ,i] + Race + Bcell + CD4T +
+            CD8T + Gran + Mono + NK + nRBC, data = Xs)
+  coef = summary(lm)$coefficients[2, ]
+  return(coef)
+})
+   outcome_lm = data.frame(matrix(unlist(outcome_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+                     c(colnames(CpGdata)),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+   # adjusted p-value
+    outcome_lm =  outcome_lm %>% 
+                              mutate(FDR = p.adjust(p.value, "BH", n_cpg ),
+                                               names = colnames(CpGdata)) %>% 
+                                               mutate(Estimate = round(Estimate ,4),
+                                                      Std.Error = round(Std.Error,4),
+                                                      t.statistic = round(t.statistic,4)
+                                                      )%>% 
+                                               select(names, everything())
+   # sort by p.value
+    outcome_lm = outcome_lm[order(outcome_lm$p.value), ]
+    outcome_lm = data.frame(outcome_lm)
+ 
+   ## sample size 
+    size = length(outcome) - sum(is.na(outcome))
+   ## save results per outcome 
+    fwrite(outcome_lm, row.names = F,
+           paste("~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/results/", Sys.Date(), "_",Gender,"_",
+                 Outcome_name, "_",chemname ,"_", ".csv", sep=""))
+   ## summary table 
+   kable(head(outcome_lm, Topn), 
+         caption = paste("Top CpGs from ", n_cpg," CpGs" ," for Outcome: ", Outcome_name, " of ", Gender, " (Sample Size = ", size, ") ", sep = "" , collapse = ""))
+}
+
+## read in data 
+pfas_cell_583 <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/11_05_pfas_cell_583.csv")
+Outcomes <- colnames(pfas_cell_583)[5:13]
+Outcomes
+
+```
+
+```{r femaledata}
+## gender top cpgs
+f_pfoa_DMR_top1 <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/dmr/2019-03-07_f_pfoa_DMR_top1_CpG.csv")
+f_pfhxs_DMR_top1 <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/dmr/2019-03-07_f_pfhxs_DMR_top1_CpG.csv")
+f_pfos_DMR_top1 <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/dmr/2019-03-07_f_pfos_DMR_top1_CpG.csv")
+
+# all clinical data, chemical conc, obesity outcomes
+clinchem_f <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_f.csv")
+dim(clinchem_f)
+# mval
+dtall_f <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/dt_all_f.csv", header = T)
+dim(dtall_f)
+sum(dtall_f$pid != clinchem_f$pid)
+## cpgs <- colnames(dtall_f)[-c(1:26)]
+sum(colnames(dtall_f) %in% f_pfoa_DMR_top1$ID)
+dtall_f <- data.frame(dtall_f)
+# CpGdata
+CpGdatapfoa_f <- dtall_f[ , colnames(dtall_f) %in% f_pfoa_DMR_top1$ID]
+CpGdatapfhxs_f <- dtall_f[ , colnames(dtall_f) %in% f_pfhxs_DMR_top1$ID]
+CpGdatapfos_f <- dtall_f[ , colnames(dtall_f) %in% f_pfos_DMR_top1$ID]
+# all outcome, covariate
+colnames(clinchem_f)
+#
+
+## # the regression summary table for log10 outcomes 
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_f[, x]), CpGdatapfoa_f, clinchem_f, x, 10, "pfoa")
+})
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_f[, x]), CpGdatapfhxs_f, clinchem_f, x, 10, "pfhxs")
+})
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_f[, x]), CpGdatapfos_f, clinchem_f, x, 10, "pfos")
+})
+```
+
+```{r maledata}
+## gender top cpgs
+m_pfoa_DMR_top1 <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/dmr/2019-03-07_m_pfoa_DMR_top1_CpG.csv")
+m_pfhxs_DMR_top1 <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/dmr/2019-03-07_m_pfhxs_DMR_top1_CpG.csv")
+m_pfos_DMR_top1 <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/dmr/2019-03-07_m_pfos_DMR_top1_CpG.csv")
+
+# all clinical data, chemical conc, obesity outcomes
+clinchem_m <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_m.csv")
+dim(clinchem_m)
+
+# # all clinchem
+clinchem <- read.csv( "/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem.csv",
+          header = T)
+clinchem_m <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_m.csv")
+dim(clinchem_m)
+t_mval <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/t_mval.csv",
+                 header = T)
+dt_all <- merge(clinchem, t_mval, by = "pid")
+
+dim(dt_all)
+dt_all <- data.table(dt_all)
+dtall_m <-  dt_all[infant_sex == "Male"]
+
+sum(dtall_m$pid != clinchem_m$pid)
+## cpgs <- colnames(dtall_f)[-c(1:26)]
+sum(colnames(dtall_m) %in% m_pfoa_DMR_top1$ID)
+dtall_m <- data.frame(dtall_m)
+## 
+# CpGdata
+CpGdatapfoa_m <- dtall_m[ , colnames(dtall_m) %in% m_pfoa_DMR_top1$ID]
+CpGdatapfhxs_m <- dtall_m[ , colnames(dtall_m) %in% m_pfhxs_DMR_top1$ID]
+CpGdatapfos_m <- dtall_m[ , colnames(dtall_m) %in% m_pfos_DMR_top1$ID]
+# all outcome, covariate
+#
+
+## # the regression summary table for log10 outcomes 
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_m[, x]), CpGdatapfoa_m, clinchem_m, x, 10, "pfoa")
+})
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_m[, x]), CpGdatapfhxs_m, clinchem_m, x, 10, "pfhxs")
+})
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_m[, x]), CpGdatapfos_m, clinchem_m, x, 10, "pfos")
+})
+```

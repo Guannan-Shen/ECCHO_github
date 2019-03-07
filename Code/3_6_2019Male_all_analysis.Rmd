@@ -49,7 +49,6 @@ library(stats)
 library(DMRcate)
 library(parallel)
 library(devtools)
-install_github("kvnkuang/pbmcapply", ref = "dev")
 library(pbmcapply)
 library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
 library(tibble)
@@ -76,7 +75,36 @@ getwd()
 clin_chem_m <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_m.csv")
 dim(clin_chem_m)
 # mval
-dt_all_m <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/dt_all_m.csv", header = T)
+# dt_all_m <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/dt_all_m.csv", header = T)
+t_mval <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/t_mval.csv",
+                 header = T)
+head(t_mval[,1:5])
+# merge is much faster than inner_join
+#### all clinical data but chemical conc
+pfas_cell_583 <- fread(file = "/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/pfas_cell_583.csv", 
+                       header = T)
+head(pfas_cell_583)
+dim(pfas_cell_583)
+#### chemical data and transform
+chems <- fread(file = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/pid583_pfoa_pfos_pfhxs.csv", 
+               header = T)
+
+sum(chems$pid != pfas_cell_583$pid)
+chems_ln <- chems %>% dplyr::mutate(lnpfhxs = log(PFHXS_ng_ml, base = exp(1)),
+                                    lnpfoa = log(PFOA_ng_ml, base = exp(1)),
+                                    lnpfos = log(PFOS_ng_ml, base = exp(1)))
+head(chems_ln)
+dim(chems_ln)
+#### all data but mval
+clin_chem <- inner_join(pfas_cell_583, chems_ln, by = "pid")
+dim(clin_chem)
+write.csv(clin_chem, "/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem.csv",
+          row.names = F)
+dt_all <- merge(clin_chem, t_mval, by = "pid")
+
+dim(dt_all)
+dt_all <- data.table(dt_all)
+dt_all_m <-  dt_all[infant_sex == "Male"]
 dim(dt_all_m)
 dt_all_m <- data.frame(dt_all_m)
 # all pids were aligned 
@@ -160,7 +188,7 @@ rslts.pfhxs <- do.call("rbind", pbmclapply(dt_all_m[,-c(1:26)], FUN = fchem, cli
                                           mc.cores =getOption("mc.cores", 10L)))
 # get BH p-adjusted and reformat
 pfhxs_mval <- rslts_format(rslts.pfhxs)
-pfhxs_mval <- data.frame(fhxs_mval)
+pfhxs_mval <- data.frame(pfhxs_mval)
 pfhxs_mval$CpG <- cpgs
 # save .bed file
 bedfile(chem_m = pfhxs_mval, chemname = "lnpfhxs")
@@ -172,7 +200,7 @@ rslts.pfos <- do.call("rbind", pbmclapply(dt_all_m[,-c(1:26)], FUN = fchem, clin
 # get BH p-adjusted and reformat
 pfos_mval <- rslts_format(rslts.pfos)
 pfos_mval <- data.frame(pfos_mval)
-ppfos_mval$CpG <- cpgs
+pfos_mval$CpG <- cpgs
 # save .bed file
 bedfile(chem_m = pfos_mval, chemname = "lnpfos")
 

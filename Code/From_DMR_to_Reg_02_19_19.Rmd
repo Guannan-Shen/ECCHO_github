@@ -129,14 +129,14 @@ head(mval_f[,1:10], 5)
 
 ################ function wrapper for DMR analysis ###################
 DMRcate_wrapper <- function(formula, clindat, mval){
-  ## dataset use , female or male, log2pfoa or lnpfoa ##
+  ## dataset use , female or male, lnpfoa ##
   gender1 = unlist(strsplit( deparse(substitute(clindat)), "_"))[2]
   gender2 = unlist(strsplit( deparse(substitute(mval)), "_"))[2]
   if(gender1 != gender2)
     stop("should use the same gender data")
   ## the type of pfoa
-  log = unlist(strsplit( deparse(substitute(formula)), "_"))[2]
-  prefix_name = paste(gender1,"_",log, "pfoa",sep = "")
+  chem = unlist(strsplit( deparse(substitute(formula)), "_"))[2]
+  prefix_name = paste(gender1,"_", chem, "pfoa",sep = "")
   ### build design matrix ###
   str(model <- model.frame(formula, clindat))
   design = model.matrix(formula, model)
@@ -145,6 +145,8 @@ DMRcate_wrapper <- function(formula, clindat, mval){
   ## Build cpg anno object
   cpganno = cpg.annotate("array",
                           ## female 
+                          # with unique Illumina probe IDs as rownames and unique
+                          # sample IDs as column names o
                           mval,
                           what = "M",
                           arraytype = "450K",
@@ -154,14 +156,18 @@ DMRcate_wrapper <- function(formula, clindat, mval){
                           ## only have the intercept and the pfoa concentration
                           ##  it will still be coef = 2. 
                           ## We are telling DMRcate that we are interested in the log transformed pfoa.
-                          coef = 2)
+                          coef = 2
+                          # Highly recommended as the primary thresholding parameter for calling DMRs 
+                          # fdr = 0.05
+                         )
   ## get results ##
   dmrcoutput = dmrcate(cpganno, 
                         lambda=1000, 
                         c=2, 
                         p.adjust.method="BH", 
                         consec=FALSE, 
-                        pcutoff=0.05)
+                        pcutoff = 0.05,
+                        mc.cores = 4)
   #######################################
   # Get list of significant DMRs and CpGs
   # associated with those DMRs
@@ -181,6 +187,11 @@ DMRcate_wrapper <- function(formula, clindat, mval){
     return(anno2) 
   }
   dmr.results = dmrcoutput$results
+  ## save genomewide results
+  write.csv(dmrcoutput$input, 
+            row.names = F,
+            paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/",  prefix_name,"_", 
+                  Sys.Date(),"__CpGs_withChem", ".csv", sep= ""))
   ########### get detailed DMR level results ############### 
   ##Build list of annotation data for probes in each DMR
   DMRprobes = list()

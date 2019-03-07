@@ -49,7 +49,7 @@ library(stats)
 library(DMRcate)
 library(parallel)
 library(devtools)
-install_github("kvnkuang/pbmcapply", ref = "dev")
+# install_github("kvnkuang/pbmcapply", ref = "dev")
 library(pbmcapply)
 library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
 library(tibble)
@@ -189,7 +189,7 @@ rslts.pfhxs <- do.call("rbind", pbmclapply(dt_all_f[,-c(1:26)], FUN = fchem, cli
 # get BH p-adjusted and reformat
 pfhxs_mval <- rslts_format(rslts.pfhxs)
 
-pfhxs_mval <- data.frame(fhxs_mval)
+pfhxs_mval <- data.frame(pfhxs_mval)
 pfhxs_mval$CpG <- cpgs
 # save .bed file
 bedfile(chem_m = pfhxs_mval, chemname = "lnpfhxs")
@@ -201,7 +201,7 @@ rslts.pfos <- do.call("rbind", pbmclapply(dt_all_f[,-c(1:26)], FUN = fchem, clin
 # get BH p-adjusted and reformat
 pfos_mval <- rslts_format(rslts.pfos)
 pfos_mval <- data.frame(pfos_mval)
-ppfos_mval$CpG <- cpgs
+pfos_mval$CpG <- cpgs
 # save .bed file
 bedfile(chem_m = pfos_mval, chemname = "lnpfos")
 

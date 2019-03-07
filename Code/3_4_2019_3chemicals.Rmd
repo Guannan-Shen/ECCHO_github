@@ -49,7 +49,7 @@ library(stats)
 library(DMRcate)
 library(parallel)
 library(devtools)
-install_github("kvnkuang/pbmcapply", ref = "dev")
+# install_github("kvnkuang/pbmcapply", ref = "dev")
 library(pbmcapply)
 library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
 library(tibble)
@@ -91,29 +91,29 @@ dim(clin_chem)
 # by gender
 clin_chem_f <- data.frame(clin_chem) %>% filter(infant_sex == "Female") 
 dim(clin_chem_f)
-write.csv(clin_chem_f, 
-          "/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_f.csv",
-          row.names = F)
+# write.csv(clin_chem_f, 
+#           "/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_f.csv",
+#           row.names = F)
 clin_chem_m <- data.frame(clin_chem) %>% filter(infant_sex == "Male") 
 dim(clin_chem_m)
-write.csv(clin_chem_m, 
-          "/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_m.csv",
-          row.names = F)
+# write.csv(clin_chem_m, 
+#           "/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_m.csv",
+#           row.names = F)
 ## head(clin_chem)
 # typeof(clin_chem)
 # clin_chem <- data.table(clin_chem)
 
 #### mval with each row represents a participant
-# t_mval <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/t_mval.csv",
-#                  header = T)
-# head(t_mval[,1:5])
-# ## merge two data.table
-# # t_mval$pid
-# # use data.table merge
-# # merge is much faster than inner_join
-# dt_all <- merge(clin_chem, t_mval, by = "pid")
-# 
-# dim(dt_all)
+t_mval <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/t_mval.csv",
+                 header = T)
+head(t_mval[,1:5])
+## merge two data.table
+# t_mval$pid
+# use data.table merge
+# merge is much faster than inner_join
+dt_all <- merge(clin_chem, t_mval, by = "pid")
+
+dim(dt_all)
 # # head(dt_all[,31:40])
 # # data.table syntax
 # dt_all <- data.table(dt_all)
@@ -124,7 +124,7 @@ write.csv(clin_chem_m,
 dt_all_f <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/dt_all_f.csv", header = T)
 dim(dt_all_f)
 # save male data 
-# dt_all_m <-  dt_all[infant_sex == "Male"]
+dt_all_m <-  dt_all[infant_sex == "Male"]
 # dim(dt_all_m)
 # fwrite(dt_all_m, "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/dt_all_m.csv", row.names = F)
 dt_all_m <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/dt_all_m.csv", header = T)
