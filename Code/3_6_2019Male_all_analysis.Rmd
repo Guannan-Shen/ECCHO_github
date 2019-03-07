@@ -81,7 +81,7 @@ dim(dt_all_m)
 dt_all_m <- data.frame(dt_all_m)
 # all pids were aligned 
 sum(dt_all_m$pid != clin_chem_m$pid)
-
+cpgs <- colnames(dt_all_m)[-c(1:26)]
 # dt_all_m[,-c(1:26)]
 
 ```
@@ -116,17 +116,20 @@ rslts.pfoa <- do.call("rbind", pbmclapply(dt_all_m[,-c(1:26)], FUN = fchem, clin
 # rslts.pfoa <- data.frame(rslts.pfoa) %>% mutate(p_adjust = p.adjust(raw_p, method = "BH"),
 #                                                 CpG = colnames(dt_all_m)[-c(1:26)])
 rslts_format <- function(rslts.cb){
+  rslts.cb = data.frame(rslts.cb)
   p_adjust = p.adjust(rslts.cb[, 4], method = "BH")
-  rslts.cb = as.data.frame(cbind(rownames(rslts.cb), rslts.cb, p_adjust))
-  colnames(rslts.cb)[1] = "CpG"
-  rslts.cb = rslts.cb %>% arrange(p_adjust)
-  cols.num = c(2:6)
+  rslts.cb = as.data.frame(cbind(rslts.cb, p_adjust))
+  # rslts.cb = rslts.cb %>% arrange(`Pr(>|t|)`)
+  colnames(rslts.cb)[4] = "rawp"
+  cols.num = c(1:5)
   rslts.cb[cols.num] = sapply(rslts.cb[cols.num],as.character)
   rslts.cb[cols.num] = sapply(rslts.cb[cols.num],as.numeric)
 }
 ################### work on Asus #########################
 # can be used to find the top CpGs for scatter plot
 pfoa_mval <- rslts_format(rslts.pfoa )
+pfoa_mval <- data.frame(pfoa_mval)
+pfoa_mval$CpG <- cpgs
 # create the .bed file for comb-p
 # the annotation for start position of .bed file
 anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19))
@@ -136,15 +139,15 @@ bedfile <- function(chem_mval, chemname){
         "chrom, chromStart, chromEnd, unadjusted, p_adjust, CpG")
   # Step 1. Merge rslts.cb with annotation
   chem_mval.merged = merge(chem_mval, anno, by.x = "CpG", by.y = "Name")
-  chem_mval.merged$unadjusted = chem_mval.merged$`Pr(>|t|)` # Just the same column with a better name
+  chem_mval.merged$unadjusted = chem_mval.merged$rawp # Just the same column with a better name
   # Step 2. Generate BED style format
   chem_mval.bed = chem_mval.merged %>%
   mutate(stop = pos + 51) %>% # so generated one by adding 51 to position, 50 is the len of probe
   dplyr::rename(chrom = chr, chromStart = pos, chromEnd = stop) %>%
   select(chrom, chromStart, chromEnd, unadjusted, p_adjust, CpG)
   chem_mval.bed = data.frame(chem_mval.bed)
-  write.table(chem_mval.bed, file= paste("~/Documents/gitlab/ECCHO_github/DataProcessed/", 
-                                         chemname, "_mval.bed", sep = ""), 
+  write.table(chem_mval.bed, file= paste("~/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/", 
+                                         chemname, "_male_mval.bed", sep = ""), 
               quote=F, sep="\t", row.names=F, col.names=F)
 }
 
@@ -157,6 +160,8 @@ rslts.pfhxs <- do.call("rbind", pbmclapply(dt_all_m[,-c(1:26)], FUN = fchem, cli
                                           mc.cores =getOption("mc.cores", 10L)))
 # get BH p-adjusted and reformat
 pfhxs_mval <- rslts_format(rslts.pfhxs)
+pfhxs_mval <- data.frame(fhxs_mval)
+pfhxs_mval$CpG <- cpgs
 # save .bed file
 bedfile(chem_m = pfhxs_mval, chemname = "lnpfhxs")
 
@@ -166,6 +171,8 @@ rslts.pfos <- do.call("rbind", pbmclapply(dt_all_m[,-c(1:26)], FUN = fchem, clin
                                           mc.cores =getOption("mc.cores", 10L)))
 # get BH p-adjusted and reformat
 pfos_mval <- rslts_format(rslts.pfos)
+pfos_mval <- data.frame(pfos_mval)
+ppfos_mval$CpG <- cpgs
 # save .bed file
 bedfile(chem_m = pfos_mval, chemname = "lnpfos")
 

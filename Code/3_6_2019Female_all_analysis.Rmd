@@ -80,6 +80,7 @@ dim(clin_chem_f)
 dt_all_f <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/dt_all_f.csv", header = T)
 dim(dt_all_f)
 dt_all_f <- data.frame(dt_all_f)
+cpgs <- colnames(dt_all_f)[-c(1:26)]
 # all pids were aligned 
 sum(dt_all_f$pid != clin_chem_f$pid)
 
@@ -89,25 +90,25 @@ sum(dt_all_f$pid != clin_chem_f$pid)
 
 
 ```{r genomewide_linear}
-## all female 
-## chems
-# clin_chem_f$lnpfoa clin_chem_f$lnpfhxs clin_chem_f$lnpfos
-
-# local()  Ensure all your "strict" functions don't have globalenv as environment.
-f <- local(function(mval){
-  fit1 = lm(mval ~ lnpfoa + Race + Bcell + CD4T + CD8T + Gran + Mono + NK + nRBC, 
-                    data = clin_chem_f, na.action = na.omit) # Be sure to use the covariates for Anne's analysis
-  fit.sum = summary(fit1)
-  cpg.dat = fit.sum$coefficients[2, ] 
-  return(cpg.dat)
-})
-
-# parallel
-cl <- makeCluster(10)
-clusterExport(cl, "clin_chem_f")
-rslts.cb.1 <- do.call("rbind", pbmclapply(dt_all_f[,-c(1:26)], FUN = f, mc.cores =getOption("mc.cores", 10L)))
+# ## all female 
+# ## chems
+# # clin_chem_f$lnpfoa clin_chem_f$lnpfhxs clin_chem_f$lnpfos
 # 
-head(rslts.cb.1)
+# # local()  Ensure all your "strict" functions don't have globalenv as environment.
+# f <- local(function(mval){
+#   fit1 = lm(mval ~ lnpfoa + Race + Bcell + CD4T + CD8T + Gran + Mono + NK + nRBC, 
+#                     data = clin_chem_f, na.action = na.omit) # Be sure to use the covariates for Anne's analysis
+#   fit.sum = summary(fit1)
+#   cpg.dat = fit.sum$coefficients[2, ] 
+#   return(cpg.dat)
+# })
+# 
+# # parallel
+# cl <- makeCluster(10)
+# clusterExport(cl, "clin_chem_f")
+# rslts.cb.1 <- do.call("rbind", pbmclapply(dt_all_f[,-c(1:26)], FUN = f, mc.cores =getOption("mc.cores", 10L)))
+# # 
+# head(rslts.cb.1)
 
 ```
 
@@ -140,9 +141,6 @@ rslts.pfoa <- do.call("rbind", pbmclapply(dt_all_f[,-c(1:26)], FUN = fchem, clin
 # rslts.pfoa <- data.frame(rslts.pfoa) %>% mutate(p_adjust = p.adjust(raw_p, method = "BH"),
 #                                                 CpG = colnames(dt_all_f)[-c(1:26)])
 rslts_format <- function(rslts.cb){
-  #########
-  # need seperate row name file 
-  #########
   rslts.cb = data.frame(rslts.cb)
   p_adjust = p.adjust(rslts.cb[, 4], method = "BH")
   rslts.cb = as.data.frame(cbind(rslts.cb, p_adjust))
@@ -157,7 +155,7 @@ rslts_format <- function(rslts.cb){
 
 pfoa_mval <- rslts_format(rslts.pfoa )
 pfoa_mval <- data.frame(pfoa_mval)
-pfoa_mval$CpG <- colnames(dt_all_f)[-c(1:26)]
+pfoa_mval$CpG <- cpgs
 # head(pfoa_mval)
 # create the .bed file for comb-p
 # the annotation for start position of .bed file
@@ -177,7 +175,7 @@ bedfile <- function(chem_mval, chemname){
   select(chrom, chromStart, chromEnd, unadjusted, p_adjust, CpG)
   chem_mval.bed = data.frame(chem_mval.bed)
   write.table(chem_mval.bed, file= paste("~/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/", 
-                                         chemname, "_mval.bed", sep = ""), 
+                                         chemname, "_female_mval.bed", sep = ""), 
               quote=F, sep="\t", row.names=F, col.names=F)
 }
 
@@ -192,7 +190,7 @@ rslts.pfhxs <- do.call("rbind", pbmclapply(dt_all_f[,-c(1:26)], FUN = fchem, cli
 pfhxs_mval <- rslts_format(rslts.pfhxs)
 
 pfhxs_mval <- data.frame(fhxs_mval)
-pfhxs_mval$CpG <- colnames(dt_all_f)[-c(1:26)]
+pfhxs_mval$CpG <- cpgs
 # save .bed file
 bedfile(chem_m = pfhxs_mval, chemname = "lnpfhxs")
 
@@ -203,7 +201,7 @@ rslts.pfos <- do.call("rbind", pbmclapply(dt_all_f[,-c(1:26)], FUN = fchem, clin
 # get BH p-adjusted and reformat
 pfos_mval <- rslts_format(rslts.pfos)
 pfos_mval <- data.frame(pfos_mval)
-ppfos_mval$CpG <- colnames(dt_all_f)[-c(1:26)]
+ppfos_mval$CpG <- cpgs
 # save .bed file
 bedfile(chem_m = pfos_mval, chemname = "lnpfos")
 
