@@ -30,7 +30,7 @@ bedfile <- function(DMRcate_input){
   # bedforsave[,2:4] = mutate_all(bedforsave[,2:4], function(x) as.numeric(as.character(x)) )
   write.table(bedforsave, file= paste("~/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/", 
                                       Sys.Date(), "_", gender, "_",chemname, ".bed", sep = ""), 
-                                     quote=F, sep="\t", row.names=F, col.names=F)
+                                     quote=F, sep="\t", row.names=F, col.names=T)
 }
 ####################### sort by bedtools as command line tools ###############
 # sort by chromosome may not be enough
