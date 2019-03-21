@@ -91,6 +91,8 @@ clinchem_m <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcess
 
 ```
 
+##  comb-p Results
+
 ```{r viewdmr, echo=FALSE}
 ## check rawp 
 range(f_pfhxs_dmr$z_p)
@@ -110,22 +112,49 @@ dmrsort <- function(dmr){
 }
 
 f_pfhxs_dmr_02 <- dmrsort(f_pfhxs_dmr)
-kable(f_pfhxs_dmr_02, caption = "Female pfhxs DMR region")
+kable(f_pfhxs_dmr_02, caption = "Female pfhxs DMR, adjusted.p 0.2")
 
 f_pfoa_dmr_02 <- dmrsort(f_pfoa_dmr)
-kable(f_pfoa_dmr_02, caption = "Female pfoa DMR region")
+kable(f_pfoa_dmr_02, caption = "Female pfoa DMR, adjusted.p 0.2")
 
 f_pfos_dmr_02 <- dmrsort(f_pfos_dmr)
-kable(f_pfos_dmr_02, caption = "Female pfos DMR region")
+kable(f_pfos_dmr_02, caption = "Female pfos DMR, adjusted.p 0.2")
 
 m_pfhxs_dmr_02 <- dmrsort(m_pfhxs_dmr)
-kable(m_pfhxs_dmr_02, caption = "Male pfhxs DMR region")
+kable(m_pfhxs_dmr_02, caption = "Male pfhxs DMR, adjusted.p 0.2")
 
 m_pfoa_dmr_02 <- dmrsort(m_pfoa_dmr)
-kable(m_pfoa_dmr_02, caption = "Male pfoa DMR region")
+kable(m_pfoa_dmr_02, caption = "Male pfoa DMR, adjusted.p 0.2")
 
 m_pfos_dmr_02 <- dmrsort(m_pfos_dmr)
-kable(m_pfos_dmr_02, caption = "Male pfos DMR region")
+kable(m_pfos_dmr_02, caption = "Male pfos DMR, adjusted.p 0.2")
+```
+
+
+## DMRcate Results
+
+```{r  DMRcatereview, echo = F}
+f_pfhxs__DMRcate <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/dmrcate/2019-03-21_f_pfhxs__DMRcate_DMR.csv")
+f_pfoa__DMRcate <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/dmrcate/2019-03-21_f_pfoa__DMRcate_DMR.csv")
+f_pfos__DMRcate <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/dmrcate/2019-03-21_f_pfos__DMRcate_DMR.csv")
+
+dmrcatesort <- function(dmr){
+    dmr_sort = data.frame(dmr) %>% 
+                         dplyr::mutate(No. = 1:nrow(dmr) ) %>%
+                           select(No. , everything())
+    return(dmr_sort)
+}
+
+kable(dmrcatesort(f_pfhxs__DMRcate), caption = "Female pfhxs DMR, adjusted.p 0.05" )
+kable(dmrcatesort(f_pfoa__DMRcate), caption = "Female pfoa DMR, adjusted.p 0.05" )
+kable(dmrcatesort(f_pfos__DMRcate), caption = "Female pfos DMR, adjusted.p 0.05" )
+
+m_pfhxs__DMRcate <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/dmrcate/2019-03-21_m_pfhxs__DMRcate_DMR.csv")
+m_pfoa__DMRcate <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/dmrcate/2019-03-21_m_pfoa__DMRcate_DMR.csv")
+m_pfos__DMRcate <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/dmrcate/2019-03-21_m_pfos__DMRcate_DMR.csv")
+kable(dmrcatesort(m_pfhxs__DMRcate), caption = "Male pfhxs DMR, adjusted.p 0.05" )
+kable(dmrcatesort(m_pfoa__DMRcate), caption = "Male pfoa DMR, adjusted.p 0.05" )
+kable(dmrcatesort(m_pfos__DMRcate), caption = "Male pfos DMR, adjusted.p 0.05" )
 ```
 
 

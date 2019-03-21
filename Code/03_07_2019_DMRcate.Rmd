@@ -3,20 +3,20 @@ title: "DMRcate"
 author: "Guannan Shen"
 date: "March 7, 2019"
 output: 
-  pdf_document:
-    latex_engine: lualatex
-    number_sections: yes
-    toc: yes
-    toc_depth: 5
-  word_document:
-    toc: yes
-    toc_depth: '5'
   html_document:
     number_sections: yes
     theme: united
     toc: yes
     toc_depth: 5
     toc_float: yes
+  word_document:
+    toc: yes
+    toc_depth: '5'
+  pdf_document:
+    latex_engine: lualatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 5
 ---
 
 ```{r setup, include=FALSE, cache = FALSE}
@@ -146,6 +146,11 @@ DMRcate_wrapper <- function(formula, clindat, mval){
     return(anno2) 
   }
   dmr.results = dmrcoutput$results
+  ## save dmrcate results
+    write.csv(dmrcoutput$results, 
+            row.names = F,
+            paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/dmrcate/",  Sys.Date(),"_", 
+                  prefix_name,"__DMRcate_DMR", ".csv", sep= ""))
   ## save genomewide results
   write.csv(dmrcoutput$input, 
             row.names = F,
