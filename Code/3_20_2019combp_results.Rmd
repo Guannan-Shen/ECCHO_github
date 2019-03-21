@@ -1,0 +1,151 @@
+---
+title: "combp results"
+author: "Guannan Shen"
+date: "March 20, 2019"
+output: 
+  html_document:
+    number_sections: yes
+    theme: united
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+  word_document:
+    toc: yes
+    toc_depth: '5'
+  pdf_document:
+    latex_engine: lualatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 5
+---
+
+```{r setup, include=FALSE, cache = FALSE}
+require("knitr")
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+opts_chunk$set(engine = "R")
+knitr::opts_chunk$set(echo = T)
+knitr::opts_chunk$set(message = F)
+knitr::opts_chunk$set(warning = F)
+## setting wd in DELL
+## opts_knit$set(root.dir = "~/Stats/CIDA_OMICs/CIDA_OMICS/7659Stats_Genetics/HW5/")
+## setting working directory in asus 
+## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/Cario_RNASeq_Microbiom_Inte/DataRaw/") 
+## setting working directory in ubuntu
+opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/combp/")
+                                                 
+## cache = F, if cache = T, will not revaluate code chunk everytime
+## double or more space to insert a line break
+```
+
+```{r libs, echo=FALSE }
+## set up workspace
+rm(list = ls())
+library(data.table)
+library(knitr)
+library(tidyverse)
+library(magrittr)
+library(stats)
+library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
+library(tibble)
+library(grid) # low-level grid functions are required
+options(stringsAsFactors = F)
+options(dplyr.width = Inf)
+getwd()
+## not in function
+'%nin%' <- Negate('%in%')
+
+# ######## clean memory ######################
+# rm(list = ls())
+# gc()
+# ls()
+# slotNames(x)
+# getSlots(x)
+
+```
+
+```{r importdata, echo=FALSE}
+########### import dmp results ##################
+f_pfhxs_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/2019-03-07_f_pfhxs__CpGs_withChem.csv", header = T)
+f_pfoa_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/2019-03-07_f_pfoa__CpGs_withChem.csv", header = T)
+f_pfos_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/2019-03-07_f_pfos__CpGs_withChem.csv", header = T)
+
+m_pfhxs_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/2019-03-07_m_pfhxs__CpGs_withChem.csv", header = T)
+m_pfoa_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/2019-03-07_m_pfoa__CpGs_withChem.csv", header = T)
+m_pfos_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/2019-03-07_m_pfos__CpGs_withChem.csv", header = T)
+
+########## DMR results from combp #################
+f_pfhxs_dmr <- read.delim("f_pfhxs.anno.hg19.bed", header=TRUE, sep="\t")
+f_pfoa_dmr <- read.delim("f_pfoa.anno.hg19.bed", header=TRUE, sep="\t")
+f_pfos_dmr <- read.delim("f_pfos.anno.hg19.bed", header=TRUE, sep="\t")
+m_pfhxs_dmr <- read.delim("m_pfhxs.anno.hg19.bed", header=TRUE, sep="\t")
+m_pfoa_dmr <- read.delim("m_pfoa.anno.hg19.bed", header=TRUE, sep="\t")
+m_pfos_dmr <- read.delim("m_pfos.anno.hg19.bed", header=TRUE, sep="\t")
+# head(f_pfhxs_dmr)
+
+############# chemical conc and clinical data ###################
+# all clinical data, chemical conc, obesity outcomes
+clinchem_f <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_f.csv")
+# head(clinchem_f)
+# all clinical data, chemical conc, obesity outcomes
+clinchem_m <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_m.csv")
+
+```
+
+```{r viewdmr, echo=FALSE}
+## check rawp 
+range(f_pfhxs_dmr$z_p)
+
+####
+dmrsort <- function(dmr){
+  ## this is only for combp results
+  dmr_sort = data.frame(dmr) %>% arrange(z_sidak_p) %>% 
+                         dplyr::mutate(No. = 1:nrow(dmr) ) %>% 
+                         dplyr::filter(z_sidak_p <= 0.2) %>% 
+                        dplyr::rename(chrom = X.chrom) %>%
+                        select(-c("min_p", "z_p") ) %>%
+                           select(No. , everything())
+  write.csv(dmr_sort, file =  paste("dmr0.2/",substitute(dmr),".02" ,sep = "_" ),
+            row.names = F)
+  return(dmr_sort)
+}
+
+f_pfhxs_dmr_02 <- dmrsort(f_pfhxs_dmr)
+kable(f_pfhxs_dmr_02, caption = "Female pfhxs DMR region")
+
+f_pfoa_dmr_02 <- dmrsort(f_pfoa_dmr)
+kable(f_pfoa_dmr_02, caption = "Female pfoa DMR region")
+
+f_pfos_dmr_02 <- dmrsort(f_pfos_dmr)
+kable(f_pfos_dmr_02, caption = "Female pfos DMR region")
+
+m_pfhxs_dmr_02 <- dmrsort(m_pfhxs_dmr)
+kable(m_pfhxs_dmr_02, caption = "Male pfhxs DMR region")
+
+m_pfoa_dmr_02 <- dmrsort(m_pfoa_dmr)
+kable(m_pfoa_dmr_02, caption = "Male pfoa DMR region")
+
+m_pfos_dmr_02 <- dmrsort(m_pfos_dmr)
+kable(m_pfos_dmr_02, caption = "Male pfos DMR region")
+```
+
+
+```{r getanno, echo=FALSE}
+  #######################################
+  # Get list of significant DMRs and CpGs
+  # associated with those DMRs
+  #######################################
+  #get annotation;
+  anno <- as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19))
+  
+  #get probes in DMR regions;
+  getDMRprobes <-  function(a, anno){
+    chr = sapply(strsplit(as.character(a[1]), split=":", fixed=TRUE), "[[", 1)
+    start =  as.numeric(sapply(strsplit(sapply(strsplit(as.character(a[1]), split=":", fixed=TRUE), "[[", 2), split="-", fixed=TRUE), "[[", 1))
+    stop =  as.numeric(sapply(strsplit(as.character(a[1]), split="-", fixed=TRUE), "[[", 2))
+    
+    anno.chr = anno[which(anno$chr==chr),]
+    anno2 = as.data.frame(anno.chr[which(anno.chr$pos >= start & anno.chr$pos <= stop),])
+    
+    return(anno2) 
+  }
+```
