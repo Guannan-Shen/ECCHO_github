@@ -1,0 +1,170 @@
+---
+title: "3chems DMP dmr and final correlation"
+author: "Guannan Shen"
+date: "March 25, 2019"
+output: 
+  html_document:
+    number_sections: yes
+    theme: united
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+  word_document:
+    toc: yes
+    toc_depth: '5'
+  pdf_document:
+    latex_engine: lualatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 5
+---
+
+```{r setup, include=FALSE, cache = FALSE}
+require("knitr")
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+opts_chunk$set(engine = "R")
+knitr::opts_chunk$set(echo = T)
+knitr::opts_chunk$set(message = F)
+knitr::opts_chunk$set(warning = F)
+## setting wd in DELL
+## opts_knit$set(root.dir = "~/Stats/CIDA_OMICs/CIDA_OMICS/7659Stats_Genetics/HW5/")
+## setting working directory in asus 
+## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/Cario_RNASeq_Microbiom_Inte/DataRaw/") 
+## setting working directory in ubuntu
+opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/combp/")
+                                                 
+## cache = F, if cache = T, will not revaluate code chunk everytime
+## double or more space to insert a line break
+```
+
+
+```{r libs, echo=FALSE }
+## set up workspace
+rm(list = ls())
+library(data.table)
+library(knitr)
+library(tidyverse)
+library(magrittr)
+library(stats)
+library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
+library(tibble)
+library(openxlsx)
+library(grid) # low-level grid functions are required
+options(stringsAsFactors = F)
+options(dplyr.width = Inf)
+getwd()
+## not in function
+'%nin%' <- Negate('%in%')
+
+# ######## clean memory ######################
+# rm(list = ls())
+# gc()
+# ls()
+# slotNames(x)
+# getSlots(x)
+
+```
+
+```{r dmp, echo=FALSE}
+########### import dmp results ##################
+f_pfhxs_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/2019-03-07_f_pfhxs__CpGs_withChem.csv", header = T)
+f_pfoa_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/2019-03-07_f_pfoa__CpGs_withChem.csv", header = T)
+f_pfos_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/2019-03-07_f_pfos__CpGs_withChem.csv", header = T)
+
+m_pfhxs_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/2019-03-07_m_pfhxs__CpGs_withChem.csv", header = T)
+m_pfoa_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/2019-03-07_m_pfoa__CpGs_withChem.csv", header = T)
+m_pfos_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/2019-03-07_m_pfos__CpGs_withChem.csv", header = T)
+
+### top 300
+
+topdmp <- function(DMP, n) {
+  topdmp = data.frame(DMP) %>% dplyr::select(-c("weights", "fdr", "sig")) %>%
+                  dplyr::rename(rawp = raw) %>% dplyr::top_n(-n, rawp)
+  name = substitute(DMP)
+  write.xlsx(topdmp, paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/top300dmp/", sep = "_", name, n ,".xlsx" ) )
+}
+
+topdmp(f_pfhxs_DMP, 300)
+topdmp(f_pfoa_DMP, 300)
+topdmp(f_pfos_DMP, 300)
+
+topdmp(m_pfhxs_DMP, 300)
+topdmp(m_pfoa_DMP, 300)
+topdmp(m_pfos_DMP, 300)
+
+
+
+```
+
+
+```{r combp}
+########## DMR results from combp #################
+f_pfhxs_dmr <- read.delim("f_pfhxs.anno.hg19.bed", header=TRUE, sep="\t")
+f_pfoa_dmr <- read.delim("f_pfoa.anno.hg19.bed", header=TRUE, sep="\t")
+f_pfos_dmr <- read.delim("f_pfos.anno.hg19.bed", header=TRUE, sep="\t")
+m_pfhxs_dmr <- read.delim("m_pfhxs.anno.hg19.bed", header=TRUE, sep="\t")
+m_pfoa_dmr <- read.delim("m_pfoa.anno.hg19.bed", header=TRUE, sep="\t")
+m_pfos_dmr <- read.delim("m_pfos.anno.hg19.bed", header=TRUE, sep="\t")
+head(f_pfhxs_dmr)
+
+dmrformat <- function(dmr){
+  ## this is only for combp results
+  dmr_form = data.frame(dmr) %>% arrange(z_sidak_p) %>% 
+                         dplyr::mutate(No. = 1:nrow(dmr) )  %>% 
+                        dplyr::rename(chrom = X.chrom) %>%
+                        select(-c("min_p", "z_p") ) %>%
+                           select(No. , everything())
+  name = substitute(dmr)
+  write.xlsx(dmr_form, file = paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/combpdmr/", sep = "_", name,".xlsx" )
+         )
+}
+
+dmrformat(f_pfhxs_dmr)
+dmrformat(f_pfos_dmr)
+dmrformat(f_pfoa_dmr)
+
+dmrformat(m_pfhxs_dmr)
+dmrformat(m_pfos_dmr)
+dmrformat(m_pfoa_dmr)
+
+```
+
+
+```{r cpgsinDMR}
+#get annotation;
+anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19))
+dim(anno)
+head(anno[, 1:4] )
+head(f_pfhxs_dmr[, 1:3])
+dim(f_pfhxs_dmr)
+head(f_pfhxs_DMP)
+#get probes in DMR regions;
+
+####### for combp, and DMRcate input 
+########## also get the directionaliy of methylation by betafc (the beta fold change for given design)
+  getprobes_perDMR = function(dmr, dmp, anno, pcutoff){
+    dmr_sig = data.frame(dmr) %>% arrange(z_sidak_p) %>% 
+                         dplyr::mutate(No. = 1:nrow(f_pfhxs_dmr) )  %>% 
+                        dplyr::rename(chrom = X.chrom) %>%
+                        select(-c("min_p", "z_p") ) %>%
+                           select(No. , everything()) %>% filter(z_sidak_p <= pcutoff)
+    chr = dmr_sig[, 2]
+    start =  dmr_sig[, 3]
+    stop =  dmr_sig[, 4]
+    n_dmr = nrow(dmr_sig)
+    max_probes = max(dmr_sig$n_probes)
+    for (i in 1: n_dmr) {
+      anno.chr = anno[which(anno$chr==chr),]
+      anno2 = as.data.frame(anno.chr[which(anno.chr$pos >= start & anno.chr$pos <= stop),])
+      anno_probes = data.frame(anno) %>% dplyr::filter(chr == chr[i]) %>% 
+          dplyr::filter(pos >= start[i]) %>% dplyr::filter (pos <= stop[3])
+    }
+}
+  f_pfhxs_dmr
+apply(f_pfhxs_dmr[6, ], 1, function(x) { 
+ probes =  data.frame(anno) %>% dplyr::filter( (chr == x[1]) ) %>% 
+                         dplyr::filter(pos >= x[2]) %>% dplyr::filter (pos <= x[3])
+  } )
+
+
+```

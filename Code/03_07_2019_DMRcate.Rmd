@@ -140,7 +140,7 @@ DMRcate_wrapper <- function(formula, clindat, mval){
     start =  as.numeric(sapply(strsplit(sapply(strsplit(as.character(a[1]), split=":", fixed=TRUE), "[[", 2), split="-", fixed=TRUE), "[[", 1))
     stop =  as.numeric(sapply(strsplit(as.character(a[1]), split="-", fixed=TRUE), "[[", 2))
     
-    anno.chr = anno[which(anno$chr==chr),]
+    anno.chr = anno[which(anno$chr==chr),] 
     anno2 = as.data.frame(anno.chr[which(anno.chr$pos >= start & anno.chr$pos <= stop),])
     
     return(anno2) 
