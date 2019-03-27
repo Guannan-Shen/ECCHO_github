@@ -133,38 +133,149 @@ dmrformat(m_pfoa_dmr)
 ```{r cpgsinDMR}
 #get annotation;
 anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19))
-dim(anno)
-head(anno[, 1:4] )
-head(f_pfhxs_dmr[, 1:3])
-dim(f_pfhxs_dmr)
-head(f_pfhxs_DMP)
+
 #get probes in DMR regions;
 
 ####### for combp, and DMRcate input 
 ########## also get the directionaliy of methylation by betafc (the beta fold change for given design)
   getprobes_perDMR = function(dmr, dmp, anno, pcutoff){
+    name = paste(substitute(dmr), pcutoff, sep = "_")
     dmr_sig = data.frame(dmr) %>% arrange(z_sidak_p) %>% 
-                         dplyr::mutate(No. = 1:nrow(f_pfhxs_dmr) )  %>% 
+                         dplyr::mutate(No. = 1:nrow(dmr) )  %>% 
                         dplyr::rename(chrom = X.chrom) %>%
                         select(-c("min_p", "z_p") ) %>%
                            select(No. , everything()) %>% filter(z_sidak_p <= pcutoff)
-    chr = dmr_sig[, 2]
-    start =  dmr_sig[, 3]
-    stop =  dmr_sig[, 4]
-    n_dmr = nrow(dmr_sig)
+    # chrom, start, end
+    chrom = dmr_sig[, 2]; start =  dmr_sig[, 3]; stop =  dmr_sig[, 4]; n_dmr = nrow(dmr_sig)
     max_probes = max(dmr_sig$n_probes)
-    for (i in 1: n_dmr) {
-      anno.chr = anno[which(anno$chr==chr),]
-      anno2 = as.data.frame(anno.chr[which(anno.chr$pos >= start & anno.chr$pos <= stop),])
-      anno_probes = data.frame(anno) %>% dplyr::filter(chr == chr[i]) %>% 
-          dplyr::filter(pos >= start[i]) %>% dplyr::filter (pos <= stop[3])
+    
+    # 2 means probename and rawp, + 3 means cpg1 and positive rate No_probes
+    maxlength = (2*max_probes + 3)
+    dmrprobes_all = matrix(NA, 0, maxlength)
+    n_probes = NULL
+  
+    for (i in 1:n_dmr) {
+      anno_probes = data.frame(anno) %>% dplyr::filter(chr == chrom[i]) %>%
+                   dplyr::filter(pos >= start[i]) %>% dplyr::filter (pos <= stop[i]) %>% dplyr::select(Name)
+      
+      probes_dmp = data.frame(dmp) %>% 
+                   filter(ID %in% anno_probes$Name)  %>% 
+                      select(ID, betafc, raw ) %>% dplyr::rename(beta = betafc, raw_p = raw)
+      probes = merge(anno_probes, probes_dmp, by.x = "Name", by.y = "ID")
+      probes_order = data.frame(probes) %>% dplyr::arrange(raw_p )
+      n_probes = c( n_probes, nrow(probes_order) )
+      
+    if (n_probes[i] == dmr_sig$n_probes[i] ) {
+       dmrprobes = matrix(NA, 1, 0)
+      for (j in 1: n_probes[i])
+         {
+          ## beta at column 2 
+         dmrprobes = cbind(dmrprobes, probes_order[j, -2])
+          colnames(dmrprobes)[ (2*j -1): (2*j )] = c(paste("Name", j, sep = "") ,
+                                paste("raw_p", j, sep = "") )
+         }
+        dmrprobes = dmrprobes %>% dplyr::mutate(cpg1 = probes_order$Name[1],
+                                     positive =  sum(probes_order$beta > 0)/n_probes[i],
+                                     No_probes = n_probes[i] ) %>%
+                             dplyr::select(cpg1, positive, No_probes, everything())
+    # Convert a row of a data frame to vector
+    dmrprobes = unlist(dmrprobes)
+    # cbind or rbind different lengths vectors without repeating the elements of the shorter vectors
+    length(dmrprobes) = maxlength
     }
+      else {
+        dmrprobes = c(probes_order$Name[1], 0  ,"Wrong Number of probes")
+        names(dmrprobes) <- c("cpg1", "positive", "No_probes")
+        # # cbind or rbind different lengths vectors without repeating the elements of the shorter vectors
+        length(dmrprobes) = maxlength
+      }
+      
+    dmrprobes_all = data.frame(rbind(dmrprobes_all, dmrprobes))
+    row.names(dmrprobes_all) = NULL
+    }
+  fulllist = cbind(dmr_sig, dmrprobes_all)
+  write.xlsx(fulllist, file =  paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/probesDMR/", sep = "_", name,"sigDMR.xlsx" ) )
+  cpg1 = data.frame(fulllist) %>% dplyr::select(c("No.", "chrom", "start", "end",
+                                                  "n_probes", "z_sidak_p", 
+                                                  "cpg1", "positive", "No_probes"))
+  
+    write.xlsx(cpg1, file =  paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/", sep = "_", name,"topCpG.xlsx" ) )
+    
 }
-  f_pfhxs_dmr
-apply(f_pfhxs_dmr[6, ], 1, function(x) { 
- probes =  data.frame(anno) %>% dplyr::filter( (chr == x[1]) ) %>% 
-                         dplyr::filter(pos >= x[2]) %>% dplyr::filter (pos <= x[3])
-  } )
 
+getprobes_perDMR(f_pfhxs_dmr, f_pfhxs_DMP , anno, 0.05)
+getprobes_perDMR(f_pfos_dmr, f_pfos_DMP , anno, 0.05)
+getprobes_perDMR(f_pfoa_dmr, f_pfoa_DMP , anno, 0.05)
+
+getprobes_perDMR(m_pfhxs_dmr, m_pfhxs_DMP , anno, 0.05)
+getprobes_perDMR(m_pfos_dmr, m_pfos_DMP , anno, 0.05)
+getprobes_perDMR(m_pfoa_dmr, m_pfoa_DMP , anno, 0.05)
 
 ```
+
+
+
+```{r test, echo= F, eval= F}
+#################### test #######################
+pcutoff <- 0.05
+    dmr_sig = data.frame(f_pfhxs_dmr) %>% arrange(z_sidak_p) %>% 
+                         dplyr::mutate(No. = 1:nrow(f_pfhxs_dmr) )  %>% 
+      
+                        dplyr::rename(chrom = X.chrom) %>%
+                        select(-c("min_p", "z_p") ) %>%
+                           select(No. , everything()) %>% filter(z_sidak_p <= pcutoff)
+    # chrom, start, end
+    chrom = dmr_sig[, 2]; start =  dmr_sig[, 3]; stop =  dmr_sig[, 4]; n_dmr = nrow(dmr_sig)
+    
+    max_probes = max(dmr_sig$n_probes)
+    
+    # 2 means probename and rawp, + 3 means cpg1 and positive rate No_probes
+    maxlength = (2*max_probes + 3)
+    dmrprobes_all = matrix(NA, 0, maxlength)
+    n_probes = NULL
+  
+    for (i in 1:n_dmr) {
+      anno_probes = data.frame(anno) %>% dplyr::filter(chr == chrom[i]) %>%
+                   dplyr::filter(pos >= start[i]) %>% dplyr::filter (pos <= stop[i]) %>% dplyr::select(Name)
+      
+      probes_dmp = data.frame(f_pfhxs_DMP) %>% 
+        
+                   filter(ID %in% anno_probes$Name)  %>% 
+                      select(ID, betafc, raw ) %>% dplyr::rename(beta = betafc, raw_p = raw)
+      probes = merge(anno_probes, probes_dmp, by.x = "Name", by.y = "ID")
+      probes_order = data.frame(probes) %>% dplyr::arrange(raw_p )
+      n_probes = c( n_probes, nrow(probes_order) )
+  
+  
+    if (n_probes[i] == dmr_sig$n_probes[i] ) {
+       dmrprobes = matrix(NA, 1, 0)
+      for (j in 1: n_probes[i])
+         {
+          ## beta at column 2 
+         dmrprobes = cbind(dmrprobes, probes_order[j, -2])
+          colnames(dmrprobes)[ (2*j -1): (2*j )] = c(paste("Name", j, sep = "") ,
+                                paste("raw_p", j, sep = "") )
+         }
+        dmrprobes = dmrprobes %>% dplyr::mutate(cpg1 = probes_order$Name[1],
+                                     positive =  sum(probes_order$beta > 0)/n_probes[i],
+                                     No_probes = n_probes[i] ) %>%
+                             dplyr::select(cpg1, positive, No_probes, everything())
+    # Convert a row of a data frame to vector
+    dmrprobes = unlist(dmrprobes)
+    # cbind or rbind different lengths vectors without repeating the elements of the shorter vectors
+    length(dmrprobes) = maxlength
+    }
+      else {
+        dmrprobes = c(probes_order$Name[1], 0  ,"Wrong Number of probes")
+        names(dmrprobes) <- c("cpg1", "positive", "No_probes")
+        # # cbind or rbind different lengths vectors without repeating the elements of the shorter vectors
+        length(dmrprobes) = maxlength
+      }
+      
+    dmrprobes_all = data.frame(rbind(dmrprobes_all, dmrprobes))
+    row.names(dmrprobes_all) = NULL
+    }
+ fulllist = cbind(dmr, dmrprobes_all)
+
+```
+
