@@ -1,0 +1,251 @@
+---
+title: "TopCpG Obesity Correlation"
+author: "Guannan Shen"
+date: "March 28, 2019"
+output: 
+  html_document:
+    number_sections: yes
+    theme: united
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+  word_document:
+    toc: yes
+    toc_depth: '5'
+  pdf_document:
+    latex_engine: lualatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 5
+---
+
+```{r setup, include=FALSE, cache = FALSE}
+require("knitr")
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+opts_chunk$set(engine = "R")
+knitr::opts_chunk$set(echo = T)
+knitr::opts_chunk$set(message = F)
+knitr::opts_chunk$set(warning = F)
+## setting wd in DELL
+## opts_knit$set(root.dir = "~/Stats/CIDA_OMICs/CIDA_OMICS/7659Stats_Genetics/HW5/")
+## setting working directory in asus 
+## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/Cario_RNASeq_Microbiom_Inte/DataRaw/") 
+## setting working directory in ubuntu
+opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/")
+                                                 
+## cache = F, if cache = T, will not revaluate code chunk everytime
+## double or more space to insert a line break
+```
+
+```{r libs, echo=FALSE }
+## set up workspace
+rm(list = ls())
+library(data.table)
+library(knitr)
+library(tidyverse)
+library(magrittr)
+library(stats)
+library(readxl)
+library(mutoss)
+options(stringsAsFactors = F)
+options(dplyr.width = Inf)
+getwd()
+## not in function
+'%nin%' <- Negate('%in%')
+
+# ######## clean memory ######################
+# rm(list = ls())
+# gc()
+# ls()
+# slotNames(x)
+# getSlots(x)
+
+```
+
+## Top CpG per DMR
+
+```{r showtop}
+####### import top cpg ################
+top_f_pfhxs <- read_excel("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/_f_pfhxs_dmr_0.05_topCpG.xlsx")
+top_f_pfos <- read_excel("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/_f_pfos_dmr_0.05_topCpG.xlsx")
+top_f_pfoa <- read_excel("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/_f_pfoa_dmr_0.05_topCpG.xlsx")
+
+top_m_pfhxs <- read_excel("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/_m_pfhxs_dmr_0.05_topCpG.xlsx")
+top_m_pfos <- read_excel("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/_m_pfos_dmr_0.05_topCpG.xlsx")
+top_m_pfoa <- read_excel("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/_m_pfoa_dmr_0.05_topCpG.xlsx")
+
+showtop <- function(top){
+  top1 = top  %>% dplyr::mutate(rate = round(as.numeric(positive), 4)) %>% 
+            dplyr::select(-No_probes, -positive)  %>%
+    dplyr::rename(Hypermethylation_prop. = rate)
+  name = substitute(top)
+  kable(top1, digits = c(1,1,1,1,1,15,1,4), caption = name)
+}
+showtop(top_f_pfhxs)
+showtop(top_f_pfos)
+showtop(top_f_pfoa)
+
+showtop(top_m_pfhxs)
+showtop(top_m_pfos)
+showtop(top_m_pfoa)
+
+```
+
+## Import Data
+```{r data}
+########## get mval for topcpg
+Mtop_f_pfhxs <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/Mval_top_f_pfhxs_.csv")
+Mtop_f_pfos <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/Mval_top_f_pfos_.csv")
+Mtop_f_pfoa <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/Mval_top_f_pfoa_.csv")
+
+Mtop_m_pfhxs <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/Mval_top_m_pfhxs_.csv")
+Mtop_m_pfos <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/Mval_top_m_pfos_.csv")
+Mtop_m_pfoa <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/Mval_top_m_pfoa_.csv")
+
+#### the same order as the pvalue of DMR, ascending
+sum(colnames(Mtop_f_pfhxs)[-1] != top_f_pfhxs$cpg1)
+
+
+########## get chem conc
+# all clinical data, chemical conc, obesity outcomes
+clinchem_f <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_f.csv")
+clinchem_m <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_m.csv")
+sum(Mtop_f_pfhxs$pid != clinchem_f$pid) != 0
+
+## read in data 
+pfas_cell_583 <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/11_05_pfas_cell_583.csv")
+Outcomes <- colnames(pfas_cell_583)[5:13]
+Outcomes
+
+```
+
+
+
+## Correlation
+### Controlling FDR 
+BL step-down procedure is more suitable when the number of hypotheses is small. Moreover, if most hypotheses are far from the null then the BL step-down procedure is more powerful than the BH step-up method. 
+
+The conclusion is that, between the two mathematically proved FDR controlling procedures, the SDFDR is recommendable if m <= 4; or if m <= 16 and most of the hypotheses are false. Otherwise, the SUFDR is recommended.
+```{r corre}
+## BL step-down procedure is more suitable when the number of hypotheses is small. 
+##  Moreover, if most hypotheses are far from the null then the BL step-down procedure 
+## is more powerful than the BH step-up method. 
+## BL(p, alpha, silent=TRUE) mutoss
+c("Need:", "outcome_f", "CpGdata_f", "Xs_f")
+## equal length of outcomes and covariates
+cpg_FunRegSim <- function(outcome, CpGdataPid, Xs, Outcome_name, Topn, chemname){
+  ## get the gender 
+  gender1 = unlist(strsplit( deparse(substitute(Xs)), "_", fixed = T))[2]
+  gender2 = unlist(strsplit( deparse(substitute(CpGdataPid)), "_", fixed = T))[2]
+  if(gender1 != gender2)
+    stop("Should use data of the same gender!")
+  if(   sum(CpGdataPid$pid != Xs$pid) != 0  )
+    stop("Wrong pid order!")
+  Gender = ifelse(gender1 == "m", "male", "female")
+  # the first column of CpG data is pid 
+  CpGdata = as.matrix(as.matrix(CpGdataPid[,-1] ) )
+  ## number of CpG to test, also the number of multiple test
+  n_cpg = ncol(CpGdata) 
+  ## outcome lm
+  outcome_lm = lapply(1:n_cpg, function(i){
+  lmregress = lm(CpGdata[ ,i] ~ Bcell + CD4T + CD8T + Gran + Mono + NK + nRBC, data = Xs)
+  xcpg = resid(lmregress)
+  lm = lm(outcome ~ xcpg + Race, data = Xs)
+  coef = summary(lm)$coefficients[2, ]
+  return(coef)
+})
+   outcome_lm = data.frame(matrix(unlist(outcome_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+              # the first column of CpG data is pid
+                     c(colnames(CpGdata)),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+   # adjusted p-value
+    outcome_lm =  outcome_lm %>% 
+                              mutate(FDR = if(n_cpg >= 17)
+                                       {p.adjust(p.value, "BH", n_cpg )}
+                                     else { BL(p.value, 0.05, silent = TRUE )$adjPValues },
+                                     names = colnames(CpGdata)) %>% 
+                                               mutate(Estimate = round(Estimate ,4),
+                                                      Std.Error = round(Std.Error,4),
+                                                      t.statistic = round(t.statistic,4)
+                                                      )%>% 
+                                               select(names, everything()) %>% arrange(p.value)
+   # sort by p.value
+    outcome_lm = data.frame(outcome_lm)
+ 
+   ## sample size 
+    size = length(outcome) - sum(is.na(outcome))
+   ## save results per outcome 
+    write.csv(outcome_lm, paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/obesity/", Sys.Date(), Gender, Outcome_name, chemname, ".csv", sep="_"), row.names = F)
+   ## summary table 
+   kable(head(outcome_lm, Topn), 
+         caption = paste("Top CpGs from ", n_cpg," CpGs" ," for Outcome: ", Outcome_name, " of ", Gender, " ", chemname, " (Sample Size = ", size, ") ", sep = "" , collapse = ""))
+}
+
+## # the regression summary table for log10 outcomes 
+# function(outcome, CpGdata, Xs, Outcome_name, Topn, chemname)
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfhxs, clinchem_f, x, 5, "pfhxs")
+})
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfos, clinchem_f, x, 5, "pfos")
+})
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfoa, clinchem_f, x, 5, "pfoa")
+})
+
+####### male 
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfhxs, clinchem_m, x, 5, "pfhxs")
+})
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfos, clinchem_m, x, 5, "pfos")
+})
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfoa, clinchem_m, x, 5, "pfoa")
+})
+```
+
+
+```{r test, echo=FALSE, eval=FALSE}
+    lmregress = lm(Mtop_f_pfhxs[,2] ~ Bcell + CD4T + CD8T + Gran + Mono + NK + nRBC, data = clinchem_f)
+  xcpg = resid(lmregress)
+  
+  a <- mutoss::BL(seq( 0.0001, 0.001, 0.0005 ), 0.05, silent = TRUE )
+  a$adjPValues
+BL(seq( 0.0001, 0.001, 0.0005 ), 0.05, silent = TRUE )$adjPValues
+
+BL(c(0.007496901245939,
+0.027494847026878,
+0.033304432449839,
+0.04425841474404,
+0.208775693050999,
+0.217617794697816,
+0.357711553114492,
+0.463917144168355,
+0.607730395083265,
+0.739705822720544,
+0.742851875542756,
+0.767515970322343,
+0.886149008007969,
+0.977801818448802), 0.05, silent = TRUE )$adjPValues
+
+p.value = c(0.007496901245939,
+0.027494847026878,
+0.033304432449839,
+0.04425841474404,
+0.208775693050999,
+0.217617794697816,
+0.357711553114492,
+0.463917144168355,
+0.607730395083265,
+0.739705822720544,
+0.742851875542756,
+0.767515970322343,
+0.886149008007969,
+0.977801818448802)
+n_cpg = 14
+FDR =  
+FDR
+```

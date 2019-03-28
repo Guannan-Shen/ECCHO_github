@@ -88,12 +88,62 @@ showtop(top_f_pfoa)
 showtop(top_m_pfhxs)
 showtop(top_m_pfos)
 showtop(top_m_pfoa)
+########## get mval for topcpg
+Mtop_f_pfhxs <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/Mval_top_f_pfhxs_.csv")
+Mtop_f_pfos <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/Mval_top_f_pfos_.csv")
+Mtop_f_pfoa <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/Mval_top_f_pfoa_.csv")
 
+Mtop_m_pfhxs <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/Mval_top_m_pfhxs_.csv")
+Mtop_m_pfos <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/Mval_top_m_pfos_.csv")
+Mtop_m_pfoa <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/Mval_top_m_pfoa_.csv")
+
+#### the same order as the pvalue of DMR, ascending
+sum(colnames(Mtop_f_pfhxs)[-1] != top_f_pfhxs$cpg1)
 
 
 ########## get chem conc
 # all clinical data, chemical conc, obesity outcomes
 clinchem_f <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_f.csv")
 clinchem_m <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_m.csv")
+sum(Mtop_f_pfhxs$pid != clinchem_f$pid) != 0
+
+```
+
+
+```{r scatter}
+doscatter <- function(mval, chem){
+  if(sum(mval$pid != chem$pid) != 0)
+  stop("Wrong pid order!")
+  gender1 = unlist( strsplit(deparse(substitute(mval)), "_", fixed = T))  [2]
+  gender2 = unlist( strsplit(deparse(substitute(chem)), "_", fixed = T))  [2]
+  if(gender1 != gender2)
+    {stop("Use same gender for both datasets")}
+  else{
+    gender = ifelse(gender1 == "f", "Female", "Male") 
+  }
+  chemname = unlist( strsplit(deparse(substitute(mval)), "_", fixed = T))  [3]
+  xname = paste("ln", chemname, sep = "")
+  x = chem[, colnames(chem) == xname]
+  ncpg = ncol(mval) - 1
+  for (i in 1:ncpg) {
+    j = i+1
+    cpg = colnames(mval)[j]
+    ggplot( mval,aes(x, mval[, j]) ) +
+          geom_point() +
+            xlab(paste(xname,gender, sep = "_" ) ) +
+            ylab(paste("M Values of ", sep = "", cpg) ) +
+           geom_smooth(method = "lm", se = F) +
+           theme_minimal()
+    ggsave( paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/plots/scatter_chem/scatter", xname, cpg, gender,sep = "_", ".png" ) )
+  }
+}
+
+doscatter(Mtop_f_pfhxs, clinchem_f)
+doscatter(Mtop_f_pfos, clinchem_f)
+doscatter(Mtop_f_pfoa, clinchem_f)
+
+doscatter(Mtop_m_pfhxs, clinchem_m)
+doscatter(Mtop_m_pfos, clinchem_m)
+doscatter(Mtop_m_pfoa, clinchem_m)
 
 ```
