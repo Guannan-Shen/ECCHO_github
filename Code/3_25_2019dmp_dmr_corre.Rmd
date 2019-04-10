@@ -76,12 +76,17 @@ m_pfoa_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/
 m_pfos_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/2019-03-07_m_pfos__CpGs_withChem.csv", header = T)
 
 ### top 300
+anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19))
 
 topdmp <- function(DMP, n) {
   topdmp = data.frame(DMP) %>% dplyr::select(-c("weights", "fdr", "sig")) %>%
                   dplyr::rename(rawp = raw) %>% dplyr::top_n(-n, rawp)
   name = substitute(DMP)
-  write.xlsx(topdmp, paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/top300dmp/", sep = "_", name, n ,".xlsx" ) )
+  middle = merge(topdmp, 
+                 anno[,colnames(anno) %in% c("Name", "UCSC_RefGene_Name") ], 
+                 by.x = "ID", by.y = "Name" )
+  topdmp_ref = data.frame(middle) %>% arrange(rawp)
+  write.xlsx(topdmp_ref, paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/top300dmp/", sep = "_", name, n ,".xlsx" ) )
 }
 
 topdmp(f_pfhxs_DMP, 300)
@@ -150,7 +155,8 @@ anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)
     max_probes = max(dmr_sig$n_probes)
     
     # 2 means probename and rawp, + 3 means cpg1 and positive rate No_probes
-    maxlength = (2*max_probes + 3)
+    # 3 means probename and rawp and beta 
+    maxlength = (3*max_probes + 3)
     dmrprobes_all = matrix(NA, 0, maxlength)
     n_probes = NULL
   
@@ -170,14 +176,17 @@ anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)
       for (j in 1: n_probes[i])
          {
           ## beta at column 2 
-         dmrprobes = cbind(dmrprobes, probes_order[j, -2])
-          colnames(dmrprobes)[ (2*j -1): (2*j )] = c(paste("Name", j, sep = "") ,
+          # keep beta not probes_order[j, -2]
+         dmrprobes = cbind(dmrprobes, probes_order[j, ])
+          colnames(dmrprobes)[ (3*j - 2): (3*j )] = c(paste("Name", j, sep = "") ,
+                                                     ##  beta means hyper or hypo direction
+                                                     paste("direction", j, sep = ""),
                                 paste("raw_p", j, sep = "") )
          }
         dmrprobes = dmrprobes %>% dplyr::mutate(cpg1 = probes_order$Name[1],
                                      positive =  sum(probes_order$beta > 0)/n_probes[i],
                                      No_probes = n_probes[i] ) %>%
-                             dplyr::select(cpg1, positive, No_probes, everything())
+                             dplyr::select(cpg1, direction1, positive, No_probes, everything())
     # Convert a row of a data frame to vector
     dmrprobes = unlist(dmrprobes)
     # cbind or rbind different lengths vectors without repeating the elements of the shorter vectors
@@ -195,9 +204,11 @@ anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)
     }
   fulllist = cbind(dmr_sig, dmrprobes_all)
   write.xlsx(fulllist, file =  paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/probesDMR/", sep = "_", name,"sigDMR.xlsx" ) )
-  cpg1 = data.frame(fulllist) %>% dplyr::select(c("No.", "chrom", "start", "end",
-                                                  "n_probes", "z_sidak_p", 
-                                                  "cpg1", "positive", "No_probes"))
+  ####### list focus on top cpg
+  cpg1 = data.frame(fulllist) %>% dplyr::mutate(methylation1 = ifelse(direction1 > 0, 1, -1)) %>%
+                                  dplyr::select(c("No.", "chrom", "start", "end",
+                                                  "n_probes", "z_sidak_p", "refGene_name", 
+                                                  "cpg1", "direction1", "methylation1","positive", "No_probes"))
   
     write.xlsx(cpg1, file =  paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/", sep = "_", name,"topCpG.xlsx" ) )
     
@@ -276,6 +287,23 @@ pcutoff <- 0.05
     row.names(dmrprobes_all) = NULL
     }
  fulllist = cbind(dmr, dmrprobes_all)
+ 
+## test 
+head(anno$Name)
+
+write.xlsx(topdmp, paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/top300dmp/", sep = "_", name, n ,".xlsx" ) )
+
+topdmp <- function(DMP, n) {
+  topdmp = data.frame(DMP) %>% dplyr::select(-c("weights", "fdr", "sig")) %>%
+                  dplyr::rename(rawp = raw) %>% dplyr::top_n(-n, rawp)
+  name = substitute(DMP)
+  return(topdmp)
+}
+
+topfpfhxs = topdmp(f_pfhxs_DMP, 300)
+topfpfhxs 
+merge(topfpfhxs, anno[,colnames(anno) %in% c("Name", "UCSC_RefGene_Name") ] , by.x = "ID", by.y = "Name" )
+
 
 ```
 
