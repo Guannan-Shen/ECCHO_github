@@ -89,13 +89,13 @@ topdmp <- function(DMP, n) {
   write.xlsx(topdmp_ref, paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/top300dmp/", sep = "_", name, n ,".xlsx" ) )
 }
 
-topdmp(f_pfhxs_DMP, 300)
-topdmp(f_pfoa_DMP, 300)
-topdmp(f_pfos_DMP, 300)
+topdmp(f_pfhxs_DMP, 500)
+topdmp(f_pfoa_DMP, 500)
+topdmp(f_pfos_DMP, 500)
 
-topdmp(m_pfhxs_DMP, 300)
-topdmp(m_pfoa_DMP, 300)
-topdmp(m_pfos_DMP, 300)
+topdmp(m_pfhxs_DMP, 500)
+topdmp(m_pfoa_DMP, 500)
+topdmp(m_pfos_DMP, 500)
 
 
 
@@ -144,12 +144,13 @@ anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)
 ####### for combp, and DMRcate input 
 ########## also get the directionaliy of methylation by betafc (the beta fold change for given design)
   getprobes_perDMR = function(dmr, dmp, anno, pcutoff){
+    # name contains pcutoff
     name = paste(substitute(dmr), pcutoff, sep = "_")
     dmr_sig = data.frame(dmr) %>% arrange(z_sidak_p) %>% 
                          dplyr::mutate(No. = 1:nrow(dmr) )  %>% 
                         dplyr::rename(chrom = X.chrom) %>%
                         select(-c("min_p", "z_p") ) %>%
-                           select(No. , everything()) %>% filter(z_sidak_p <= pcutoff)
+                           select(No. , everything()) %>% filter(z_sidak_p < pcutoff)
     # chrom, start, end
     chrom = dmr_sig[, 2]; start =  dmr_sig[, 3]; stop =  dmr_sig[, 4]; n_dmr = nrow(dmr_sig)
     max_probes = max(dmr_sig$n_probes)
@@ -203,24 +204,24 @@ anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)
     row.names(dmrprobes_all) = NULL
     }
   fulllist = cbind(dmr_sig, dmrprobes_all)
-  write.xlsx(fulllist, file =  paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/probesDMR/", sep = "_", name,"sigDMR.xlsx" ) )
+  write.xlsx(fulllist, file =  paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/probesDMR/", sep = "_", name, pcutoff, "sigDMR.xlsx" ) )
   ####### list focus on top cpg
   cpg1 = data.frame(fulllist) %>% dplyr::mutate(methylation1 = ifelse(direction1 > 0, 1, -1)) %>%
                                   dplyr::select(c("No.", "chrom", "start", "end",
                                                   "n_probes", "z_sidak_p", "refGene_name", 
                                                   "cpg1", "direction1", "methylation1","positive", "No_probes"))
   
-    write.xlsx(cpg1, file =  paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/", sep = "_", name,"topCpG.xlsx" ) )
+    write.xlsx(cpg1, file =  paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/", sep = "_", pcutoff, name,"topCpG.xlsx" ) )
     
 }
 
-getprobes_perDMR(f_pfhxs_dmr, f_pfhxs_DMP , anno, 0.05)
-getprobes_perDMR(f_pfos_dmr, f_pfos_DMP , anno, 0.05)
-getprobes_perDMR(f_pfoa_dmr, f_pfoa_DMP , anno, 0.05)
+getprobes_perDMR(f_pfhxs_dmr, f_pfhxs_DMP , anno, 1)
+getprobes_perDMR(f_pfos_dmr, f_pfos_DMP , anno, 1)
+getprobes_perDMR(f_pfoa_dmr, f_pfoa_DMP , anno, 1)
 
-getprobes_perDMR(m_pfhxs_dmr, m_pfhxs_DMP , anno, 0.05)
-getprobes_perDMR(m_pfos_dmr, m_pfos_DMP , anno, 0.05)
-getprobes_perDMR(m_pfoa_dmr, m_pfoa_DMP , anno, 0.05)
+getprobes_perDMR(m_pfhxs_dmr, m_pfhxs_DMP , anno, 1)
+getprobes_perDMR(m_pfos_dmr, m_pfos_DMP , anno, 1)
+getprobes_perDMR(m_pfoa_dmr, m_pfoa_DMP , anno, 1)
 
 ```
 
