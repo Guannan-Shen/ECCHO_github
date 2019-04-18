@@ -64,6 +64,9 @@ getwd()
 
 ```
 
+## Import Data
+
+
 ```{r data, echo=FALSE }
 # load top1 cpg associated gene from FDR 0.05 DMR
 ####### import top cpg ################
@@ -83,9 +86,30 @@ m_pfhxs_DMP_300 <- read_excel("/home/guanshim/Documents/gitlab/ECCHO_github/Data
 m_pfos_DMP_300 <- read_excel("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/ECCHO_3Chems_fe_male_pathway/top300dmp/_m_pfos_DMP_300_.xlsx")
 m_pfoa_DMP_300 <- read_excel("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/ECCHO_3Chems_fe_male_pathway/top300dmp/_m_pfoa_DMP_300_.xlsx")
 
+######################### import dataset of top500 dmp and top1 CpG of p<1 dmr ######################
+folder3 <- "/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3_chems_top500_dmr1/dmr_1/"
+folder4 <- "/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3_chems_top500_dmr1/top500dmp/"
+######### dmr cutoff at 1 from combp #########
+top_f_pfhxs_1 <- read_excel(paste(folder3, "_1_f_pfhxs_dmr_1_topCpG.xlsx", sep = ""))
+top_f_pfos_1 <- read_excel(paste(folder3, "_1_f_pfos_dmr_1_topCpG.xlsx", sep = ""))
+top_f_pfoa_1 <- read_excel(paste(folder3, "_1_f_pfoa_dmr_1_topCpG.xlsx", sep = ""))
+
+top_m_pfhxs_1 <- read_excel(paste(folder3, "_1_m_pfhxs_dmr_1_topCpG.xlsx", sep = ""))
+top_m_pfos_1 <- read_excel(paste(folder3, "_1_m_pfos_dmr_1_topCpG.xlsx", sep = ""))
+top_m_pfoa_1 <- read_excel(paste(folder3, "_1_m_pfoa_dmr_1_topCpG.xlsx", sep = ""))
+########## top 500 dmp 
+f_pfhxs_DMP_500 <- read_excel(paste(folder4, "_f_pfhxs_DMP_500_.xlsx", sep = ""))
+f_pfos_DMP_500 <- read_excel(paste(folder4, "_f_pfos_DMP_500_.xlsx", sep = ""))
+f_pfoa_DMP_500 <- read_excel(paste(folder4, "_f_pfoa_DMP_500_.xlsx", sep = ""))
+
+m_pfhxs_DMP_500 <- read_excel(paste(folder4, "_m_pfhxs_DMP_500_.xlsx", sep = ""))
+m_pfos_DMP_500 <- read_excel(paste(folder4, "_m_pfos_DMP_500_.xlsx", sep = ""))
+m_pfoa_DMP_500 <- read_excel(paste(folder4, "_m_pfoa_DMP_500_.xlsx", sep = ""))
 ## Enrich R pathway analysis  
 
 ```
+
+## Funciton to make ErichR Query 
 
 
 ```{r function}
@@ -117,16 +141,22 @@ getpathway_top <- function(CpGtable, database, gene_col){
 ```
 
 
+## Results
+
+### Female Enrichment Results from Top300 DMP or TOP1 CpG from p less than 0.05 DMR
+
 ```{r run}
 dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", "GO_Biological_Process_2018",
          "KEGG_2019_Human")
+top1_gene <- c("refGene_name")
+top300_gene <- c("UCSC_RefGene_Name")
+
 top1_data <- c("top_f_pfhxs", "top_f_pfos","top_f_pfoa", 
                "top_m_pfhxs", "top_m_pfos","top_m_pfoa")
 top300_data <- c("f_pfhxs_DMP_300", "f_pfos_DMP_300", "f_pfoa_DMP_300",
                  "m_pfhxs_DMP_300", "m_pfos_DMP_300", "m_pfoa_DMP_300")
 
-top1_gene <- c("refGene_name")
-top300_gene <- c("UCSC_RefGene_Name")
+
 ############# run #################
 f_pfhxs_1 <- getpathway_top( "top_f_pfhxs",  dbs, top1_gene)
 kable(f_pfhxs_1$KEGG_2019_Human[1:5, ], 
@@ -190,7 +220,7 @@ kable(f_pfoa_300$GO_Cellular_Component_2018[1:5, ],
 
 ```
 
-
+### Male Enrichment Results from Top300 DMP or TOP1 CpG from p less than 0.05 DMR
 
 ```{r male}
 ############# run #################
@@ -255,3 +285,148 @@ kable(m_pfoa_300$GO_Cellular_Component_2018[1:20, ],
       caption = "male pfoa Top300 DMP: GO_Cellular_Component_2018" )
 
 ```
+
+
+### Female Enrichment Results from Top500 DMP or TOP1 CpG from p less than 1 DMR
+
+```{r female500}
+dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", "GO_Biological_Process_2018",
+         "KEGG_2019_Human")
+top1_gene <- c("refGene_name")
+top500_gene <- c("UCSC_RefGene_Name")
+
+
+f_pfhxs_1_1 <- getpathway_top( "top_f_pfhxs_1",  dbs, top1_gene)
+kable(f_pfhxs_1_1$KEGG_2019_Human[1:5, ], 
+      caption = "female pfhxs Top1 DMR_1: KEGG_2019_Human" )
+kable(f_pfhxs_1_1$GO_Biological_Process_2018[1:5, ], 
+      caption = "female pfhxs Top1 DMR_1: GO_Biological_Process_2018" )
+kable(f_pfhxs_1_1$GO_Molecular_Function_2018[1:5, ], 
+      caption = "female pfhxs Top1 DMR_1: GO_Molecular_Function_2018" )
+kable(f_pfhxs_1_1$GO_Cellular_Component_2018[1:5, ], 
+      caption = "female pfhxs Top1 DMR_1: GO_Cellular_Component_2018" )
+
+f_pfhxs_500 <- getpathway_top( "f_pfhxs_DMP_500",  dbs, top500_gene)
+kable(f_pfhxs_500$KEGG_2019_Human[1:5, ], 
+      caption = "female pfhxs Top500 DMP: KEGG_2019_Human" )
+kable(f_pfhxs_500$GO_Biological_Process_2018[1:5, ], 
+      caption = "female pfhxs Top500 DMP: GO_Biological_Process_2018" )
+kable(f_pfhxs_500$GO_Molecular_Function_2018[1:5, ], 
+      caption = "female pfhxs Top500 DMP: GO_Molecular_Function_2018" )
+kable(f_pfhxs_500$GO_Cellular_Component_2018[1:5, ], 
+      caption = "female pfhxs Top500 DMP: GO_Cellular_Component_2018" )
+
+f_pfos_1 <- getpathway_top( "top_f_pfos_1",  dbs, top1_gene)
+kable(f_pfos_1$KEGG_2019_Human[1:5, ], 
+      caption = "female pfos Top1 DMR: KEGG_2019_Human" )
+kable(f_pfos_1$GO_Biological_Process_2018[1:20, ], 
+      caption = "female pfos Top1 DMR: GO_Biological_Process_2018" )
+kable(f_pfos_1$GO_Molecular_Function_2018[1:10, ], 
+      caption = "female pfos Top1 DMR: GO_Molecular_Function_2018" )
+kable(f_pfos_1$GO_Cellular_Component_2018[1:5, ], 
+      caption = "female pfos Top1 DMR: GO_Cellular_Component_2018" )
+
+f_pfos_500 <- getpathway_top( "f_pfos_DMP_500",  dbs, top500_gene)
+kable(f_pfos_500$KEGG_2019_Human[1:5, ], 
+      caption = "female pfos Top500 DMP: KEGG_2019_Human" )
+kable(f_pfos_500$GO_Biological_Process_2018[1:5, ], 
+      caption = "female pfos Top500 DMP: GO_Biological_Process_2018" )
+kable(f_pfos_500$GO_Molecular_Function_2018[1:5, ], 
+      caption = "female pfos Top500 DMP: GO_Molecular_Function_2018" )
+kable(f_pfos_500$GO_Cellular_Component_2018[1:5, ], 
+      caption = "female pfos Top500 DMP: GO_Cellular_Component_2018" )
+
+f_pfoa_1 <- getpathway_top( "top_f_pfoa_1",  dbs, top1_gene)
+kable(f_pfoa_1$KEGG_2019_Human[1:5, ], 
+      caption = "female pfoa Top1 DMR: KEGG_2019_Human" )
+kable(f_pfoa_1$GO_Biological_Process_2018[1:5, ], 
+      caption = "female pfoa Top1 DMR: GO_Biological_Process_2018" )
+kable(f_pfoa_1$GO_Molecular_Function_2018[1:5, ], 
+      caption = "female pfoa Top1 DMR: GO_Molecular_Function_2018" )
+kable(f_pfoa_1$GO_Cellular_Component_2018[1:5, ], 
+      caption = "female pfoa Top1 DMR: GO_Cellular_Component_2018" )
+
+f_pfoa_500 <- getpathway_top( "f_pfoa_DMP_500",  dbs, top500_gene)
+kable(f_pfoa_500$KEGG_2019_Human[1:5, ], 
+      caption = "female pfoa Top500 DMP: KEGG_2019_Human" )
+kable(f_pfoa_500$GO_Biological_Process_2018[1:5, ], 
+      caption = "female pfoa Top500 DMP: GO_Biological_Process_2018" )
+kable(f_pfoa_500$GO_Molecular_Function_2018[1:5, ], 
+      caption = "female pfoa Top500 DMP: GO_Molecular_Function_2018" )
+kable(f_pfoa_500$GO_Cellular_Component_2018[1:5, ], 
+      caption = "female pfoa Top500 DMP: GO_Cellular_Component_2018" )
+
+
+```
+
+### Male Enrichment Results from Top500 DMP or TOP1 CpG from p less than 1 DMR
+
+```{r male500}
+dbs <- c("GO_Molecular_Function_2018", "GO_Cellular_Component_2018", "GO_Biological_Process_2018",
+         "KEGG_2019_Human")
+top1_gene <- c("refGene_name")
+top500_gene <- c("UCSC_RefGene_Name")
+
+m_pfhxs_1_1 <- getpathway_top( "top_m_pfhxs_1",  dbs, top1_gene)
+kable(m_pfhxs_1_1$KEGG_2019_Human[1:5, ], 
+      caption = "Male pfhxs Top1 DMR_1: KEGG_2019_Human" )
+kable(m_pfhxs_1_1$GO_Biological_Process_2018[1:5, ], 
+      caption = "Male pfhxs Top1 DMR_1: GO_Biological_Process_2018" )
+kable(m_pfhxs_1_1$GO_Molecular_Function_2018[1:5, ], 
+      caption = "Male pfhxs Top1 DMR_1: GO_Molecular_Function_2018" )
+kable(m_pfhxs_1_1$GO_Cellular_Component_2018[1:5, ], 
+      caption = "Male pfhxs Top1 DMR_1: GO_Cellular_Component_2018" )
+
+m_pfhxs_500 <- getpathway_top( "m_pfhxs_DMP_500",  dbs, top500_gene)
+kable(m_pfhxs_500$KEGG_2019_Human[1:5, ], 
+      caption = "Male pfhxs Top500 DMP: KEGG_2019_Human" )
+kable(m_pfhxs_500$GO_Biological_Process_2018[1:5, ], 
+      caption = "Male pfhxs Top500 DMP: GO_Biological_Process_2018" )
+kable(m_pfhxs_500$GO_Molecular_Function_2018[1:5, ], 
+      caption = "Male pfhxs Top500 DMP: GO_Molecular_Function_2018" )
+kable(m_pfhxs_500$GO_Cellular_Component_2018[1:5, ], 
+      caption = "Male pfhxs Top500 DMP: GO_Cellular_Component_2018" )
+
+m_pfos_1 <- getpathway_top( "top_m_pfos_1",  dbs, top1_gene)
+kable(m_pfos_1$KEGG_2019_Human[1:5, ], 
+      caption = "Male pfos Top1 DMR: KEGG_2019_Human" )
+kable(m_pfos_1$GO_Biological_Process_2018[1:20, ], 
+      caption = "Male pfos Top1 DMR: GO_Biological_Process_2018" )
+kable(m_pfos_1$GO_Molecular_Function_2018[1:10, ], 
+      caption = "Male pfos Top1 DMR: GO_Molecular_Function_2018" )
+kable(m_pfos_1$GO_Cellular_Component_2018[1:5, ], 
+      caption = "Male pfos Top1 DMR: GO_Cellular_Component_2018" )
+
+m_pfos_500 <- getpathway_top( "m_pfos_DMP_500",  dbs, top500_gene)
+kable(m_pfos_500$KEGG_2019_Human[1:5, ], 
+      caption = "Male pfos Top500 DMP: KEGG_2019_Human" )
+kable(m_pfos_500$GO_Biological_Process_2018[1:5, ], 
+      caption = "Male pfos Top500 DMP: GO_Biological_Process_2018" )
+kable(m_pfos_500$GO_Molecular_Function_2018[1:5, ], 
+      caption = "Male pfos Top500 DMP: GO_Molecular_Function_2018" )
+kable(m_pfos_500$GO_Cellular_Component_2018[1:5, ], 
+      caption = "Male pfos Top500 DMP: GO_Cellular_Component_2018" )
+
+m_pfoa_1 <- getpathway_top( "top_m_pfoa_1",  dbs, top1_gene)
+kable(m_pfoa_1$KEGG_2019_Human[1:5, ], 
+      caption = "Male pfoa Top1 DMR: KEGG_2019_Human" )
+kable(m_pfoa_1$GO_Biological_Process_2018[1:5, ], 
+      caption = "Male pfoa Top1 DMR: GO_Biological_Process_2018" )
+kable(m_pfoa_1$GO_Molecular_Function_2018[1:5, ], 
+      caption = "Male pfoa Top1 DMR: GO_Molecular_Function_2018" )
+kable(m_pfoa_1$GO_Cellular_Component_2018[1:5, ], 
+      caption = "Male pfoa Top1 DMR: GO_Cellular_Component_2018" )
+
+m_pfoa_500 <- getpathway_top( "m_pfoa_DMP_500",  dbs, top500_gene)
+kable(m_pfoa_500$KEGG_2019_Human[1:5, ], 
+      caption = "Male pfoa Top500 DMP: KEGG_2019_Human" )
+kable(m_pfoa_500$GO_Biological_Process_2018[1:5, ], 
+      caption = "Male pfoa Top500 DMP: GO_Biological_Process_2018" )
+kable(m_pfoa_500$GO_Molecular_Function_2018[1:5, ], 
+      caption = "Male pfoa Top500 DMP: GO_Molecular_Function_2018" )
+kable(m_pfoa_500$GO_Cellular_Component_2018[1:5, ], 
+      caption = "Male pfoa Top500 DMP: GO_Cellular_Component_2018" )
+
+```
+
+

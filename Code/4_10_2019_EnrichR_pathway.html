@@ -74,9 +74,7 @@ h6 {
 </style>
 
 
-</head>
 
-<body>
 
 <style type="text/css">
 .main-container {
@@ -107,8 +105,6 @@ summary {
 </style>
 
 
-
-<div class="container-fluid main-container">
 
 <!-- tabsets -->
 
@@ -267,6 +263,16 @@ div.tocify {
 
 </style>
 
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
 <!-- setup 3col/9col grid for toc_float and main content  -->
 <div class="row-fluid">
 <div class="col-xs-12 col-sm-4 col-md-3">
@@ -284,13 +290,18 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Pathways from 3 chemicals by gender Methylation</h1>
-<h4 class="author"><em>Guannan Shen</em></h4>
-<h4 class="date"><em>April 10, 2019</em></h4>
+<h4 class="author">Guannan Shen</h4>
+<h4 class="date">April 10, 2019</h4>
 
 </div>
 
 
 <pre><code>## [1] &quot;/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data&quot;</code></pre>
+<div id="import-data" class="section level2">
+<h2><span class="header-section-number">0.1</span> Import Data</h2>
+</div>
+<div id="funciton-to-make-erichr-query" class="section level2">
+<h2><span class="header-section-number">0.2</span> Funciton to make ErichR Query</h2>
 <pre class="r"><code>getpathway_top &lt;- function(CpGtable, database, gene_col) {
     ######### 3 CpGtable a string and database a vector ##############
     ######### gene_col a string
@@ -317,15 +328,22 @@ div.tocify {
     # return
     return(pathways)
 }</code></pre>
+</div>
+<div id="results" class="section level2">
+<h2><span class="header-section-number">0.3</span> Results</h2>
+<div id="female-enrichment-results-from-top300-dmp-or-top1-cpg-from-p-less-than-0.05-dmr" class="section level3">
+<h3><span class="header-section-number">0.3.1</span> Female Enrichment Results from Top300 DMP or TOP1 CpG from p less than 0.05 DMR</h3>
 <pre class="r"><code>dbs &lt;- c(&quot;GO_Molecular_Function_2018&quot;, &quot;GO_Cellular_Component_2018&quot;, 
     &quot;GO_Biological_Process_2018&quot;, &quot;KEGG_2019_Human&quot;)
+top1_gene &lt;- c(&quot;refGene_name&quot;)
+top300_gene &lt;- c(&quot;UCSC_RefGene_Name&quot;)
+
 top1_data &lt;- c(&quot;top_f_pfhxs&quot;, &quot;top_f_pfos&quot;, &quot;top_f_pfoa&quot;, &quot;top_m_pfhxs&quot;, 
     &quot;top_m_pfos&quot;, &quot;top_m_pfoa&quot;)
 top300_data &lt;- c(&quot;f_pfhxs_DMP_300&quot;, &quot;f_pfos_DMP_300&quot;, &quot;f_pfoa_DMP_300&quot;, 
     &quot;m_pfhxs_DMP_300&quot;, &quot;m_pfos_DMP_300&quot;, &quot;m_pfoa_DMP_300&quot;)
 
-top1_gene &lt;- c(&quot;refGene_name&quot;)
-top300_gene &lt;- c(&quot;UCSC_RefGene_Name&quot;)
+
 ############# run #################
 f_pfhxs_1 &lt;- getpathway_top(&quot;top_f_pfhxs&quot;, dbs, top1_gene)</code></pre>
 <pre><code>## Uploading data to Enrichr... Done.
@@ -2377,6 +2395,9 @@ f_pfhxs_1 &lt;- getpathway_top(&quot;top_f_pfhxs&quot;, dbs, top1_gene)</code></
 </tr>
 </tbody>
 </table>
+</div>
+<div id="male-enrichment-results-from-top300-dmp-or-top1-cpg-from-p-less-than-0.05-dmr" class="section level3">
+<h3><span class="header-section-number">0.3.2</span> Male Enrichment Results from Top300 DMP or TOP1 CpG from p less than 0.05 DMR</h3>
 <pre class="r"><code>############# run #################
 m_pfhxs_1 &lt;- getpathway_top(&quot;top_m_pfhxs&quot;, dbs, top1_gene)</code></pre>
 <pre><code>## Uploading data to Enrichr... Done.
@@ -4746,6 +4767,4101 @@ m_pfhxs_1 &lt;- getpathway_top(&quot;top_m_pfhxs&quot;, dbs, top1_gene)</code></
 </tr>
 </tbody>
 </table>
+</div>
+<div id="female-enrichment-results-from-top500-dmp-or-top1-cpg-from-p-less-than-1-dmr" class="section level3">
+<h3><span class="header-section-number">0.3.3</span> Female Enrichment Results from Top500 DMP or TOP1 CpG from p less than 1 DMR</h3>
+<pre class="r"><code>dbs &lt;- c(&quot;GO_Molecular_Function_2018&quot;, &quot;GO_Cellular_Component_2018&quot;, 
+    &quot;GO_Biological_Process_2018&quot;, &quot;KEGG_2019_Human&quot;)
+top1_gene &lt;- c(&quot;refGene_name&quot;)
+top500_gene &lt;- c(&quot;UCSC_RefGene_Name&quot;)
+
+
+f_pfhxs_1_1 &lt;- getpathway_top(&quot;top_f_pfhxs_1&quot;, dbs, top1_gene)</code></pre>
+<pre><code>## Uploading data to Enrichr... Done.
+##   Querying GO_Molecular_Function_2018... Done.
+##   Querying GO_Cellular_Component_2018... Done.
+##   Querying GO_Biological_Process_2018... Done.
+##   Querying KEGG_2019_Human... Done.
+## Parsing results... Done.</code></pre>
+<pre class="r"><code>kable(f_pfhxs_1_1$KEGG_2019_Human[1:5, ], caption = &quot;female pfhxs Top1 DMR_1: KEGG_2019_Human&quot;)</code></pre>
+<table>
+<caption>female pfhxs Top1 DMR_1: KEGG_2019_Human</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Renin secretion</td>
+<td align="left">1/69</td>
+<td align="right">0.1704486</td>
+<td align="right">0.3716986</td>
+<td align="right">0.1263271</td>
+<td align="right">0.2756224</td>
+<td align="right">-123.61509</td>
+<td align="right">218.71480</td>
+<td align="left">PTGER2</td>
+</tr>
+<tr class="even">
+<td align="left">Carbohydrate digestion and absorption</td>
+<td align="left">1/44</td>
+<td align="right">0.1122711</td>
+<td align="right">0.3716986</td>
+<td align="right">0.0830274</td>
+<td align="right">0.2756224</td>
+<td align="right">-32.92371</td>
+<td align="right">71.99885</td>
+<td align="left">SLC5A1</td>
+</tr>
+<tr class="odd">
+<td align="left">Steroid hormone biosynthesis</td>
+<td align="left">1/60</td>
+<td align="right">0.1499492</td>
+<td align="right">0.3716986</td>
+<td align="right">0.1109639</td>
+<td align="right">0.2756224</td>
+<td align="right">-35.01928</td>
+<td align="right">66.44764</td>
+<td align="left">COMT</td>
+</tr>
+<tr class="even">
+<td align="left">TGF-beta signaling pathway</td>
+<td align="left">1/90</td>
+<td align="right">0.2164124</td>
+<td align="right">0.3716986</td>
+<td align="right">0.1612161</td>
+<td align="right">0.2756224</td>
+<td align="right">-32.88431</td>
+<td align="right">50.33172</td>
+<td align="left">LTBP1</td>
+</tr>
+<tr class="odd">
+<td align="left">Tyrosine metabolism</td>
+<td align="left">1/36</td>
+<td align="right">0.0928222</td>
+<td align="right">0.3716986</td>
+<td align="right">0.0687538</td>
+<td align="right">0.2756224</td>
+<td align="right">-20.57664</td>
+<td align="right">48.91211</td>
+<td align="left">COMT</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfhxs_1_1$GO_Biological_Process_2018[1:5, ], caption = &quot;female pfhxs Top1 DMR_1: GO_Biological_Process_2018&quot;)</code></pre>
+<table>
+<caption>female pfhxs Top1 DMR_1: GO_Biological_Process_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">regulation of male gonad development (<a href="GO:2000018" class="uri">GO:2000018</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0187504</td>
+<td align="right">0.1798385</td>
+<td align="right">0.0202788</td>
+<td align="right">0.1758004</td>
+<td align="right">-3.473596</td>
+<td align="right">13.81290</td>
+<td align="left">WT1</td>
+</tr>
+<tr class="even">
+<td align="left">glycosyl compound catabolic process (<a href="GO:1901658" class="uri">GO:1901658</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0187504</td>
+<td align="right">0.1798385</td>
+<td align="right">0.0202788</td>
+<td align="right">0.1758004</td>
+<td align="right">-3.451012</td>
+<td align="right">13.72309</td>
+<td align="left">FUCA1</td>
+</tr>
+<tr class="odd">
+<td align="left">response to gonadotropin (<a href="GO:0034698" class="uri">GO:0034698</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0187504</td>
+<td align="right">0.1798385</td>
+<td align="right">0.0202788</td>
+<td align="right">0.1758004</td>
+<td align="right">-3.277539</td>
+<td align="right">13.03327</td>
+<td align="left">WT1</td>
+</tr>
+<tr class="even">
+<td align="left">kidney epithelium development (<a href="GO:0072073" class="uri">GO:0072073</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0214007</td>
+<td align="right">0.1798385</td>
+<td align="right">0.0227854</td>
+<td align="right">0.1758004</td>
+<td align="right">-3.340523</td>
+<td align="right">12.84208</td>
+<td align="left">WT1</td>
+</tr>
+<tr class="odd">
+<td align="left">growth hormone secretion (<a href="GO:0030252" class="uri">GO:0030252</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0187504</td>
+<td align="right">0.1798385</td>
+<td align="right">0.0202788</td>
+<td align="right">0.1758004</td>
+<td align="right">-3.193656</td>
+<td align="right">12.69970</td>
+<td align="left">LTBP4</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfhxs_1_1$GO_Molecular_Function_2018[1:5, ], caption = &quot;female pfhxs Top1 DMR_1: GO_Molecular_Function_2018&quot;)</code></pre>
+<table>
+<caption>female pfhxs Top1 DMR_1: GO_Molecular_Function_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">transforming growth factor beta-activated receptor activity (<a href="GO:0005024" class="uri">GO:0005024</a>)</td>
+<td align="left">2/7</td>
+<td align="right">0.0001490</td>
+<td align="right">0.0143006</td>
+<td align="right">0.0002191</td>
+<td align="right">0.0210336</td>
+<td align="right">-3.019459</td>
+<td align="right">26.60687</td>
+<td align="left">LTBP4;LTBP1</td>
+</tr>
+<tr class="even">
+<td align="left">transmembrane receptor protein serine/threonine kinase activity (<a href="GO:0004675" class="uri">GO:0004675</a>)</td>
+<td align="left">2/15</td>
+<td align="right">0.0007346</td>
+<td align="right">0.0352596</td>
+<td align="right">0.0008174</td>
+<td align="right">0.0392354</td>
+<td align="right">-2.513302</td>
+<td align="right">18.13654</td>
+<td align="left">LTBP4;LTBP1</td>
+</tr>
+<tr class="odd">
+<td align="left">transforming growth factor beta binding (<a href="GO:0050431" class="uri">GO:0050431</a>)</td>
+<td align="left">2/20</td>
+<td align="right">0.0013178</td>
+<td align="right">0.0421689</td>
+<td align="right">0.0013776</td>
+<td align="right">0.0440820</td>
+<td align="right">-2.221109</td>
+<td align="right">14.72996</td>
+<td align="left">LTBP4;LTBP1</td>
+</tr>
+<tr class="even">
+<td align="left">1-phosphatidylinositol-3-kinase regulator activity (<a href="GO:0046935" class="uri">GO:0046935</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0187504</td>
+<td align="right">0.1636397</td>
+<td align="right">0.0200235</td>
+<td align="right">0.1747506</td>
+<td align="right">-3.342334</td>
+<td align="right">13.29093</td>
+<td align="left">CCKBR</td>
+</tr>
+<tr class="odd">
+<td align="left">glucose:sodium symporter activity (<a href="GO:0005412" class="uri">GO:0005412</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0187504</td>
+<td align="right">0.1636397</td>
+<td align="right">0.0200235</td>
+<td align="right">0.1747506</td>
+<td align="right">-3.255907</td>
+<td align="right">12.94725</td>
+<td align="left">SLC5A1</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfhxs_1_1$GO_Cellular_Component_2018[1:5, ], caption = &quot;female pfhxs Top1 DMR_1: GO_Cellular_Component_2018&quot;)</code></pre>
+<table>
+<caption>female pfhxs Top1 DMR_1: GO_Cellular_Component_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">pi-body (<a href="GO:0071546" class="uri">GO:0071546</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0214007</td>
+<td align="right">0.4626769</td>
+<td align="right">0.0215844</td>
+<td align="right">0.4208193</td>
+<td align="right">-3.143844</td>
+<td align="right">12.085979</td>
+<td align="left">MOV10L1</td>
+</tr>
+<tr class="even">
+<td align="left">lateral element (<a href="GO:0000800" class="uri">GO:0000800</a>)</td>
+<td align="left">1/11</td>
+<td align="right">0.0293095</td>
+<td align="right">0.4626769</td>
+<td align="right">0.0286800</td>
+<td align="right">0.4208193</td>
+<td align="right">-2.673905</td>
+<td align="right">9.438464</td>
+<td align="left">FAM9A</td>
+</tr>
+<tr class="odd">
+<td align="left">germ plasm (<a href="GO:0060293" class="uri">GO:0060293</a>)</td>
+<td align="left">1/14</td>
+<td align="right">0.0371556</td>
+<td align="right">0.4626769</td>
+<td align="right">0.0357266</td>
+<td align="right">0.4208193</td>
+<td align="right">-2.358112</td>
+<td align="right">7.764417</td>
+<td align="left">MOV10L1</td>
+</tr>
+<tr class="even">
+<td align="left">P granule (<a href="GO:0043186" class="uri">GO:0043186</a>)</td>
+<td align="left">1/17</td>
+<td align="right">0.0449394</td>
+<td align="right">0.4626769</td>
+<td align="right">0.0427246</td>
+<td align="right">0.4208193</td>
+<td align="right">-2.365953</td>
+<td align="right">7.340228</td>
+<td align="left">MOV10L1</td>
+</tr>
+<tr class="odd">
+<td align="left">axon (<a href="GO:0030424" class="uri">GO:0030424</a>)</td>
+<td align="left">2/142</td>
+<td align="right">0.0563603</td>
+<td align="right">0.4626769</td>
+<td align="right">0.0467577</td>
+<td align="right">0.4208193</td>
+<td align="right">-2.060529</td>
+<td align="right">5.926062</td>
+<td align="left">NFIB;COMT</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>f_pfhxs_500 &lt;- getpathway_top(&quot;f_pfhxs_DMP_500&quot;, dbs, top500_gene)</code></pre>
+<pre><code>## Uploading data to Enrichr... Done.
+##   Querying GO_Molecular_Function_2018... Done.
+##   Querying GO_Cellular_Component_2018... Done.
+##   Querying GO_Biological_Process_2018... Done.
+##   Querying KEGG_2019_Human... Done.
+## Parsing results... Done.</code></pre>
+<pre class="r"><code>kable(f_pfhxs_500$KEGG_2019_Human[1:5, ], caption = &quot;female pfhxs Top500 DMP: KEGG_2019_Human&quot;)</code></pre>
+<table>
+<caption>female pfhxs Top500 DMP: KEGG_2019_Human</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Glycosaminoglycan degradation</td>
+<td align="left">1/19</td>
+<td align="right">0.1072412</td>
+<td align="right">0.6977476</td>
+<td align="right">0.0401930</td>
+<td align="right">0.2009650</td>
+<td align="right">-664.91956</td>
+<td align="right">1484.54892</td>
+<td align="left">GNS</td>
+</tr>
+<tr class="even">
+<td align="left">Glycosylphosphatidylinositol (GPI)-anchor biosynthesis</td>
+<td align="left">1/25</td>
+<td align="right">0.1386757</td>
+<td align="right">0.6977476</td>
+<td align="right">0.0519523</td>
+<td align="right">0.2154602</td>
+<td align="right">-150.87650</td>
+<td align="right">298.07424</td>
+<td align="left">PIGS</td>
+</tr>
+<tr class="odd">
+<td align="left">Renin secretion</td>
+<td align="left">1/69</td>
+<td align="right">0.3379935</td>
+<td align="right">0.6977476</td>
+<td align="right">0.1341497</td>
+<td align="right">0.2790067</td>
+<td align="right">-120.41179</td>
+<td align="right">130.61410</td>
+<td align="left">PTGER2</td>
+</tr>
+<tr class="even">
+<td align="left">Carbohydrate digestion and absorption</td>
+<td align="left">1/44</td>
+<td align="right">0.2311547</td>
+<td align="right">0.6977476</td>
+<td align="right">0.0883054</td>
+<td align="right">0.2534151</td>
+<td align="right">-33.06735</td>
+<td align="right">48.43269</td>
+<td align="left">SLC5A1</td>
+</tr>
+<tr class="odd">
+<td align="left">Vibrio cholerae infection</td>
+<td align="left">1/50</td>
+<td align="right">0.2582595</td>
+<td align="right">0.6977476</td>
+<td align="right">0.0995110</td>
+<td align="right">0.2534151</td>
+<td align="right">-24.60407</td>
+<td align="right">33.30875</td>
+<td align="left">KCNQ1</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfhxs_500$GO_Biological_Process_2018[1:5, ], caption = &quot;female pfhxs Top500 DMP: GO_Biological_Process_2018&quot;)</code></pre>
+<table>
+<caption>female pfhxs Top500 DMP: GO_Biological_Process_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">intestinal absorption (<a href="GO:0050892" class="uri">GO:0050892</a>)</td>
+<td align="left">2/14</td>
+<td align="right">0.0030487</td>
+<td align="right">0.3325379</td>
+<td align="right">0.0009612</td>
+<td align="right">0.1667734</td>
+<td align="right">-2.587378</td>
+<td align="right">14.98877</td>
+<td align="left">KCNQ1;SLC5A1</td>
+</tr>
+<tr class="even">
+<td align="left">aromatic compound catabolic process (<a href="GO:0019439" class="uri">GO:0019439</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0409199</td>
+<td align="right">0.3325379</td>
+<td align="right">0.0229836</td>
+<td align="right">0.1667734</td>
+<td align="right">-3.642199</td>
+<td align="right">11.64097</td>
+<td align="left">PON3</td>
+</tr>
+<tr class="odd">
+<td align="left">positive regulation of cardiac muscle contraction (<a href="GO:0060452" class="uri">GO:0060452</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0409199</td>
+<td align="right">0.3325379</td>
+<td align="right">0.0229836</td>
+<td align="right">0.1667734</td>
+<td align="right">-3.540846</td>
+<td align="right">11.31704</td>
+<td align="left">KCNQ1</td>
+</tr>
+<tr class="even">
+<td align="left">glycosyl compound catabolic process (<a href="GO:1901658" class="uri">GO:1901658</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0409199</td>
+<td align="right">0.3325379</td>
+<td align="right">0.0229836</td>
+<td align="right">0.1667734</td>
+<td align="right">-3.448540</td>
+<td align="right">11.02201</td>
+<td align="left">FUCA1</td>
+</tr>
+<tr class="odd">
+<td align="left">kynurenine metabolic process (<a href="GO:0070189" class="uri">GO:0070189</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0523033</td>
+<td align="right">0.3325379</td>
+<td align="right">0.0286484</td>
+<td align="right">0.1667734</td>
+<td align="right">-3.565153</td>
+<td align="right">10.51968</td>
+<td align="left">KYNU</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfhxs_500$GO_Molecular_Function_2018[1:5, ], caption = &quot;female pfhxs Top500 DMP: GO_Molecular_Function_2018&quot;)</code></pre>
+<table>
+<caption>female pfhxs Top500 DMP: GO_Molecular_Function_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">inorganic cation transmembrane transporter activity (<a href="GO:0022890" class="uri">GO:0022890</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0409199</td>
+<td align="right">0.3082302</td>
+<td align="right">0.0220690</td>
+<td align="right">0.1568738</td>
+<td align="right">-3.474082</td>
+<td align="right">11.10365</td>
+<td align="left">SLC41A1</td>
+</tr>
+<tr class="even">
+<td align="left">1-phosphatidylinositol-3-kinase regulator activity (<a href="GO:0046935" class="uri">GO:0046935</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0409199</td>
+<td align="right">0.3082302</td>
+<td align="right">0.0220690</td>
+<td align="right">0.1568738</td>
+<td align="right">-3.357577</td>
+<td align="right">10.73128</td>
+<td align="left">CCKBR</td>
+</tr>
+<tr class="odd">
+<td align="left">arylesterase activity (<a href="GO:0004064" class="uri">GO:0004064</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0409199</td>
+<td align="right">0.3082302</td>
+<td align="right">0.0220690</td>
+<td align="right">0.1568738</td>
+<td align="right">-3.352394</td>
+<td align="right">10.71472</td>
+<td align="left">PON3</td>
+</tr>
+<tr class="even">
+<td align="left">glucose:sodium symporter activity (<a href="GO:0005412" class="uri">GO:0005412</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0409199</td>
+<td align="right">0.3082302</td>
+<td align="right">0.0220690</td>
+<td align="right">0.1568738</td>
+<td align="right">-3.270927</td>
+<td align="right">10.45434</td>
+<td align="left">SLC5A1</td>
+</tr>
+<tr class="odd">
+<td align="left">protein binding involved in cell-matrix adhesion (<a href="GO:0098634" class="uri">GO:0098634</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0466284</td>
+<td align="right">0.3082302</td>
+<td align="right">0.0247943</td>
+<td align="right">0.1568738</td>
+<td align="right">-3.268935</td>
+<td align="right">10.02107</td>
+<td align="left">EMILIN1</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfhxs_500$GO_Cellular_Component_2018[1:5, ], caption = &quot;female pfhxs Top500 DMP: GO_Cellular_Component_2018&quot;)</code></pre>
+<table>
+<caption>female pfhxs Top500 DMP: GO_Cellular_Component_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">chromatoid body (<a href="GO:0033391" class="uri">GO:0033391</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0523033</td>
+<td align="right">0.5751904</td>
+<td align="right">0.0239550</td>
+<td align="right">0.1747823</td>
+<td align="right">-3.220674</td>
+<td align="right">9.503233</td>
+<td align="left">PIWIL1</td>
+</tr>
+<tr class="even">
+<td align="left">filopodium membrane (<a href="GO:0031527" class="uri">GO:0031527</a>)</td>
+<td align="left">1/13</td>
+<td align="right">0.0746696</td>
+<td align="right">0.5751904</td>
+<td align="right">0.0333832</td>
+<td align="right">0.1747823</td>
+<td align="right">-2.576197</td>
+<td align="right">6.684413</td>
+<td align="left">ANTXR1</td>
+</tr>
+<tr class="odd">
+<td align="left">lamellipodium membrane (<a href="GO:0031258" class="uri">GO:0031258</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0523033</td>
+<td align="right">0.5751904</td>
+<td align="right">0.0239550</td>
+<td align="right">0.1747823</td>
+<td align="right">-2.018943</td>
+<td align="right">5.957287</td>
+<td align="left">ANTXR1</td>
+</tr>
+<tr class="even">
+<td align="left">germ plasm (<a href="GO:0060293" class="uri">GO:0060293</a>)</td>
+<td align="left">1/14</td>
+<td align="right">0.0801789</td>
+<td align="right">0.5751904</td>
+<td align="right">0.0357266</td>
+<td align="right">0.1747823</td>
+<td align="right">-2.332573</td>
+<td align="right">5.886238</td>
+<td align="left">PIWIL1</td>
+</tr>
+<tr class="odd">
+<td align="left">P granule (<a href="GO:0043186" class="uri">GO:0043186</a>)</td>
+<td align="left">1/17</td>
+<td align="right">0.0965124</td>
+<td align="right">0.5751904</td>
+<td align="right">0.0427246</td>
+<td align="right">0.1747823</td>
+<td align="right">-2.328727</td>
+<td align="right">5.444760</td>
+<td align="left">PIWIL1</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>f_pfos_1 &lt;- getpathway_top(&quot;top_f_pfos_1&quot;, dbs, top1_gene)</code></pre>
+<pre><code>## Uploading data to Enrichr... Done.
+##   Querying GO_Molecular_Function_2018... Done.
+##   Querying GO_Cellular_Component_2018... Done.
+##   Querying GO_Biological_Process_2018... Done.
+##   Querying KEGG_2019_Human... Done.
+## Parsing results... Done.</code></pre>
+<pre class="r"><code>kable(f_pfos_1$KEGG_2019_Human[1:5, ], caption = &quot;female pfos Top1 DMR: KEGG_2019_Human&quot;)</code></pre>
+<table>
+<caption>female pfos Top1 DMR: KEGG_2019_Human</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Asthma</td>
+<td align="left">1/31</td>
+<td align="right">0.1182966</td>
+<td align="right">0.4823651</td>
+<td align="right">0.1229930</td>
+<td align="right">0.4932363</td>
+<td align="right">-80.83599</td>
+<td align="right">172.5493</td>
+<td align="left">HLA-DMA</td>
+</tr>
+<tr class="even">
+<td align="left">Intestinal immune network for IgA production</td>
+<td align="left">1/48</td>
+<td align="right">0.1771855</td>
+<td align="right">0.4823651</td>
+<td align="right">0.1822359</td>
+<td align="right">0.4932363</td>
+<td align="right">-87.11788</td>
+<td align="right">150.7626</td>
+<td align="left">HLA-DMA</td>
+</tr>
+<tr class="odd">
+<td align="left">Galactose metabolism</td>
+<td align="left">1/31</td>
+<td align="right">0.1182966</td>
+<td align="right">0.4823651</td>
+<td align="right">0.1229930</td>
+<td align="right">0.4932363</td>
+<td align="right">-54.88099</td>
+<td align="right">117.1468</td>
+<td align="left">GANC</td>
+</tr>
+<tr class="even">
+<td align="left">Graft-versus-host disease</td>
+<td align="left">1/41</td>
+<td align="right">0.1534230</td>
+<td align="right">0.4823651</td>
+<td align="right">0.1583269</td>
+<td align="right">0.4932363</td>
+<td align="right">-62.02695</td>
+<td align="right">116.2730</td>
+<td align="left">HLA-DMA</td>
+</tr>
+<tr class="odd">
+<td align="left">Alanine, aspartate and glutamate metabolism</td>
+<td align="left">1/35</td>
+<td align="right">0.1325166</td>
+<td align="right">0.4823651</td>
+<td align="right">0.1372957</td>
+<td align="right">0.4932363</td>
+<td align="right">-57.24566</td>
+<td align="right">115.6962</td>
+<td align="left">ABAT</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfos_1$GO_Biological_Process_2018[1:20, ], caption = &quot;female pfos Top1 DMR: GO_Biological_Process_2018&quot;)</code></pre>
+<table>
+<caption>female pfos Top1 DMR: GO_Biological_Process_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">renal absorption (<a href="GO:0070293" class="uri">GO:0070293</a>)</td>
+<td align="left">2/14</td>
+<td align="right">0.0014284</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0011026</td>
+<td align="right">0.1831966</td>
+<td align="right">-2.542386</td>
+<td align="right">16.65564</td>
+<td align="left">CLDN4;KCNQ1</td>
+</tr>
+<tr class="even">
+<td align="left">monoamine transport (<a href="GO:0015844" class="uri">GO:0015844</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0280120</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0246024</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.819459</td>
+<td align="right">13.65503</td>
+<td align="left">SLC6A3</td>
+</tr>
+<tr class="odd">
+<td align="left">telencephalon cell migration (<a href="GO:0022029" class="uri">GO:0022029</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0280120</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0246024</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.668493</td>
+<td align="right">13.11531</td>
+<td align="left">PEX13</td>
+</tr>
+<tr class="even">
+<td align="left">aromatic compound catabolic process (<a href="GO:0019439" class="uri">GO:0019439</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0280120</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0246024</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.633163</td>
+<td align="right">12.98900</td>
+<td align="left">PON3</td>
+</tr>
+<tr class="odd">
+<td align="left">bone morphogenesis (<a href="GO:0060349" class="uri">GO:0060349</a>)</td>
+<td align="left">2/17</td>
+<td align="right">0.0021180</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0015619</td>
+<td align="right">0.1831966</td>
+<td align="right">-2.104763</td>
+<td align="right">12.95959</td>
+<td align="left">LRP5;FGFR3</td>
+</tr>
+<tr class="even">
+<td align="left">positive regulation of cardiac muscle contraction (<a href="GO:0060452" class="uri">GO:0060452</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0280120</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0246024</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.525819</td>
+<td align="right">12.60523</td>
+<td align="left">KCNQ1</td>
+</tr>
+<tr class="odd">
+<td align="left">regulation of male gonad development (<a href="GO:2000018" class="uri">GO:2000018</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0280120</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0246024</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.456066</td>
+<td align="right">12.35586</td>
+<td align="left">WT1</td>
+</tr>
+<tr class="even">
+<td align="left">nucleotide phosphorylation (<a href="GO:0046939" class="uri">GO:0046939</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0358721</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0306599</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.585583</td>
+<td align="right">11.93208</td>
+<td align="left">AK4</td>
+</tr>
+<tr class="odd">
+<td align="left">nucleoside diphosphate metabolic process (<a href="GO:0009132" class="uri">GO:0009132</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0319499</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0276357</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.406398</td>
+<td align="right">11.73022</td>
+<td align="left">AK4</td>
+</tr>
+<tr class="even">
+<td align="left">negative regulation of muscle hypertrophy (<a href="GO:0014741" class="uri">GO:0014741</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0319499</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0276357</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.393282</td>
+<td align="right">11.68506</td>
+<td align="left">BMP10</td>
+</tr>
+<tr class="odd">
+<td align="left">response to gonadotropin (<a href="GO:0034698" class="uri">GO:0034698</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0280120</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0246024</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.242808</td>
+<td align="right">11.59343</td>
+<td align="left">WT1</td>
+</tr>
+<tr class="even">
+<td align="left">ventricular cardiac muscle cell development (<a href="GO:0055015" class="uri">GO:0055015</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0280120</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0246024</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.224295</td>
+<td align="right">11.52725</td>
+<td align="left">BMP10</td>
+</tr>
+<tr class="odd">
+<td align="left">kidney epithelium development (<a href="GO:0072073" class="uri">GO:0072073</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0319499</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0276357</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.300322</td>
+<td align="right">11.36494</td>
+<td align="left">WT1</td>
+</tr>
+<tr class="even">
+<td align="left">positive regulation of metanephros development (<a href="GO:0072216" class="uri">GO:0072216</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0358721</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0306599</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.368166</td>
+<td align="right">11.20857</td>
+<td align="left">WT1</td>
+</tr>
+<tr class="odd">
+<td align="left">male genitalia development (<a href="GO:0030539" class="uri">GO:0030539</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0280120</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0246024</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.107674</td>
+<td align="right">11.11031</td>
+<td align="left">WT1</td>
+</tr>
+<tr class="even">
+<td align="left">TORC1 signaling (<a href="GO:0038202" class="uri">GO:0038202</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0358721</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0306599</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.329664</td>
+<td align="right">11.08044</td>
+<td align="left">RPTOR</td>
+</tr>
+<tr class="odd">
+<td align="left">positive regulation of striated muscle contraction (<a href="GO:0045989" class="uri">GO:0045989</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0319499</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0276357</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.194989</td>
+<td align="right">11.00221</td>
+<td align="left">KCNQ1</td>
+</tr>
+<tr class="even">
+<td align="left">cerebral cortex cell migration (<a href="GO:0021795" class="uri">GO:0021795</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0280120</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0246024</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.031470</td>
+<td align="right">10.83787</td>
+<td align="left">PEX13</td>
+</tr>
+<tr class="odd">
+<td align="left">nucleoside phosphate biosynthetic process (<a href="GO:1901293" class="uri">GO:1901293</a>)</td>
+<td align="left">1/10</td>
+<td align="right">0.0397786</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0336748</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.360320</td>
+<td align="right">10.83510</td>
+<td align="left">AK4</td>
+</tr>
+<tr class="even">
+<td align="left">regulation of digestive system process (<a href="GO:0044058" class="uri">GO:0044058</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0280120</td>
+<td align="right">0.2331136</td>
+<td align="right">0.0246024</td>
+<td align="right">0.1831966</td>
+<td align="right">-3.030311</td>
+<td align="right">10.83373</td>
+<td align="left">KCNQ1</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfos_1$GO_Molecular_Function_2018[1:10, ], caption = &quot;female pfos Top1 DMR: GO_Molecular_Function_2018&quot;)</code></pre>
+<table>
+<caption>female pfos Top1 DMR: GO_Molecular_Function_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">adenylate kinase activity (<a href="GO:0004017" class="uri">GO:0004017</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0319499</td>
+<td align="right">0.2042629</td>
+<td align="right">0.0270835</td>
+<td align="right">0.1589556</td>
+<td align="right">-3.763868</td>
+<td align="right">12.961197</td>
+<td align="left">AK4</td>
+</tr>
+<tr class="even">
+<td align="left">dopamine transmembrane transporter activity (<a href="GO:0005329" class="uri">GO:0005329</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0280120</td>
+<td align="right">0.2042629</td>
+<td align="right">0.0241097</td>
+<td align="right">0.1589556</td>
+<td align="right">-3.616716</td>
+<td align="right">12.930199</td>
+<td align="left">SLC6A3</td>
+</tr>
+<tr class="odd">
+<td align="left">ubiquitin-dependent protein binding (<a href="GO:0140036" class="uri">GO:0140036</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0280120</td>
+<td align="right">0.2042629</td>
+<td align="right">0.0241097</td>
+<td align="right">0.1589556</td>
+<td align="right">-3.578586</td>
+<td align="right">12.793881</td>
+<td align="left">FAAP20</td>
+</tr>
+<tr class="even">
+<td align="left">arylesterase activity (<a href="GO:0004064" class="uri">GO:0004064</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0280120</td>
+<td align="right">0.2042629</td>
+<td align="right">0.0241097</td>
+<td align="right">0.1589556</td>
+<td align="right">-3.348455</td>
+<td align="right">11.971134</td>
+<td align="left">PON3</td>
+</tr>
+<tr class="odd">
+<td align="left">delayed rectifier potassium channel activity (<a href="GO:0005251" class="uri">GO:0005251</a>)</td>
+<td align="left">2/30</td>
+<td align="right">0.0065477</td>
+<td align="right">0.2042629</td>
+<td align="right">0.0042191</td>
+<td align="right">0.1589556</td>
+<td align="right">-2.168344</td>
+<td align="right">10.903835</td>
+<td align="left">KCNQ1;KCNQ2</td>
+</tr>
+<tr class="even">
+<td align="left">telethonin binding (<a href="GO:0031433" class="uri">GO:0031433</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0319499</td>
+<td align="right">0.2042629</td>
+<td align="right">0.0270835</td>
+<td align="right">0.1589556</td>
+<td align="right">-3.097921</td>
+<td align="right">10.667955</td>
+<td align="left">BMP10</td>
+</tr>
+<tr class="odd">
+<td align="left">monoamine transmembrane transporter activity (<a href="GO:0008504" class="uri">GO:0008504</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0358721</td>
+<td align="right">0.2042629</td>
+<td align="right">0.0300484</td>
+<td align="right">0.1589556</td>
+<td align="right">-3.171845</td>
+<td align="right">10.555251</td>
+<td align="left">SLC6A3</td>
+</tr>
+<tr class="even">
+<td align="left">prostaglandin E receptor activity (<a href="GO:0004957" class="uri">GO:0004957</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0280120</td>
+<td align="right">0.2042629</td>
+<td align="right">0.0241097</td>
+<td align="right">0.1589556</td>
+<td align="right">-2.781343</td>
+<td align="right">9.943641</td>
+<td align="left">PTGER2</td>
+</tr>
+<tr class="odd">
+<td align="left">cardiolipin binding (<a href="GO:1901612" class="uri">GO:1901612</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0319499</td>
+<td align="right">0.2042629</td>
+<td align="right">0.0270835</td>
+<td align="right">0.1589556</td>
+<td align="right">-2.857058</td>
+<td align="right">9.838522</td>
+<td align="left">GSDMD</td>
+</tr>
+<tr class="even">
+<td align="left">coreceptor activity involved in Wnt signaling pathway (<a href="GO:0071936" class="uri">GO:0071936</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0358721</td>
+<td align="right">0.2042629</td>
+<td align="right">0.0300484</td>
+<td align="right">0.1589556</td>
+<td align="right">-2.777750</td>
+<td align="right">9.243782</td>
+<td align="left">LRP5</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfos_1$GO_Cellular_Component_2018[1:5, ], caption = &quot;female pfos Top1 DMR: GO_Cellular_Component_2018&quot;)</code></pre>
+<table>
+<caption>female pfos Top1 DMR: GO_Cellular_Component_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">flotillin complex (<a href="GO:0016600" class="uri">GO:0016600</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0319499</td>
+<td align="right">0.3375073</td>
+<td align="right">0.0316803</td>
+<td align="right">0.3029273</td>
+<td align="right">-2.896788</td>
+<td align="right">9.975335</td>
+<td align="left">SLC6A3</td>
+</tr>
+<tr class="even">
+<td align="left">microbody (<a href="GO:0042579" class="uri">GO:0042579</a>)</td>
+<td align="left">3/93</td>
+<td align="right">0.0063921</td>
+<td align="right">0.2045475</td>
+<td align="right">0.0046998</td>
+<td align="right">0.1503922</td>
+<td align="right">-1.943633</td>
+<td align="right">9.820576</td>
+<td align="left">ZADH2;PEX11G;PEX13</td>
+</tr>
+<tr class="odd">
+<td align="left">axon initial segment (<a href="GO:0043194" class="uri">GO:0043194</a>)</td>
+<td align="left">1/10</td>
+<td align="right">0.0397786</td>
+<td align="right">0.3375073</td>
+<td align="right">0.0385873</td>
+<td align="right">0.3029273</td>
+<td align="right">-2.984452</td>
+<td align="right">9.623146</td>
+<td align="left">KCNQ2</td>
+</tr>
+<tr class="even">
+<td align="left">peroxisome (<a href="GO:0005777" class="uri">GO:0005777</a>)</td>
+<td align="left">3/93</td>
+<td align="right">0.0063921</td>
+<td align="right">0.2045475</td>
+<td align="right">0.0046998</td>
+<td align="right">0.1503922</td>
+<td align="right">-1.823915</td>
+<td align="right">9.215680</td>
+<td align="left">ZADH2;PEX11G;PEX13</td>
+</tr>
+<tr class="odd">
+<td align="left">IkappaB kinase complex (<a href="GO:0008385" class="uri">GO:0008385</a>)</td>
+<td align="left">1/12</td>
+<td align="right">0.0475447</td>
+<td align="right">0.3375073</td>
+<td align="right">0.0454466</td>
+<td align="right">0.3029273</td>
+<td align="right">-2.888800</td>
+<td align="right">8.799531</td>
+<td align="left">TRIM40</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>f_pfos_500 &lt;- getpathway_top(&quot;f_pfos_DMP_500&quot;, dbs, top500_gene)</code></pre>
+<pre><code>## Uploading data to Enrichr... Done.
+##   Querying GO_Molecular_Function_2018... Done.
+##   Querying GO_Cellular_Component_2018... Done.
+##   Querying GO_Biological_Process_2018... Done.
+##   Querying KEGG_2019_Human... Done.
+## Parsing results... Done.</code></pre>
+<pre class="r"><code>kable(f_pfos_500$KEGG_2019_Human[1:5, ], caption = &quot;female pfos Top500 DMP: KEGG_2019_Human&quot;)</code></pre>
+<table>
+<caption>female pfos Top500 DMP: KEGG_2019_Human</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Glycosphingolipid biosynthesis</td>
+<td align="left">1/45</td>
+<td align="right">0.2528669</td>
+<td align="right">0.7431442</td>
+<td align="right">0.1473230</td>
+<td align="right">0.4734908</td>
+<td align="right">-1050.96994</td>
+<td align="right">1444.97019</td>
+<td align="left">GCNT2</td>
+</tr>
+<tr class="even">
+<td align="left">Endometrial cancer</td>
+<td align="left">1/58</td>
+<td align="right">0.3132942</td>
+<td align="right">0.7431442</td>
+<td align="right">0.1850154</td>
+<td align="right">0.4734908</td>
+<td align="right">-276.37761</td>
+<td align="right">320.76736</td>
+<td align="left">MAP2K2</td>
+</tr>
+<tr class="odd">
+<td align="left">Renin secretion</td>
+<td align="left">1/69</td>
+<td align="right">0.3606190</td>
+<td align="right">0.7431442</td>
+<td align="right">0.2156510</td>
+<td align="right">0.4734908</td>
+<td align="right">-95.85321</td>
+<td align="right">97.76388</td>
+<td align="left">PTGER2</td>
+</tr>
+<tr class="even">
+<td align="left">Cocaine addiction</td>
+<td align="left">1/49</td>
+<td align="right">0.2720013</td>
+<td align="right">0.7431442</td>
+<td align="right">0.1590959</td>
+<td align="right">0.4734908</td>
+<td align="right">-65.81563</td>
+<td align="right">85.68855</td>
+<td align="left">SLC6A3</td>
+</tr>
+<tr class="odd">
+<td align="left">Long-term depression</td>
+<td align="left">1/60</td>
+<td align="right">0.3221499</td>
+<td align="right">0.7431442</td>
+<td align="right">0.1906699</td>
+<td align="right">0.4734908</td>
+<td align="right">-68.63718</td>
+<td align="right">77.74795</td>
+<td align="left">MAP2K2</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfos_500$GO_Biological_Process_2018[1:5, ], caption = &quot;female pfos Top500 DMP: GO_Biological_Process_2018&quot;)</code></pre>
+<table>
+<caption>female pfos Top500 DMP: GO_Biological_Process_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">regulation of response to biotic stimulus (<a href="GO:0002831" class="uri">GO:0002831</a>)</td>
+<td align="left">2/8</td>
+<td align="right">0.0011269</td>
+<td align="right">0.3487272</td>
+<td align="right">0.0004760</td>
+<td align="right">0.1825346</td>
+<td align="right">-2.871993</td>
+<td align="right">19.49596</td>
+<td align="left">SCARB2;FOXP1</td>
+</tr>
+<tr class="even">
+<td align="left">regulation of myeloid leukocyte differentiation (<a href="GO:0002761" class="uri">GO:0002761</a>)</td>
+<td align="left">2/11</td>
+<td align="right">0.0021856</td>
+<td align="right">0.3487272</td>
+<td align="right">0.0008199</td>
+<td align="right">0.1825346</td>
+<td align="right">-2.763435</td>
+<td align="right">16.92841</td>
+<td align="left">BGLAP;FOXP1</td>
+</tr>
+<tr class="odd">
+<td align="left">renal absorption (<a href="GO:0070293" class="uri">GO:0070293</a>)</td>
+<td align="left">2/14</td>
+<td align="right">0.0035707</td>
+<td align="right">0.3487272</td>
+<td align="right">0.0012534</td>
+<td align="right">0.1825346</td>
+<td align="right">-2.539845</td>
+<td align="right">14.31202</td>
+<td align="left">CLDN4;KCNQ1</td>
+</tr>
+<tr class="even">
+<td align="left">regulation of bone resorption (<a href="GO:0045124" class="uri">GO:0045124</a>)</td>
+<td align="left">2/23</td>
+<td align="right">0.0095583</td>
+<td align="right">0.3487272</td>
+<td align="right">0.0030744</td>
+<td align="right">0.1825346</td>
+<td align="right">-2.583548</td>
+<td align="right">12.01439</td>
+<td align="left">P2RX7;BGLAP</td>
+</tr>
+<tr class="odd">
+<td align="left">monoamine transport (<a href="GO:0015844" class="uri">GO:0015844</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0442922</td>
+<td align="right">0.3487272</td>
+<td align="right">0.0262182</td>
+<td align="right">0.1825346</td>
+<td align="right">-3.829820</td>
+<td align="right">11.93734</td>
+<td align="left">SLC6A3</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfos_500$GO_Molecular_Function_2018[1:5, ], caption = &quot;female pfos Top500 DMP: GO_Molecular_Function_2018&quot;)</code></pre>
+<table>
+<caption>female pfos Top500 DMP: GO_Molecular_Function_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">outward rectifier potassium channel activity (<a href="GO:0015271" class="uri">GO:0015271</a>)</td>
+<td align="left">2/15</td>
+<td align="right">0.0041027</td>
+<td align="right">0.395833</td>
+<td align="right">0.0011236</td>
+<td align="right">0.1157308</td>
+<td align="right">-2.695205</td>
+<td align="right">14.813151</td>
+<td align="left">REST;KCNQ1</td>
+</tr>
+<tr class="even">
+<td align="left">dopamine transmembrane transporter activity (<a href="GO:0005329" class="uri">GO:0005329</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0442922</td>
+<td align="right">0.395833</td>
+<td align="right">0.0234300</td>
+<td align="right">0.1671105</td>
+<td align="right">-3.636187</td>
+<td align="right">11.333802</td>
+<td align="left">SLC6A3</td>
+</tr>
+<tr class="odd">
+<td align="left">arylesterase activity (<a href="GO:0004064" class="uri">GO:0004064</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0442922</td>
+<td align="right">0.395833</td>
+<td align="right">0.0234300</td>
+<td align="right">0.1671105</td>
+<td align="right">-3.360272</td>
+<td align="right">10.473789</td>
+<td align="left">PON3</td>
+</tr>
+<tr class="even">
+<td align="left">telethonin binding (<a href="GO:0031433" class="uri">GO:0031433</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0504587</td>
+<td align="right">0.395833</td>
+<td align="right">0.0263211</td>
+<td align="right">0.1671105</td>
+<td align="right">-3.112843</td>
+<td align="right">9.296818</td>
+<td align="left">BMP10</td>
+</tr>
+<tr class="odd">
+<td align="left">monoamine transmembrane transporter activity (<a href="GO:0008504" class="uri">GO:0008504</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0565857</td>
+<td align="right">0.395833</td>
+<td align="right">0.0292038</td>
+<td align="right">0.1671105</td>
+<td align="right">-3.199873</td>
+<td align="right">9.190033</td>
+<td align="left">SLC6A3</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfos_500$GO_Cellular_Component_2018[1:5, ], caption = &quot;female pfos Top500 DMP: GO_Cellular_Component_2018&quot;)</code></pre>
+<table>
+<caption>female pfos Top500 DMP: GO_Cellular_Component_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">chromatin silencing complex (<a href="GO:0005677" class="uri">GO:0005677</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0565857</td>
+<td align="right">0.5234343</td>
+<td align="right">0.0351398</td>
+<td align="right">0.2945126</td>
+<td align="right">-3.067553</td>
+<td align="right">8.810011</td>
+<td align="left">BAHCC1</td>
+</tr>
+<tr class="even">
+<td align="left">flotillin complex (<a href="GO:0016600" class="uri">GO:0016600</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0504587</td>
+<td align="right">0.5234343</td>
+<td align="right">0.0316803</td>
+<td align="right">0.2945126</td>
+<td align="right">-2.908284</td>
+<td align="right">8.685884</td>
+<td align="left">SLC6A3</td>
+</tr>
+<tr class="odd">
+<td align="left">IkappaB kinase complex (<a href="GO:0008385" class="uri">GO:0008385</a>)</td>
+<td align="left">1/12</td>
+<td align="right">0.0747323</td>
+<td align="right">0.5234343</td>
+<td align="right">0.0454466</td>
+<td align="right">0.2945126</td>
+<td align="right">-2.927097</td>
+<td align="right">7.592431</td>
+<td align="left">TRIM40</td>
+</tr>
+<tr class="even">
+<td align="left">late endosome (<a href="GO:0005770" class="uri">GO:0005770</a>)</td>
+<td align="left">4/141</td>
+<td align="right">0.0132245</td>
+<td align="right">0.5234343</td>
+<td align="right">0.0016512</td>
+<td align="right">0.1155829</td>
+<td align="right">-1.689819</td>
+<td align="right">7.309623</td>
+<td align="left">SCARB2;MAP2K2;KCNQ1;CLEC16A</td>
+</tr>
+<tr class="odd">
+<td align="left">integral component of nuclear inner membrane (<a href="GO:0005639" class="uri">GO:0005639</a>)</td>
+<td align="left">1/13</td>
+<td align="right">0.0807038</td>
+<td align="right">0.5234343</td>
+<td align="right">0.0488585</td>
+<td align="right">0.2945126</td>
+<td align="right">-2.692769</td>
+<td align="right">6.777617</td>
+<td align="left">P2RX7</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>f_pfoa_1 &lt;- getpathway_top(&quot;top_f_pfoa_1&quot;, dbs, top1_gene)</code></pre>
+<pre><code>## Uploading data to Enrichr... Done.
+##   Querying GO_Molecular_Function_2018... Done.
+##   Querying GO_Cellular_Component_2018... Done.
+##   Querying GO_Biological_Process_2018... Done.
+##   Querying KEGG_2019_Human... Done.
+## Parsing results... Done.</code></pre>
+<pre class="r"><code>kable(f_pfoa_1$KEGG_2019_Human[1:5, ], caption = &quot;female pfoa Top1 DMR: KEGG_2019_Human&quot;)</code></pre>
+<table>
+<caption>female pfoa Top1 DMR: KEGG_2019_Human</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Glycosphingolipid biosynthesis</td>
+<td align="left">2/45</td>
+<td align="right">0.0174884</td>
+<td align="right">0.4284657</td>
+<td align="right">0.0120707</td>
+<td align="right">0.2957331</td>
+<td align="right">-1108.70497</td>
+<td align="right">4486.0617</td>
+<td align="left">B3GALNT1;GCNT2</td>
+</tr>
+<tr class="even">
+<td align="left">Alanine, aspartate and glutamate metabolism</td>
+<td align="left">1/35</td>
+<td align="right">0.1461417</td>
+<td align="right">0.6124626</td>
+<td align="right">0.1212510</td>
+<td align="right">0.4718831</td>
+<td align="right">-60.94678</td>
+<td align="right">117.2115</td>
+<td align="left">ABAT</td>
+</tr>
+<tr class="odd">
+<td align="left">Galactose metabolism</td>
+<td align="left">1/31</td>
+<td align="right">0.1305722</td>
+<td align="right">0.6124626</td>
+<td align="right">0.1085133</td>
+<td align="right">0.4718831</td>
+<td align="right">-57.37239</td>
+<td align="right">116.8004</td>
+<td align="left">GANC</td>
+</tr>
+<tr class="even">
+<td align="left">Salmonella infection</td>
+<td align="left">1/86</td>
+<td align="right">0.3220636</td>
+<td align="right">0.6420440</td>
+<td align="right">0.2690397</td>
+<td align="right">0.5497315</td>
+<td align="right">-99.87173</td>
+<td align="right">113.1553</td>
+<td align="left">MYH14</td>
+</tr>
+<tr class="odd">
+<td align="left">Central carbon metabolism in cancer</td>
+<td align="left">2/65</td>
+<td align="right">0.0346827</td>
+<td align="right">0.5664833</td>
+<td align="right">0.0236287</td>
+<td align="right">0.3328926</td>
+<td align="right">-31.66691</td>
+<td align="right">106.4488</td>
+<td align="left">RET;SLC16A3</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfoa_1$GO_Biological_Process_2018[1:5, ], caption = &quot;female pfoa Top1 DMR: GO_Biological_Process_2018&quot;)</code></pre>
+<table>
+<caption>female pfoa Top1 DMR: GO_Biological_Process_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">positive regulation of metanephros development (<a href="GO:0072216" class="uri">GO:0072216</a>)</td>
+<td align="left">2/9</td>
+<td align="right">0.0007063</td>
+<td align="right">0.2888228</td>
+<td align="right">0.0007341</td>
+<td align="right">0.2464605</td>
+<td align="right">-3.421736</td>
+<td align="right">24.82642</td>
+<td align="left">RET;PAX8</td>
+</tr>
+<tr class="even">
+<td align="left">positive regulation of cell adhesion mediated by integrin (<a href="GO:0033630" class="uri">GO:0033630</a>)</td>
+<td align="left">2/15</td>
+<td align="right">0.0020241</td>
+<td align="right">0.2888228</td>
+<td align="right">0.0017894</td>
+<td align="right">0.2464605</td>
+<td align="right">-2.161435</td>
+<td align="right">13.40659</td>
+<td align="left">RET;PIEZO1</td>
+</tr>
+<tr class="odd">
+<td align="left">aromatic compound catabolic process (<a href="GO:0019439" class="uri">GO:0019439</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0310825</td>
+<td align="right">0.2888228</td>
+<td align="right">0.0294407</td>
+<td align="right">0.2464605</td>
+<td align="right">-3.641295</td>
+<td align="right">12.63933</td>
+<td align="left">PON3</td>
+</tr>
+<tr class="even">
+<td align="left">quaternary ammonium group transport (<a href="GO:0015697" class="uri">GO:0015697</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0310825</td>
+<td align="right">0.2888228</td>
+<td align="right">0.0294407</td>
+<td align="right">0.2464605</td>
+<td align="right">-3.340337</td>
+<td align="right">11.59468</td>
+<td align="left">SLC25A29</td>
+</tr>
+<tr class="odd">
+<td align="left">positive regulation of hormone metabolic process (<a href="GO:0032352" class="uri">GO:0032352</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0310825</td>
+<td align="right">0.2888228</td>
+<td align="right">0.0294407</td>
+<td align="right">0.2464605</td>
+<td align="right">-3.280693</td>
+<td align="right">11.38764</td>
+<td align="left">PAX8</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfoa_1$GO_Molecular_Function_2018[1:5, ], caption = &quot;female pfoa Top1 DMR: GO_Molecular_Function_2018&quot;)</code></pre>
+<table>
+<caption>female pfoa Top1 DMR: GO_Molecular_Function_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">cuprous ion binding (<a href="GO:1903136" class="uri">GO:1903136</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0310825</td>
+<td align="right">0.2131975</td>
+<td align="right">0.0261457</td>
+<td align="right">0.1629423</td>
+<td align="right">-4.645945</td>
+<td align="right">16.12658</td>
+<td align="left">SNCB</td>
+</tr>
+<tr class="even">
+<td align="left">1-phosphatidylinositol-3-kinase regulator activity (<a href="GO:0046935" class="uri">GO:0046935</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0310825</td>
+<td align="right">0.2131975</td>
+<td align="right">0.0261457</td>
+<td align="right">0.1629423</td>
+<td align="right">-3.349956</td>
+<td align="right">11.62806</td>
+<td align="left">CCKBR</td>
+</tr>
+<tr class="odd">
+<td align="left">arylesterase activity (<a href="GO:0004064" class="uri">GO:0004064</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0310825</td>
+<td align="right">0.2131975</td>
+<td align="right">0.0261457</td>
+<td align="right">0.1629423</td>
+<td align="right">-3.340577</td>
+<td align="right">11.59551</td>
+<td align="left">PON3</td>
+</tr>
+<tr class="even">
+<td align="left">actin filament binding (<a href="GO:0051015" class="uri">GO:0051015</a>)</td>
+<td align="left">4/128</td>
+<td align="right">0.0026752</td>
+<td align="right">0.2131975</td>
+<td align="right">0.0009056</td>
+<td align="right">0.0914668</td>
+<td align="right">-1.780110</td>
+<td align="right">10.54492</td>
+<td align="left">SCIN;NEBL;CFL2;MYH14</td>
+</tr>
+<tr class="odd">
+<td align="left">L-lysine transmembrane transporter activity (<a href="GO:0015189" class="uri">GO:0015189</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0310825</td>
+<td align="right">0.2131975</td>
+<td align="right">0.0261457</td>
+<td align="right">0.1629423</td>
+<td align="right">-3.036321</td>
+<td align="right">10.53940</td>
+<td align="left">SLC25A29</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfoa_1$GO_Cellular_Component_2018[1:5, ], caption = &quot;female pfoa Top1 DMR: GO_Cellular_Component_2018&quot;)</code></pre>
+<table>
+<caption>female pfoa Top1 DMR: GO_Cellular_Component_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">pi-body (<a href="GO:0071546" class="uri">GO:0071546</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0354442</td>
+<td align="right">0.3020162</td>
+<td align="right">0.0286637</td>
+<td align="right">0.2326538</td>
+<td align="right">-3.127339</td>
+<td align="right">10.444675</td>
+<td align="left">TDRD5</td>
+</tr>
+<tr class="even">
+<td align="left">chromatoid body (<a href="GO:0033391" class="uri">GO:0033391</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0397864</td>
+<td align="right">0.3020162</td>
+<td align="right">0.0317992</td>
+<td align="right">0.2326538</td>
+<td align="right">-3.209652</td>
+<td align="right">10.348655</td>
+<td align="left">TDRD5</td>
+</tr>
+<tr class="odd">
+<td align="left">G-protein coupled receptor dimeric complex (<a href="GO:0038037" class="uri">GO:0038037</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0397864</td>
+<td align="right">0.3020162</td>
+<td align="right">0.0317992</td>
+<td align="right">0.2326538</td>
+<td align="right">-2.906413</td>
+<td align="right">9.370943</td>
+<td align="left">RAMP1</td>
+</tr>
+<tr class="even">
+<td align="left">IkappaB kinase complex (<a href="GO:0008385" class="uri">GO:0008385</a>)</td>
+<td align="left">1/12</td>
+<td align="right">0.0526975</td>
+<td align="right">0.3020162</td>
+<td align="right">0.0411473</td>
+<td align="right">0.2326538</td>
+<td align="right">-2.869652</td>
+<td align="right">8.445924</td>
+<td align="left">TRIM40</td>
+</tr>
+<tr class="odd">
+<td align="left">neurotransmitter receptor complex (<a href="GO:0098878" class="uri">GO:0098878</a>)</td>
+<td align="left">1/13</td>
+<td align="right">0.0569629</td>
+<td align="right">0.3020162</td>
+<td align="right">0.0442439</td>
+<td align="right">0.2326538</td>
+<td align="right">-2.790755</td>
+<td align="right">7.996504</td>
+<td align="left">SHANK2</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>f_pfoa_500 &lt;- getpathway_top(&quot;f_pfoa_DMP_500&quot;, dbs, top500_gene)</code></pre>
+<pre><code>## Uploading data to Enrichr... Done.
+##   Querying GO_Molecular_Function_2018... Done.
+##   Querying GO_Cellular_Component_2018... Done.
+##   Querying GO_Biological_Process_2018... Done.
+##   Querying KEGG_2019_Human... Done.
+## Parsing results... Done.</code></pre>
+<pre class="r"><code>kable(f_pfoa_500$KEGG_2019_Human[1:5, ], caption = &quot;female pfoa Top500 DMP: KEGG_2019_Human&quot;)</code></pre>
+<table>
+<caption>female pfoa Top500 DMP: KEGG_2019_Human</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Glycosphingolipid biosynthesis</td>
+<td align="left">1/45</td>
+<td align="right">0.1893911</td>
+<td align="right">0.8140408</td>
+<td align="right">0.0517965</td>
+<td align="right">0.2500491</td>
+<td align="right">-1108.70497</td>
+<td align="right">1844.81961</td>
+<td align="left">GCNT2</td>
+</tr>
+<tr class="even">
+<td align="left">Glycine, serine and threonine metabolism</td>
+<td align="left">1/40</td>
+<td align="right">0.1702379</td>
+<td align="right">0.8140408</td>
+<td align="right">0.0462845</td>
+<td align="right">0.2500491</td>
+<td align="right">-314.89327</td>
+<td align="right">557.53694</td>
+<td align="left">GNMT</td>
+</tr>
+<tr class="odd">
+<td align="left">Small cell lung cancer</td>
+<td align="left">1/93</td>
+<td align="right">0.3523863</td>
+<td align="right">0.8140408</td>
+<td align="right">0.1032893</td>
+<td align="right">0.2500491</td>
+<td align="right">-68.43250</td>
+<td align="right">71.37695</td>
+<td align="left">LAMA1</td>
+</tr>
+<tr class="even">
+<td align="left">Toxoplasmosis</td>
+<td align="left">1/113</td>
+<td align="right">0.4103105</td>
+<td align="right">0.8140408</td>
+<td align="right">0.1240003</td>
+<td align="right">0.2500491</td>
+<td align="right">-37.31275</td>
+<td align="right">33.23973</td>
+<td align="left">LAMA1</td>
+</tr>
+<tr class="odd">
+<td align="left">ECM-receptor interaction</td>
+<td align="left">1/82</td>
+<td align="right">0.3181647</td>
+<td align="right">0.8140408</td>
+<td align="right">0.0917137</td>
+<td align="right">0.2500491</td>
+<td align="right">-18.73813</td>
+<td align="right">21.45864</td>
+<td align="left">LAMA1</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfoa_500$GO_Biological_Process_2018[1:5, ], caption = &quot;female pfoa Top500 DMP: GO_Biological_Process_2018&quot;)</code></pre>
+<table>
+<caption>female pfoa Top500 DMP: GO_Biological_Process_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">aromatic compound catabolic process (<a href="GO:0019439" class="uri">GO:0019439</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0321042</td>
+<td align="right">0.3286807</td>
+<td align="right">0.0137531</td>
+<td align="right">0.1246614</td>
+<td align="right">-3.650331</td>
+<td align="right">12.552645</td>
+<td align="left">PON3</td>
+</tr>
+<tr class="even">
+<td align="left">cGMP-mediated signaling (<a href="GO:0019934" class="uri">GO:0019934</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0410880</td>
+<td align="right">0.3286807</td>
+<td align="right">0.0171628</td>
+<td align="right">0.1246614</td>
+<td align="right">-3.261549</td>
+<td align="right">10.410989</td>
+<td align="left">GUCY1B2</td>
+</tr>
+<tr class="odd">
+<td align="left">synapse assembly (<a href="GO:0007416" class="uri">GO:0007416</a>)</td>
+<td align="left">3/64</td>
+<td align="right">0.0033036</td>
+<td align="right">0.3286807</td>
+<td align="right">0.0002034</td>
+<td align="right">0.0510476</td>
+<td align="right">-1.773138</td>
+<td align="right">10.129493</td>
+<td align="left">SDK1;SHANK2;SDK2</td>
+</tr>
+<tr class="even">
+<td align="left">long term synaptic depression (<a href="GO:0060292" class="uri">GO:0060292</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0321042</td>
+<td align="right">0.3286807</td>
+<td align="right">0.0137531</td>
+<td align="right">0.1246614</td>
+<td align="right">-2.871894</td>
+<td align="right">9.875779</td>
+<td align="left">SHANK2</td>
+</tr>
+<tr class="odd">
+<td align="left">determination of digestive tract left/right asymmetry (<a href="GO:0071907" class="uri">GO:0071907</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0366065</td>
+<td align="right">0.3286807</td>
+<td align="right">0.0154594</td>
+<td align="right">0.1246614</td>
+<td align="right">-2.945380</td>
+<td align="right">9.741934</td>
+<td align="left">CCDC40</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfoa_500$GO_Molecular_Function_2018[1:5, ], caption = &quot;female pfoa Top500 DMP: GO_Molecular_Function_2018&quot;)</code></pre>
+<table>
+<caption>female pfoa Top500 DMP: GO_Molecular_Function_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">arylesterase activity (<a href="GO:0004064" class="uri">GO:0004064</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0321042</td>
+<td align="right">0.3296038</td>
+<td align="right">0.0097234</td>
+<td align="right">0.0752849</td>
+<td align="right">-3.364211</td>
+<td align="right">11.568744</td>
+<td align="left">PON3</td>
+</tr>
+<tr class="even">
+<td align="left">filamin binding (<a href="GO:0031005" class="uri">GO:0031005</a>)</td>
+<td align="left">1/11</td>
+<td align="right">0.0499894</td>
+<td align="right">0.3296038</td>
+<td align="right">0.0145521</td>
+<td align="right">0.0752849</td>
+<td align="right">-2.601568</td>
+<td align="right">7.794152</td>
+<td align="left">NEBL</td>
+</tr>
+<tr class="odd">
+<td align="left">tropomyosin binding (<a href="GO:0005523" class="uri">GO:0005523</a>)</td>
+<td align="left">1/15</td>
+<td align="right">0.0675476</td>
+<td align="right">0.3296038</td>
+<td align="right">0.0193590</td>
+<td align="right">0.0752849</td>
+<td align="right">-2.418843</td>
+<td align="right">6.518594</td>
+<td align="left">NEBL</td>
+</tr>
+<tr class="even">
+<td align="left">glycine binding (<a href="GO:0016594" class="uri">GO:0016594</a>)</td>
+<td align="left">1/14</td>
+<td align="right">0.0631884</td>
+<td align="right">0.3296038</td>
+<td align="right">0.0181593</td>
+<td align="right">0.0752849</td>
+<td align="right">-2.326848</td>
+<td align="right">6.425905</td>
+<td align="left">GNMT</td>
+</tr>
+<tr class="odd">
+<td align="left">ionotropic glutamate receptor binding (<a href="GO:0035255" class="uri">GO:0035255</a>)</td>
+<td align="left">1/14</td>
+<td align="right">0.0631884</td>
+<td align="right">0.3296038</td>
+<td align="right">0.0181593</td>
+<td align="right">0.0752849</td>
+<td align="right">-2.282841</td>
+<td align="right">6.304372</td>
+<td align="left">SHANK2</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(f_pfoa_500$GO_Cellular_Component_2018[1:5, ], caption = &quot;female pfoa Top500 DMP: GO_Cellular_Component_2018&quot;)</code></pre>
+<table>
+<caption>female pfoa Top500 DMP: GO_Cellular_Component_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">pi-body (<a href="GO:0071546" class="uri">GO:0071546</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0366065</td>
+<td align="right">0.2952982</td>
+<td align="right">0.0113713</td>
+<td align="right">0.087672</td>
+<td align="right">-3.143844</td>
+<td align="right">10.398357</td>
+<td align="left">TDRD5</td>
+</tr>
+<tr class="even">
+<td align="left">chromatoid body (<a href="GO:0033391" class="uri">GO:0033391</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0410880</td>
+<td align="right">0.2952982</td>
+<td align="right">0.0126275</td>
+<td align="right">0.087672</td>
+<td align="right">-3.220674</td>
+<td align="right">10.280515</td>
+<td align="left">TDRD5</td>
+</tr>
+<tr class="odd">
+<td align="left">neurotransmitter receptor complex (<a href="GO:0098878" class="uri">GO:0098878</a>)</td>
+<td align="left">1/13</td>
+<td align="right">0.0588090</td>
+<td align="right">0.2952982</td>
+<td align="right">0.0176378</td>
+<td align="right">0.087672</td>
+<td align="right">-2.907360</td>
+<td align="right">8.237889</td>
+<td align="left">SHANK2</td>
+</tr>
+<tr class="even">
+<td align="left">septin ring (<a href="GO:0005940" class="uri">GO:0005940</a>)</td>
+<td align="left">1/15</td>
+<td align="right">0.0675476</td>
+<td align="right">0.2952982</td>
+<td align="right">0.0201343</td>
+<td align="right">0.087672</td>
+<td align="right">-2.467886</td>
+<td align="right">6.650761</td>
+<td align="left">SEPT8</td>
+</tr>
+<tr class="odd">
+<td align="left">platelet dense granule lumen (<a href="GO:0031089" class="uri">GO:0031089</a>)</td>
+<td align="left">1/15</td>
+<td align="right">0.0675476</td>
+<td align="right">0.2952982</td>
+<td align="right">0.0201343</td>
+<td align="right">0.087672</td>
+<td align="right">-2.459124</td>
+<td align="right">6.627148</td>
+<td align="left">CLEC3B</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="male-enrichment-results-from-top500-dmp-or-top1-cpg-from-p-less-than-1-dmr" class="section level3">
+<h3><span class="header-section-number">0.3.4</span> Male Enrichment Results from Top500 DMP or TOP1 CpG from p less than 1 DMR</h3>
+<pre class="r"><code>dbs &lt;- c(&quot;GO_Molecular_Function_2018&quot;, &quot;GO_Cellular_Component_2018&quot;, 
+    &quot;GO_Biological_Process_2018&quot;, &quot;KEGG_2019_Human&quot;)
+top1_gene &lt;- c(&quot;refGene_name&quot;)
+top500_gene &lt;- c(&quot;UCSC_RefGene_Name&quot;)
+
+m_pfhxs_1_1 &lt;- getpathway_top(&quot;top_m_pfhxs_1&quot;, dbs, top1_gene)</code></pre>
+<pre><code>## Uploading data to Enrichr... Done.
+##   Querying GO_Molecular_Function_2018... Done.
+##   Querying GO_Cellular_Component_2018... Done.
+##   Querying GO_Biological_Process_2018... Done.
+##   Querying KEGG_2019_Human... Done.
+## Parsing results... Done.</code></pre>
+<pre class="r"><code>kable(m_pfhxs_1_1$KEGG_2019_Human[1:5, ], caption = &quot;Male pfhxs Top1 DMR_1: KEGG_2019_Human&quot;)</code></pre>
+<table>
+<caption>Male pfhxs Top1 DMR_1: KEGG_2019_Human</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Th17 cell differentiation</td>
+<td align="left">2/107</td>
+<td align="right">0.0362101</td>
+<td align="right">0.4647852</td>
+<td align="right">0.0179712</td>
+<td align="right">0.3356047</td>
+<td align="right">-69.21269</td>
+<td align="right">229.6766</td>
+<td align="left">IL4R;RUNX1</td>
+</tr>
+<tr class="even">
+<td align="left">Arachidonic acid metabolism</td>
+<td align="left">1/63</td>
+<td align="right">0.1621550</td>
+<td align="right">0.4647852</td>
+<td align="right">0.1161128</td>
+<td align="right">0.3356047</td>
+<td align="right">-119.33614</td>
+<td align="right">217.0966</td>
+<td align="left">PTGIS</td>
+</tr>
+<tr class="odd">
+<td align="left">Legionellosis</td>
+<td align="left">1/55</td>
+<td align="right">0.1430921</td>
+<td align="right">0.4647852</td>
+<td align="right">0.1023203</td>
+<td align="right">0.3356047</td>
+<td align="right">-86.03751</td>
+<td align="right">167.2799</td>
+<td align="left">HSPA1L</td>
+</tr>
+<tr class="even">
+<td align="left">Acute myeloid leukemia</td>
+<td align="left">1/66</td>
+<td align="right">0.1691957</td>
+<td align="right">0.4647852</td>
+<td align="right">0.1212338</td>
+<td align="right">0.3356047</td>
+<td align="right">-74.02337</td>
+<td align="right">131.5173</td>
+<td align="left">RUNX1</td>
+</tr>
+<tr class="odd">
+<td align="left">Cysteine and methionine metabolism</td>
+<td align="left">1/47</td>
+<td align="right">0.1236034</td>
+<td align="right">0.4647852</td>
+<td align="right">0.0883271</td>
+<td align="right">0.3356047</td>
+<td align="right">-55.53457</td>
+<td align="right">116.1049</td>
+<td align="left">DNMT3B</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfhxs_1_1$GO_Biological_Process_2018[1:5, ], caption = &quot;Male pfhxs Top1 DMR_1: GO_Biological_Process_2018&quot;)</code></pre>
+<table>
+<caption>Male pfhxs Top1 DMR_1: GO_Biological_Process_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">myelination in peripheral nervous system (<a href="GO:0022011" class="uri">GO:0022011</a>)</td>
+<td align="left">2/14</td>
+<td align="right">0.0006858</td>
+<td align="right">0.1763717</td>
+<td align="right">0.0005581</td>
+<td align="right">0.1440888</td>
+<td align="right">-2.164477</td>
+<td align="right">15.76817</td>
+<td align="left">SKI;PRX</td>
+</tr>
+<tr class="even">
+<td align="left">aromatic compound catabolic process (<a href="GO:0019439" class="uri">GO:0019439</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0194390</td>
+<td align="right">0.1763717</td>
+<td align="right">0.0175657</td>
+<td align="right">0.1440888</td>
+<td align="right">-3.644006</td>
+<td align="right">14.35911</td>
+<td align="left">PON1</td>
+</tr>
+<tr class="odd">
+<td align="left">positive regulation of granulocyte differentiation (<a href="GO:0030854" class="uri">GO:0030854</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0194390</td>
+<td align="right">0.1763717</td>
+<td align="right">0.0175657</td>
+<td align="right">0.1440888</td>
+<td align="right">-3.613979</td>
+<td align="right">14.24079</td>
+<td align="left">RUNX1</td>
+</tr>
+<tr class="even">
+<td align="left">negative regulation of glial cell proliferation (<a href="GO:0060253" class="uri">GO:0060253</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0194390</td>
+<td align="right">0.1763717</td>
+<td align="right">0.0175657</td>
+<td align="right">0.1440888</td>
+<td align="right">-3.515677</td>
+<td align="right">13.85343</td>
+<td align="left">SKI</td>
+</tr>
+<tr class="odd">
+<td align="left">regulation of skeletal muscle fiber development (<a href="GO:0048742" class="uri">GO:0048742</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0221855</td>
+<td align="right">0.1763717</td>
+<td align="right">0.0197403</td>
+<td align="right">0.1440888</td>
+<td align="right">-3.342361</td>
+<td align="right">12.72876</td>
+<td align="left">HDAC9</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfhxs_1_1$GO_Molecular_Function_2018[1:5, ], caption = &quot;Male pfhxs Top1 DMR_1: GO_Molecular_Function_2018&quot;)</code></pre>
+<table>
+<caption>Male pfhxs Top1 DMR_1: GO_Molecular_Function_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">arylesterase activity (<a href="GO:0004064" class="uri">GO:0004064</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0194390</td>
+<td align="right">0.2398986</td>
+<td align="right">0.0193406</td>
+<td align="right">0.2127465</td>
+<td align="right">-3.348455</td>
+<td align="right">13.194496</td>
+<td align="left">PON1</td>
+</tr>
+<tr class="even">
+<td align="left">sulfurtransferase activity (<a href="GO:0016783" class="uri">GO:0016783</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0249245</td>
+<td align="right">0.2398986</td>
+<td align="right">0.0241191</td>
+<td align="right">0.2321462</td>
+<td align="right">-3.225765</td>
+<td align="right">11.909211</td>
+<td align="left">TSTD1</td>
+</tr>
+<tr class="odd">
+<td align="left">protein deacetylase activity (<a href="GO:0033558" class="uri">GO:0033558</a>)</td>
+<td align="left">2/43</td>
+<td align="right">0.0064601</td>
+<td align="right">0.2398986</td>
+<td align="right">0.0053168</td>
+<td align="right">0.2046968</td>
+<td align="right">-1.801526</td>
+<td align="right">9.083495</td>
+<td align="left">MIER2;HDAC9</td>
+</tr>
+<tr class="even">
+<td align="left">repressing transcription factor binding (<a href="GO:0070491" class="uri">GO:0070491</a>)</td>
+<td align="left">2/54</td>
+<td align="right">0.0100383</td>
+<td align="right">0.2398986</td>
+<td align="right">0.0081351</td>
+<td align="right">0.2088016</td>
+<td align="right">-1.753097</td>
+<td align="right">8.066612</td>
+<td align="left">SKI;HDAC9</td>
+</tr>
+<tr class="odd">
+<td align="left">Rac guanyl-nucleotide exchange factor activity (<a href="GO:0030676" class="uri">GO:0030676</a>)</td>
+<td align="left">1/15</td>
+<td align="right">0.0412008</td>
+<td align="right">0.3172465</td>
+<td align="right">0.0383202</td>
+<td align="right">0.2950658</td>
+<td align="right">-2.423150</td>
+<td align="right">7.728143</td>
+<td align="left">FARP1</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfhxs_1_1$GO_Cellular_Component_2018[1:5, ], caption = &quot;Male pfhxs Top1 DMR_1: GO_Cellular_Component_2018&quot;)</code></pre>
+<table>
+<caption>Male pfhxs Top1 DMR_1: GO_Cellular_Component_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">axon initial segment (<a href="GO:0043194" class="uri">GO:0043194</a>)</td>
+<td align="left">1/10</td>
+<td align="right">0.0276560</td>
+<td align="right">0.3730437</td>
+<td align="right">0.0238464</td>
+<td align="right">0.3113165</td>
+<td align="right">-3.001707</td>
+<td align="right">10.769865</td>
+<td align="left">KCNQ2</td>
+</tr>
+<tr class="even">
+<td align="left">node of Ranvier (<a href="GO:0033268" class="uri">GO:0033268</a>)</td>
+<td align="left">1/13</td>
+<td align="right">0.0358053</td>
+<td align="right">0.3730437</td>
+<td align="right">0.0302559</td>
+<td align="right">0.3113165</td>
+<td align="right">-2.576497</td>
+<td align="right">8.578858</td>
+<td align="left">KCNQ2</td>
+</tr>
+<tr class="odd">
+<td align="left">intrinsic component of the cytoplasmic side of the plasma membrane (<a href="GO:0031235" class="uri">GO:0031235</a>)</td>
+<td align="left">1/16</td>
+<td align="right">0.0438875</td>
+<td align="right">0.3730437</td>
+<td align="right">0.0366255</td>
+<td align="right">0.3113165</td>
+<td align="right">-2.317459</td>
+<td align="right">7.244669</td>
+<td align="left">RASA2</td>
+</tr>
+<tr class="even">
+<td align="left">spherical high-density lipoprotein particle (<a href="GO:0034366" class="uri">GO:0034366</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0249245</td>
+<td align="right">0.3730437</td>
+<td align="right">0.0217010</td>
+<td align="right">0.3113165</td>
+<td align="right">-1.846460</td>
+<td align="right">6.816950</td>
+<td align="left">PON1</td>
+</tr>
+<tr class="odd">
+<td align="left">preribosome, large subunit precursor (<a href="GO:0030687" class="uri">GO:0030687</a>)</td>
+<td align="left">1/27</td>
+<td align="right">0.0729570</td>
+<td align="right">0.4420097</td>
+<td align="right">0.0596432</td>
+<td align="right">0.3595182</td>
+<td align="right">-2.240825</td>
+<td align="right">5.866220</td>
+<td align="left">PES1</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>m_pfhxs_500 &lt;- getpathway_top(&quot;m_pfhxs_DMP_500&quot;, dbs, top500_gene)</code></pre>
+<pre><code>## Uploading data to Enrichr... Done.
+##   Querying GO_Molecular_Function_2018... Done.
+##   Querying GO_Cellular_Component_2018... Done.
+##   Querying GO_Biological_Process_2018... Done.
+##   Querying KEGG_2019_Human... Done.
+## Parsing results... Done.</code></pre>
+<pre class="r"><code>kable(m_pfhxs_500$KEGG_2019_Human[1:5, ], caption = &quot;Male pfhxs Top500 DMP: KEGG_2019_Human&quot;)</code></pre>
+<table>
+<caption>Male pfhxs Top500 DMP: KEGG_2019_Human</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Arachidonic acid metabolism</td>
+<td align="left">1/63</td>
+<td align="right">0.3005881</td>
+<td align="right">0.735636</td>
+<td align="right">0.1516949</td>
+<td align="right">0.4142746</td>
+<td align="right">-109.33813</td>
+<td align="right">131.42603</td>
+<td align="left">PTGIS</td>
+</tr>
+<tr class="even">
+<td align="left">Renin secretion</td>
+<td align="left">1/69</td>
+<td align="right">0.3240415</td>
+<td align="right">0.735636</td>
+<td align="right">0.1647363</td>
+<td align="right">0.4142746</td>
+<td align="right">-99.05651</td>
+<td align="right">111.62517</td>
+<td align="left">ITPR2</td>
+</tr>
+<tr class="odd">
+<td align="left">Legionellosis</td>
+<td align="left">1/55</td>
+<td align="right">0.2680579</td>
+<td align="right">0.735636</td>
+<td align="right">0.1340052</td>
+<td align="right">0.4142746</td>
+<td align="right">-80.72819</td>
+<td align="right">106.28289</td>
+<td align="left">HSPA1L</td>
+</tr>
+<tr class="even">
+<td align="left">Long-term depression</td>
+<td align="left">1/60</td>
+<td align="right">0.2885607</td>
+<td align="right">0.735636</td>
+<td align="right">0.1451018</td>
+<td align="right">0.4142746</td>
+<td align="right">-68.63718</td>
+<td align="right">85.30570</td>
+<td align="left">ITPR2</td>
+</tr>
+<tr class="odd">
+<td align="left">Pancreatic secretion</td>
+<td align="left">2/98</td>
+<td align="right">0.1061445</td>
+<td align="right">0.735636</td>
+<td align="right">0.0264707</td>
+<td align="right">0.3464903</td>
+<td align="right">-33.83575</td>
+<td align="right">75.89202</td>
+<td align="left">ITPR2;CFTR</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfhxs_500$GO_Biological_Process_2018[1:5, ], caption = &quot;Male pfhxs Top500 DMP: GO_Biological_Process_2018&quot;)</code></pre>
+<table>
+<caption>Male pfhxs Top500 DMP: GO_Biological_Process_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">peripheral nervous system axon ensheathment (<a href="GO:0032292" class="uri">GO:0032292</a>)</td>
+<td align="left">2/9</td>
+<td align="right">0.0011100</td>
+<td align="right">0.2325353</td>
+<td align="right">0.0003084</td>
+<td align="right">0.0646191</td>
+<td align="right">-2.738391</td>
+<td align="right">18.63047</td>
+<td align="left">SKI;PARD3</td>
+</tr>
+<tr class="even">
+<td align="left">Schwann cell development (<a href="GO:0014044" class="uri">GO:0014044</a>)</td>
+<td align="left">2/9</td>
+<td align="right">0.0011100</td>
+<td align="right">0.2325353</td>
+<td align="right">0.0003084</td>
+<td align="right">0.0646191</td>
+<td align="right">-2.691070</td>
+<td align="right">18.30852</td>
+<td align="left">SKI;PARD3</td>
+</tr>
+<tr class="odd">
+<td align="left">myelination in peripheral nervous system (<a href="GO:0022011" class="uri">GO:0022011</a>)</td>
+<td align="left">2/14</td>
+<td align="right">0.0027544</td>
+<td align="right">0.3752836</td>
+<td align="right">0.0006679</td>
+<td align="right">0.0930226</td>
+<td align="right">-2.163096</td>
+<td align="right">12.75050</td>
+<td align="left">SKI;PARD3</td>
+</tr>
+<tr class="even">
+<td align="left">positive regulation of ion transmembrane transporter activity (<a href="GO:0032414" class="uri">GO:0032414</a>)</td>
+<td align="left">2/24</td>
+<td align="right">0.0080521</td>
+<td align="right">0.3752836</td>
+<td align="right">0.0017816</td>
+<td align="right">0.0930226</td>
+<td align="right">-2.490580</td>
+<td align="right">12.00915</td>
+<td align="left">ACTN2;CFTR</td>
+</tr>
+<tr class="odd">
+<td align="left">aromatic compound catabolic process (<a href="GO:0019439" class="uri">GO:0019439</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0388916</td>
+<td align="right">0.3752836</td>
+<td align="right">0.0191946</td>
+<td align="right">0.1666038</td>
+<td align="right">-3.636777</td>
+<td align="right">11.80853</td>
+<td align="left">PON1</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfhxs_500$GO_Molecular_Function_2018[1:5, ], caption = &quot;Male pfhxs Top500 DMP: GO_Molecular_Function_2018&quot;)</code></pre>
+<table>
+<caption>Male pfhxs Top500 DMP: GO_Molecular_Function_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">arylesterase activity (<a href="GO:0004064" class="uri">GO:0004064</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0388916</td>
+<td align="right">0.4219975</td>
+<td align="right">0.0234300</td>
+<td align="right">0.2196206</td>
+<td align="right">-3.364211</td>
+<td align="right">10.923512</td>
+<td align="left">PON1</td>
+</tr>
+<tr class="even">
+<td align="left">chloride channel inhibitor activity (<a href="GO:0019869" class="uri">GO:0019869</a>)</td>
+<td align="left">1/10</td>
+<td align="right">0.0550970</td>
+<td align="right">0.4219975</td>
+<td align="right">0.0320782</td>
+<td align="right">0.2196206</td>
+<td align="right">-3.202914</td>
+<td align="right">9.284158</td>
+<td align="left">CFTR</td>
+</tr>
+<tr class="odd">
+<td align="left">voltage-gated potassium channel activity involved in ventricular cardiac muscle cell action potential repolarization (<a href="GO:1902282" class="uri">GO:1902282</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0497255</td>
+<td align="right">0.4219975</td>
+<td align="right">0.0292038</td>
+<td align="right">0.2196206</td>
+<td align="right">-2.688060</td>
+<td align="right">8.067504</td>
+<td align="left">KCNJ5</td>
+</tr>
+<tr class="even">
+<td align="left">bubble DNA binding (<a href="GO:0000405" class="uri">GO:0000405</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0443238</td>
+<td align="right">0.4219975</td>
+<td align="right">0.0263211</td>
+<td align="right">0.2196206</td>
+<td align="right">-2.539984</td>
+<td align="right">7.915182</td>
+<td align="left">ERCC5</td>
+</tr>
+<tr class="odd">
+<td align="left">phosphatidylinositol-4,5-bisphosphate binding (<a href="GO:0005546" class="uri">GO:0005546</a>)</td>
+<td align="left">2/61</td>
+<td align="right">0.0466571</td>
+<td align="right">0.4219975</td>
+<td align="right">0.0148214</td>
+<td align="right">0.2196206</td>
+<td align="right">-2.446013</td>
+<td align="right">7.496861</td>
+<td align="left">ACTN2;PARD3</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfhxs_500$GO_Cellular_Component_2018[1:5, ], caption = &quot;Male pfhxs Top500 DMP: GO_Cellular_Component_2018&quot;)</code></pre>
+<table>
+<caption>Male pfhxs Top500 DMP: GO_Cellular_Component_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">pseudopodium (<a href="GO:0031143" class="uri">GO:0031143</a>)</td>
+<td align="left">1/10</td>
+<td align="right">0.0550970</td>
+<td align="right">0.7569074</td>
+<td align="right">0.0300182</td>
+<td align="right">0.3855666</td>
+<td align="right">-2.962328</td>
+<td align="right">8.586781</td>
+<td align="left">ACTN2</td>
+</tr>
+<tr class="even">
+<td align="left">holo TFIIH complex (<a href="GO:0005675" class="uri">GO:0005675</a>)</td>
+<td align="left">1/13</td>
+<td align="right">0.0710315</td>
+<td align="right">0.7569074</td>
+<td align="right">0.0380539</td>
+<td align="right">0.3855666</td>
+<td align="right">-2.840595</td>
+<td align="right">7.512328</td>
+<td align="left">ERCC5</td>
+</tr>
+<tr class="odd">
+<td align="left">intrinsic component of the cytoplasmic side of the plasma membrane (<a href="GO:0031235" class="uri">GO:0031235</a>)</td>
+<td align="left">1/16</td>
+<td align="right">0.0866996</td>
+<td align="right">0.7569074</td>
+<td align="right">0.0460258</td>
+<td align="right">0.3855666</td>
+<td align="right">-2.317459</td>
+<td align="right">5.666896</td>
+<td align="left">RASA2</td>
+</tr>
+<tr class="even">
+<td align="left">spherical high-density lipoprotein particle (<a href="GO:0034366" class="uri">GO:0034366</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0497255</td>
+<td align="right">0.7569074</td>
+<td align="right">0.0273254</td>
+<td align="right">0.3855666</td>
+<td align="right">-1.846460</td>
+<td align="right">5.541662</td>
+<td align="left">PON1</td>
+</tr>
+<tr class="odd">
+<td align="left">brush border membrane (<a href="GO:0031526" class="uri">GO:0031526</a>)</td>
+<td align="left">1/29</td>
+<td align="right">0.1516229</td>
+<td align="right">0.7569074</td>
+<td align="right">0.0798449</td>
+<td align="right">0.3855666</td>
+<td align="right">-2.513583</td>
+<td align="right">4.741518</td>
+<td align="left">SLC9A3</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>m_pfos_1 &lt;- getpathway_top(&quot;top_m_pfos_1&quot;, dbs, top1_gene)</code></pre>
+<pre><code>## Uploading data to Enrichr... Done.
+##   Querying GO_Molecular_Function_2018... Done.
+##   Querying GO_Cellular_Component_2018... Done.
+##   Querying GO_Biological_Process_2018... Done.
+##   Querying KEGG_2019_Human... Done.
+## Parsing results... Done.</code></pre>
+<pre class="r"><code>kable(m_pfos_1$KEGG_2019_Human[1:5, ], caption = &quot;Male pfos Top1 DMR: KEGG_2019_Human&quot;)</code></pre>
+<table>
+<caption>Male pfos Top1 DMR: KEGG_2019_Human</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Endocrine and other factor-regulated calcium reabsorption</td>
+<td align="left">1/48</td>
+<td align="right">0.1890122</td>
+<td align="right">0.4850514</td>
+<td align="right">0.1561674</td>
+<td align="right">0.3975271</td>
+<td align="right">-254.59630</td>
+<td align="right">424.1431</td>
+<td align="left">GNAS</td>
+</tr>
+<tr class="even">
+<td align="left">Cocaine addiction</td>
+<td align="left">2/49</td>
+<td align="right">0.0192706</td>
+<td align="right">0.4850514</td>
+<td align="right">0.0131619</td>
+<td align="right">0.3975271</td>
+<td align="right">-72.17462</td>
+<td align="right">285.0303</td>
+<td align="left">GRIN2A;GNAS</td>
+</tr>
+<tr class="odd">
+<td align="left">Dilated cardiomyopathy (DCM)</td>
+<td align="left">2/91</td>
+<td align="right">0.0597206</td>
+<td align="right">0.4850514</td>
+<td align="right">0.0404250</td>
+<td align="right">0.3975271</td>
+<td align="right">-96.82665</td>
+<td align="right">272.8651</td>
+<td align="left">ITGB4;GNAS</td>
+</tr>
+<tr class="even">
+<td align="left">Amyotrophic lateral sclerosis (ALS)</td>
+<td align="left">1/51</td>
+<td align="right">0.1995754</td>
+<td align="right">0.4850514</td>
+<td align="right">0.1649235</td>
+<td align="right">0.3975271</td>
+<td align="right">-126.17419</td>
+<td align="right">203.3377</td>
+<td align="left">GRIN2A</td>
+</tr>
+<tr class="odd">
+<td align="left">Arachidonic acid metabolism</td>
+<td align="left">1/63</td>
+<td align="right">0.2404851</td>
+<td align="right">0.4850514</td>
+<td align="right">0.1990809</td>
+<td align="right">0.3975271</td>
+<td align="right">-96.34073</td>
+<td align="right">137.2949</td>
+<td align="left">PTGIS</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfos_1$GO_Biological_Process_2018[1:20, ], caption = &quot;Male pfos Top1 DMR: GO_Biological_Process_2018&quot;)</code></pre>
+<table>
+<caption>Male pfos Top1 DMR: GO_Biological_Process_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">negative regulation of appetite (<a href="GO:0032099" class="uri">GO:0032099</a>)</td>
+<td align="left">2/9</td>
+<td align="right">0.0006602</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0006049</td>
+<td align="right">0.2593467</td>
+<td align="right">-3.353654</td>
+<td align="right">24.558791</td>
+<td align="left">LEP;NENF</td>
+</tr>
+<tr class="even">
+<td align="left">aromatic compound catabolic process (<a href="GO:0019439" class="uri">GO:0019439</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0300599</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0267561</td>
+<td align="right">0.2593467</td>
+<td align="right">-3.638585</td>
+<td align="right">12.751644</td>
+<td align="left">PON1</td>
+</tr>
+<tr class="odd">
+<td align="left">leptin-mediated signaling pathway (<a href="GO:0033210" class="uri">GO:0033210</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0384832</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0333348</td>
+<td align="right">0.2593467</td>
+<td align="right">-3.654730</td>
+<td align="right">11.905402</td>
+<td align="left">LEP</td>
+</tr>
+<tr class="even">
+<td align="left">phosphorylation of RNA polymerase II C-terminal domain (<a href="GO:0070816" class="uri">GO:0070816</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0300599</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0267561</td>
+<td align="right">0.2593467</td>
+<td align="right">-3.142412</td>
+<td align="right">11.012778</td>
+<td align="left">GTF2H4</td>
+</tr>
+<tr class="odd">
+<td align="left">negative regulation of nitric oxide metabolic process (<a href="GO:1904406" class="uri">GO:1904406</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0342807</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0300509</td>
+<td align="right">0.2593467</td>
+<td align="right">-3.134682</td>
+<td align="right">10.573828</td>
+<td align="left">PTGIS</td>
+</tr>
+<tr class="even">
+<td align="left">bone cell development (<a href="GO:0098751" class="uri">GO:0098751</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0342807</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0300509</td>
+<td align="right">0.2593467</td>
+<td align="right">-3.117435</td>
+<td align="right">10.515651</td>
+<td align="left">MPIG6B</td>
+</tr>
+<tr class="odd">
+<td align="left">antigen processing and presentation of endogenous peptide antigen (<a href="GO:0002483" class="uri">GO:0002483</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0300599</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0267561</td>
+<td align="right">0.2593467</td>
+<td align="right">-2.966310</td>
+<td align="right">10.395616</td>
+<td align="left">HLA-E</td>
+</tr>
+<tr class="even">
+<td align="left">alpha-beta T cell activation (<a href="GO:0046631" class="uri">GO:0046631</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0300599</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0267561</td>
+<td align="right">0.2593467</td>
+<td align="right">-2.942562</td>
+<td align="right">10.312390</td>
+<td align="left">HLA-E</td>
+</tr>
+<tr class="odd">
+<td align="left">cellular response to leptin stimulus (<a href="GO:0044320" class="uri">GO:0044320</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0342807</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0300509</td>
+<td align="right">0.2593467</td>
+<td align="right">-2.964094</td>
+<td align="right">9.998404</td>
+<td align="left">LEP</td>
+</tr>
+<tr class="even">
+<td align="left">regulation of interleukin-13 production (<a href="GO:0032656" class="uri">GO:0032656</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0342807</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0300509</td>
+<td align="right">0.2593467</td>
+<td align="right">-2.910189</td>
+<td align="right">9.816572</td>
+<td align="left">HLA-E</td>
+</tr>
+<tr class="odd">
+<td align="left">positive regulation of execution phase of apoptosis (<a href="GO:1900119" class="uri">GO:1900119</a>)</td>
+<td align="left">1/11</td>
+<td align="right">0.0468342</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0398699</td>
+<td align="right">0.2593467</td>
+<td align="right">-3.206410</td>
+<td align="right">9.815275</td>
+<td align="left">PTGIS</td>
+</tr>
+<tr class="even">
+<td align="left">phospholipid scrambling (<a href="GO:0017121" class="uri">GO:0017121</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0384832</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0333348</td>
+<td align="right">0.2593467</td>
+<td align="right">-2.998191</td>
+<td align="right">9.766706</td>
+<td align="left">TMEM256-PLSCR3</td>
+</tr>
+<tr class="odd">
+<td align="left">L-cysteine metabolic process (<a href="GO:0046439" class="uri">GO:0046439</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0342807</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0300509</td>
+<td align="right">0.2593467</td>
+<td align="right">-2.857855</td>
+<td align="right">9.640041</td>
+<td align="left">AHCYL2</td>
+</tr>
+<tr class="even">
+<td align="left">negative regulation of voltage-gated potassium channel activity (<a href="GO:1903817" class="uri">GO:1903817</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0384832</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0333348</td>
+<td align="right">0.2593467</td>
+<td align="right">-2.943677</td>
+<td align="right">9.589125</td>
+<td align="left">KCNE3</td>
+</tr>
+<tr class="odd">
+<td align="left">Wnt signaling pathway involved in midbrain dopaminergic neuron differentiation (<a href="GO:1904953" class="uri">GO:1904953</a>)</td>
+<td align="left">1/11</td>
+<td align="right">0.0468342</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0398699</td>
+<td align="right">0.2593467</td>
+<td align="right">-3.078742</td>
+<td align="right">9.424466</td>
+<td align="left">WNT3</td>
+</tr>
+<tr class="even">
+<td align="left">response to amino acid (<a href="GO:0043200" class="uri">GO:0043200</a>)</td>
+<td align="left">2/35</td>
+<td align="right">0.0101400</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0069260</td>
+<td align="right">0.2593467</td>
+<td align="right">-2.041639</td>
+<td align="right">9.373715</td>
+<td align="left">RRAGC;SH3BP4</td>
+</tr>
+<tr class="odd">
+<td align="left">megakaryocyte differentiation (<a href="GO:0030219" class="uri">GO:0030219</a>)</td>
+<td align="left">1/10</td>
+<td align="right">0.0426677</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0366077</td>
+<td align="right">0.2593467</td>
+<td align="right">-2.957002</td>
+<td align="right">9.327309</td>
+<td align="left">MPIG6B</td>
+</tr>
+<tr class="even">
+<td align="left">negative regulation of tyrosine phosphorylation of STAT protein (<a href="GO:0042532" class="uri">GO:0042532</a>)</td>
+<td align="left">1/10</td>
+<td align="right">0.0426677</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0366077</td>
+<td align="right">0.2593467</td>
+<td align="right">-2.943485</td>
+<td align="right">9.284673</td>
+<td align="left">SOCS1</td>
+</tr>
+<tr class="odd">
+<td align="left">negative regulation of glucose import (<a href="GO:0046325" class="uri">GO:0046325</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0384832</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0333348</td>
+<td align="right">0.2593467</td>
+<td align="right">-2.814715</td>
+<td align="right">9.169026</td>
+<td align="left">LEP</td>
+</tr>
+<tr class="even">
+<td align="left">tyrosine phosphorylation of STAT protein (<a href="GO:0007260" class="uri">GO:0007260</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0384832</td>
+<td align="right">0.3227493</td>
+<td align="right">0.0333348</td>
+<td align="right">0.2593467</td>
+<td align="right">-2.802149</td>
+<td align="right">9.128093</td>
+<td align="left">LEP</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfos_1$GO_Molecular_Function_2018[1:10, ], caption = &quot;Male pfos Top1 DMR: GO_Molecular_Function_2018&quot;)</code></pre>
+<table>
+<caption>Male pfos Top1 DMR: GO_Molecular_Function_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">3’,5’-cyclic-GMP phosphodiesterase activity (<a href="GO:0047555" class="uri">GO:0047555</a>)</td>
+<td align="left">2/12</td>
+<td align="right">0.0012001</td>
+<td align="right">0.1488649</td>
+<td align="right">0.0011523</td>
+<td align="right">0.1324447</td>
+<td align="right">-3.276213</td>
+<td align="right">22.03368</td>
+<td align="left">PDE10A;PDE6B</td>
+</tr>
+<tr class="even">
+<td align="left">phospholipid scramblase activity (<a href="GO:0017128" class="uri">GO:0017128</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0300599</td>
+<td align="right">0.2428242</td>
+<td align="right">0.0288528</td>
+<td align="right">0.2143713</td>
+<td align="right">-5.348740</td>
+<td align="right">18.74499</td>
+<td align="left">TMEM256-PLSCR3</td>
+</tr>
+<tr class="odd">
+<td align="left">uridylyltransferase activity (<a href="GO:0070569" class="uri">GO:0070569</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0300599</td>
+<td align="right">0.2428242</td>
+<td align="right">0.0288528</td>
+<td align="right">0.2143713</td>
+<td align="right">-4.335666</td>
+<td align="right">15.19461</td>
+<td align="left">UAP1L1</td>
+</tr>
+<tr class="even">
+<td align="left">insulin-like growth factor receptor binding (<a href="GO:0005159" class="uri">GO:0005159</a>)</td>
+<td align="left">2/16</td>
+<td align="right">0.0021575</td>
+<td align="right">0.1488649</td>
+<td align="right">0.0019195</td>
+<td align="right">0.1324447</td>
+<td align="right">-2.376748</td>
+<td align="right">14.59043</td>
+<td align="left">SOCS1;GNAS</td>
+</tr>
+<tr class="odd">
+<td align="left">phosphatidylinositol transporter activity (<a href="GO:0008526" class="uri">GO:0008526</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0384832</td>
+<td align="right">0.2428242</td>
+<td align="right">0.0359381</td>
+<td align="right">0.2143713</td>
+<td align="right">-4.381410</td>
+<td align="right">14.27259</td>
+<td align="left">C2CD2L</td>
+</tr>
+<tr class="even">
+<td align="left">acyl-CoA oxidase activity (<a href="GO:0003997" class="uri">GO:0003997</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0300599</td>
+<td align="right">0.2428242</td>
+<td align="right">0.0288528</td>
+<td align="right">0.2143713</td>
+<td align="right">-3.874445</td>
+<td align="right">13.57823</td>
+<td align="left">ACOX3</td>
+</tr>
+<tr class="odd">
+<td align="left">3’,5’-cyclic-nucleotide phosphodiesterase activity (<a href="GO:0004114" class="uri">GO:0004114</a>)</td>
+<td align="left">2/21</td>
+<td align="right">0.0037226</td>
+<td align="right">0.1712414</td>
+<td align="right">0.0031376</td>
+<td align="right">0.1443283</td>
+<td align="right">-2.294028</td>
+<td align="right">12.83124</td>
+<td align="left">PDE10A;PDE6B</td>
+</tr>
+<tr class="even">
+<td align="left">arylesterase activity (<a href="GO:0004064" class="uri">GO:0004064</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0300599</td>
+<td align="right">0.2428242</td>
+<td align="right">0.0288528</td>
+<td align="right">0.2143713</td>
+<td align="right">-3.336638</td>
+<td align="right">11.69345</td>
+<td align="left">PON1</td>
+</tr>
+<tr class="odd">
+<td align="left">cyclic-nucleotide phosphodiesterase activity (<a href="GO:0004112" class="uri">GO:0004112</a>)</td>
+<td align="left">1/11</td>
+<td align="right">0.0468342</td>
+<td align="right">0.2428242</td>
+<td align="right">0.0429729</td>
+<td align="right">0.2143713</td>
+<td align="right">-3.621390</td>
+<td align="right">11.08559</td>
+<td align="left">PDE10A</td>
+</tr>
+<tr class="even">
+<td align="left">arginine binding (<a href="GO:0034618" class="uri">GO:0034618</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0300599</td>
+<td align="right">0.2428242</td>
+<td align="right">0.0288528</td>
+<td align="right">0.2143713</td>
+<td align="right">-2.940604</td>
+<td align="right">10.30553</td>
+<td align="left">PADI4</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfos_1$GO_Cellular_Component_2018[1:5, ], caption = &quot;Male pfos Top1 DMR: GO_Cellular_Component_2018&quot;)</code></pre>
+<table>
+<caption>Male pfos Top1 DMR: GO_Cellular_Component_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">axon initial segment (<a href="GO:0043194" class="uri">GO:0043194</a>)</td>
+<td align="left">1/10</td>
+<td align="right">0.0426677</td>
+<td align="right">0.5064801</td>
+<td align="right">0.0337008</td>
+<td align="right">0.3292182</td>
+<td align="right">-2.993079</td>
+<td align="right">9.441109</td>
+<td align="left">KCNQ2</td>
+</tr>
+<tr class="even">
+<td align="left">NMDA selective glutamate receptor complex (<a href="GO:0017146" class="uri">GO:0017146</a>)</td>
+<td align="left">1/10</td>
+<td align="right">0.0426677</td>
+<td align="right">0.5064801</td>
+<td align="right">0.0337008</td>
+<td align="right">0.3292182</td>
+<td align="right">-2.692022</td>
+<td align="right">8.491479</td>
+<td align="left">GRIN2A</td>
+</tr>
+<tr class="odd">
+<td align="left">holo TFIIH complex (<a href="GO:0005675" class="uri">GO:0005675</a>)</td>
+<td align="left">1/13</td>
+<td align="right">0.0551134</td>
+<td align="right">0.5064801</td>
+<td align="right">0.0427005</td>
+<td align="right">0.3292182</td>
+<td align="right">-2.802278</td>
+<td align="right">8.122017</td>
+<td align="left">GTF2H4</td>
+</tr>
+<tr class="even">
+<td align="left">transcription factor TFIID complex (<a href="GO:0005669" class="uri">GO:0005669</a>)</td>
+<td align="left">2/36</td>
+<td align="right">0.0107063</td>
+<td align="right">0.5064801</td>
+<td align="right">0.0061113</td>
+<td align="right">0.3292182</td>
+<td align="right">-1.727558</td>
+<td align="right">7.837791</td>
+<td align="left">EDF1;GTF2H4</td>
+</tr>
+<tr class="odd">
+<td align="left">node of Ranvier (<a href="GO:0033268" class="uri">GO:0033268</a>)</td>
+<td align="left">1/13</td>
+<td align="right">0.0551134</td>
+<td align="right">0.5064801</td>
+<td align="right">0.0427005</td>
+<td align="right">0.3292182</td>
+<td align="right">-2.552788</td>
+<td align="right">7.398903</td>
+<td align="left">KCNQ2</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>m_pfos_500 &lt;- getpathway_top(&quot;m_pfos_DMP_500&quot;, dbs, top500_gene)</code></pre>
+<pre><code>## Uploading data to Enrichr... Done.
+##   Querying GO_Molecular_Function_2018... Done.
+##   Querying GO_Cellular_Component_2018... Done.
+##   Querying GO_Biological_Process_2018... Done.
+##   Querying KEGG_2019_Human... Done.
+## Parsing results... Done.</code></pre>
+<pre class="r"><code>kable(m_pfos_500$KEGG_2019_Human[1:5, ], caption = &quot;Male pfos Top500 DMP: KEGG_2019_Human&quot;)</code></pre>
+<table>
+<caption>Male pfos Top500 DMP: KEGG_2019_Human</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Arachidonic acid metabolism</td>
+<td align="left">1/63</td>
+<td align="right">0.2961359</td>
+<td align="right">0.8011213</td>
+<td align="right">0.1014588</td>
+<td align="right">0.3053253</td>
+<td align="right">-118.33634</td>
+<td align="right">144.00783</td>
+<td align="left">PTGIS</td>
+</tr>
+<tr class="even">
+<td align="left">ECM-receptor interaction</td>
+<td align="left">3/82</td>
+<td align="right">0.0107250</td>
+<td align="right">0.3753764</td>
+<td align="right">0.0003283</td>
+<td align="right">0.0114903</td>
+<td align="right">-19.11422</td>
+<td align="right">86.68630</td>
+<td align="left">COL1A1;LAMA1;THBS4</td>
+</tr>
+<tr class="odd">
+<td align="left">Toxoplasmosis</td>
+<td align="left">2/113</td>
+<td align="right">0.1302093</td>
+<td align="right">0.7839634</td>
+<td align="right">0.0150616</td>
+<td align="right">0.0797378</td>
+<td align="right">-38.39543</td>
+<td align="right">78.27339</td>
+<td align="left">SOCS1;LAMA1</td>
+</tr>
+<tr class="even">
+<td align="left">Amino sugar and nucleotide sugar metabolism</td>
+<td align="left">1/48</td>
+<td align="right">0.2346770</td>
+<td align="right">0.8011213</td>
+<td align="right">0.0785710</td>
+<td align="right">0.2803971</td>
+<td align="right">-50.56381</td>
+<td align="right">73.29453</td>
+<td align="left">UAP1L1</td>
+</tr>
+<tr class="odd">
+<td align="left">Small cell lung cancer</td>
+<td align="left">1/93</td>
+<td align="right">0.4047567</td>
+<td align="right">0.8011213</td>
+<td align="right">0.1456682</td>
+<td align="right">0.3053253</td>
+<td align="right">-64.75443</td>
+<td align="right">58.56838</td>
+<td align="left">LAMA1</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfos_500$GO_Biological_Process_2018[1:5, ], caption = &quot;Male pfos Top500 DMP: GO_Biological_Process_2018&quot;)</code></pre>
+<table>
+<caption>Male pfos Top500 DMP: GO_Biological_Process_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">aromatic compound catabolic process (<a href="GO:0019439" class="uri">GO:0019439</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0382147</td>
+<td align="right">0.4834344</td>
+<td align="right">0.0170220</td>
+<td align="right">0.1938607</td>
+<td align="right">-3.648524</td>
+<td align="right">11.910730</td>
+<td align="left">PON1</td>
+</tr>
+<tr class="even">
+<td align="left">collagen biosynthetic process (<a href="GO:0032964" class="uri">GO:0032964</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0382147</td>
+<td align="right">0.4834344</td>
+<td align="right">0.0170220</td>
+<td align="right">0.1938607</td>
+<td align="right">-3.091828</td>
+<td align="right">10.093379</td>
+<td align="left">COL1A1</td>
+</tr>
+<tr class="odd">
+<td align="left">negative regulation of nitric oxide metabolic process (<a href="GO:1904406" class="uri">GO:1904406</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0435545</td>
+<td align="right">0.4834344</td>
+<td align="right">0.0191300</td>
+<td align="right">0.1938607</td>
+<td align="right">-3.147498</td>
+<td align="right">9.863446</td>
+<td align="left">PTGIS</td>
+</tr>
+<tr class="even">
+<td align="left">positive regulation of execution phase of apoptosis (<a href="GO:1900119" class="uri">GO:1900119</a>)</td>
+<td align="left">1/11</td>
+<td align="right">0.0593982</td>
+<td align="right">0.4834344</td>
+<td align="right">0.0254276</td>
+<td align="right">0.1938607</td>
+<td align="right">-3.264077</td>
+<td align="right">9.216093</td>
+<td align="left">PTGIS</td>
+</tr>
+<tr class="odd">
+<td align="left">phospholipid scrambling (<a href="GO:0017121" class="uri">GO:0017121</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0488649</td>
+<td align="right">0.4834344</td>
+<td align="right">0.0212335</td>
+<td align="right">0.1938607</td>
+<td align="right">-3.011316</td>
+<td align="right">9.090248</td>
+<td align="left">PLSCR3</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfos_500$GO_Molecular_Function_2018[1:5, ], caption = &quot;Male pfos Top500 DMP: GO_Molecular_Function_2018&quot;)</code></pre>
+<table>
+<caption>Male pfos Top500 DMP: GO_Molecular_Function_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">phospholipid scramblase activity (<a href="GO:0017128" class="uri">GO:0017128</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0382147</td>
+<td align="right">0.4873968</td>
+<td align="right">0.0179732</td>
+<td align="right">0.2055669</td>
+<td align="right">-5.374033</td>
+<td align="right">17.543714</td>
+<td align="left">PLSCR3</td>
+</tr>
+<tr class="even">
+<td align="left">uridylyltransferase activity (<a href="GO:0070569" class="uri">GO:0070569</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0382147</td>
+<td align="right">0.4873968</td>
+<td align="right">0.0179732</td>
+<td align="right">0.2055669</td>
+<td align="right">-4.363934</td>
+<td align="right">14.246212</td>
+<td align="left">UAP1L1</td>
+</tr>
+<tr class="odd">
+<td align="left">phosphatidylinositol transporter activity (<a href="GO:0008526" class="uri">GO:0008526</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0488649</td>
+<td align="right">0.4873968</td>
+<td align="right">0.0224177</td>
+<td align="right">0.2055669</td>
+<td align="right">-4.413031</td>
+<td align="right">13.321597</td>
+<td align="left">C2CD2L</td>
+</tr>
+<tr class="even">
+<td align="left">arylesterase activity (<a href="GO:0004064" class="uri">GO:0004064</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0382147</td>
+<td align="right">0.4873968</td>
+<td align="right">0.0179732</td>
+<td align="right">0.2055669</td>
+<td align="right">-3.356333</td>
+<td align="right">10.956863</td>
+<td align="left">PON1</td>
+</tr>
+<tr class="odd">
+<td align="left">arginine binding (<a href="GO:0034618" class="uri">GO:0034618</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0382147</td>
+<td align="right">0.4873968</td>
+<td align="right">0.0179732</td>
+<td align="right">0.2055669</td>
+<td align="right">-2.956947</td>
+<td align="right">9.653054</td>
+<td align="left">PADI4</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfos_500$GO_Cellular_Component_2018[1:5, ], caption = &quot;Male pfos Top500 DMP: GO_Cellular_Component_2018&quot;)</code></pre>
+<table>
+<caption>Male pfos Top500 DMP: GO_Cellular_Component_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">nuclear euchromatin (<a href="GO:0005719" class="uri">GO:0005719</a>)</td>
+<td align="left">1/19</td>
+<td align="right">0.1003878</td>
+<td align="right">0.5060835</td>
+<td align="right">0.0363039</td>
+<td align="right">0.183628</td>
+<td align="right">-2.597761</td>
+<td align="right">5.971513</td>
+<td align="left">HIST1H1A</td>
+</tr>
+<tr class="even">
+<td align="left">euchromatin (<a href="GO:0000791" class="uri">GO:0000791</a>)</td>
+<td align="left">1/22</td>
+<td align="right">0.1152982</td>
+<td align="right">0.5060835</td>
+<td align="right">0.0416417</td>
+<td align="right">0.183628</td>
+<td align="right">-2.604939</td>
+<td align="right">5.627277</td>
+<td align="left">HIST1H1A</td>
+</tr>
+<tr class="odd">
+<td align="left">spherical high-density lipoprotein particle (<a href="GO:0034366" class="uri">GO:0034366</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0488649</td>
+<td align="right">0.5060835</td>
+<td align="right">0.0183093</td>
+<td align="right">0.183628</td>
+<td align="right">-1.846460</td>
+<td align="right">5.573900</td>
+<td align="left">PON1</td>
+</tr>
+<tr class="even">
+<td align="left">endoplasmic reticulum tubular network (<a href="GO:0071782" class="uri">GO:0071782</a>)</td>
+<td align="left">1/18</td>
+<td align="right">0.0953625</td>
+<td align="right">0.5060835</td>
+<td align="right">0.0345185</td>
+<td align="right">0.183628</td>
+<td align="right">-2.027037</td>
+<td align="right">4.763679</td>
+<td align="left">C2CD2L</td>
+</tr>
+<tr class="odd">
+<td align="left">U5 snRNP (<a href="GO:0005682" class="uri">GO:0005682</a>)</td>
+<td align="left">1/24</td>
+<td align="right">0.1251021</td>
+<td align="right">0.5060835</td>
+<td align="right">0.0451848</td>
+<td align="right">0.183628</td>
+<td align="right">-2.233920</td>
+<td align="right">4.643482</td>
+<td align="left">PRPF8</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>m_pfoa_1 &lt;- getpathway_top(&quot;top_m_pfoa_1&quot;, dbs, top1_gene)</code></pre>
+<pre><code>## Uploading data to Enrichr... Done.
+##   Querying GO_Molecular_Function_2018... Done.
+##   Querying GO_Cellular_Component_2018... Done.
+##   Querying GO_Biological_Process_2018... Done.
+##   Querying KEGG_2019_Human... Done.
+## Parsing results... Done.</code></pre>
+<pre class="r"><code>kable(m_pfoa_1$KEGG_2019_Human[1:5, ], caption = &quot;Male pfoa Top1 DMR: KEGG_2019_Human&quot;)</code></pre>
+<table>
+<caption>Male pfoa Top1 DMR: KEGG_2019_Human</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Autoimmune thyroid disease</td>
+<td align="left">4/53</td>
+<td align="right">0.0002444</td>
+<td align="right">0.0047907</td>
+<td align="right">0.0000523</td>
+<td align="right">0.0010255</td>
+<td align="right">-80.17552</td>
+<td align="right">666.7891</td>
+<td align="left">HLA-C;HLA-DRB1;HLA-E;HLA-DQB1</td>
+</tr>
+<tr class="even">
+<td align="left">Graft-versus-host disease</td>
+<td align="left">4/41</td>
+<td align="right">0.0000891</td>
+<td align="right">0.0026379</td>
+<td align="right">0.0000204</td>
+<td align="right">0.0005938</td>
+<td align="right">-69.19465</td>
+<td align="right">645.2630</td>
+<td align="left">HLA-C;HLA-DRB1;HLA-E;HLA-DQB1</td>
+</tr>
+<tr class="odd">
+<td align="left">Intestinal immune network for IgA production</td>
+<td align="left">3/48</td>
+<td align="right">0.0026533</td>
+<td align="right">0.0325025</td>
+<td align="right">0.0008439</td>
+<td align="right">0.0092706</td>
+<td align="right">-96.80767</td>
+<td align="right">574.2596</td>
+<td align="left">CCL25;HLA-DRB1;HLA-DQB1</td>
+</tr>
+<tr class="even">
+<td align="left">Allograft rejection</td>
+<td align="left">4/38</td>
+<td align="right">0.0000658</td>
+<td align="right">0.0026379</td>
+<td align="right">0.0000154</td>
+<td align="right">0.0005938</td>
+<td align="right">-55.15370</td>
+<td align="right">531.0350</td>
+<td align="left">HLA-C;HLA-DRB1;HLA-E;HLA-DQB1</td>
+</tr>
+<tr class="odd">
+<td align="left">Asthma</td>
+<td align="left">2/31</td>
+<td align="right">0.0136702</td>
+<td align="right">0.1116404</td>
+<td align="right">0.0065120</td>
+<td align="right">0.0455838</td>
+<td align="right">-82.91199</td>
+<td align="right">355.9025</td>
+<td align="left">HLA-DRB1;HLA-DQB1</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfoa_1$GO_Biological_Process_2018[1:5, ], caption = &quot;Male pfoa Top1 DMR: GO_Biological_Process_2018&quot;)</code></pre>
+<table>
+<caption>Male pfoa Top1 DMR: GO_Biological_Process_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">antigen processing and presentation of exogenous peptide antigen via MHC class I, TAP-independent (<a href="GO:0002480" class="uri">GO:0002480</a>)</td>
+<td align="left">2/10</td>
+<td align="right">0.0014311</td>
+<td align="right">0.2647622</td>
+<td align="right">0.0010476</td>
+<td align="right">0.1505477</td>
+<td align="right">-2.329731</td>
+<td align="right">15.25806</td>
+<td align="left">HLA-C;HLA-E</td>
+</tr>
+<tr class="even">
+<td align="left">cellular response to interferon-gamma (<a href="GO:0071346" class="uri">GO:0071346</a>)</td>
+<td align="left">5/117</td>
+<td align="right">0.0005782</td>
+<td align="right">0.2078768</td>
+<td align="right">0.0001356</td>
+<td align="right">0.0673688</td>
+<td align="right">-2.002399</td>
+<td align="right">14.92897</td>
+<td align="left">CCL25;HLA-C;HLA-DRB1;HLA-E;HLA-DQB1</td>
+</tr>
+<tr class="odd">
+<td align="left">chemical homeostasis within a tissue (<a href="GO:0048875" class="uri">GO:0048875</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0395681</td>
+<td align="right">0.3020593</td>
+<td align="right">0.0321170</td>
+<td align="right">0.2188577</td>
+<td align="right">-3.869029</td>
+<td align="right">12.49592</td>
+<td align="left">NAPSA</td>
+</tr>
+<tr class="even">
+<td align="left">positive regulation of natural killer cell mediated immunity (<a href="GO:0002717" class="uri">GO:0002717</a>)</td>
+<td align="left">2/18</td>
+<td align="right">0.0047219</td>
+<td align="right">0.3020593</td>
+<td align="right">0.0029534</td>
+<td align="right">0.1950218</td>
+<td align="right">-2.235752</td>
+<td align="right">11.97367</td>
+<td align="left">RASGRP1;HLA-E</td>
+</tr>
+<tr class="odd">
+<td align="left">photoreceptor cell differentiation (<a href="GO:0046530" class="uri">GO:0046530</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0395681</td>
+<td align="right">0.3020593</td>
+<td align="right">0.0321170</td>
+<td align="right">0.2188577</td>
+<td align="right">-3.684933</td>
+<td align="right">11.90134</td>
+<td align="left">STAT3</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfoa_1$GO_Molecular_Function_2018[1:5, ], caption = &quot;Male pfoa Top1 DMR: GO_Molecular_Function_2018&quot;)</code></pre>
+<table>
+<caption>Male pfoa Top1 DMR: GO_Molecular_Function_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">phospholipid scramblase activity (<a href="GO:0017128" class="uri">GO:0017128</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0395681</td>
+<td align="right">0.3160232</td>
+<td align="right">0.0302032</td>
+<td align="right">0.1891785</td>
+<td align="right">-5.353798</td>
+<td align="right">17.291329</td>
+<td align="left">TMEM256-PLSCR3</td>
+</tr>
+<tr class="even">
+<td align="left">acyl-CoA oxidase activity (<a href="GO:0003997" class="uri">GO:0003997</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0395681</td>
+<td align="right">0.3160232</td>
+<td align="right">0.0302032</td>
+<td align="right">0.1891785</td>
+<td align="right">-3.878197</td>
+<td align="right">12.525534</td>
+<td align="left">ACOX3</td>
+</tr>
+<tr class="odd">
+<td align="left">arylesterase activity (<a href="GO:0004064" class="uri">GO:0004064</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0395681</td>
+<td align="right">0.3160232</td>
+<td align="right">0.0302032</td>
+<td align="right">0.1891785</td>
+<td align="right">-3.344516</td>
+<td align="right">10.801887</td>
+<td align="left">PON1</td>
+</tr>
+<tr class="even">
+<td align="left">histone methyltransferase binding (<a href="GO:1990226" class="uri">GO:1990226</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0395681</td>
+<td align="right">0.3160232</td>
+<td align="right">0.0302032</td>
+<td align="right">0.1891785</td>
+<td align="right">-3.257434</td>
+<td align="right">10.520635</td>
+<td align="left">CBX1</td>
+</tr>
+<tr class="odd">
+<td align="left">sulfurtransferase activity (<a href="GO:0016783" class="uri">GO:0016783</a>)</td>
+<td align="left">1/9</td>
+<td align="right">0.0505855</td>
+<td align="right">0.3160232</td>
+<td align="right">0.0376136</td>
+<td align="right">0.1891785</td>
+<td align="right">-3.208052</td>
+<td align="right">9.573118</td>
+<td align="left">TSTD1</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfoa_1$GO_Cellular_Component_2018[1:5, ], caption = &quot;Male pfoa Top1 DMR: GO_Cellular_Component_2018&quot;)</code></pre>
+<table>
+<caption>Male pfoa Top1 DMR: GO_Cellular_Component_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">MHC protein complex (<a href="GO:0042611" class="uri">GO:0042611</a>)</td>
+<td align="left">4/19</td>
+<td align="right">0.0000038</td>
+<td align="right">0.0003347</td>
+<td align="right">0.0000021</td>
+<td align="right">0.0001848</td>
+<td align="right">-2.111869</td>
+<td align="right">26.37886</td>
+<td align="left">HLA-C;HLA-DRB1;HLA-E;HLA-DQB1</td>
+</tr>
+<tr class="even">
+<td align="left">integral component of lumenal side of endoplasmic reticulum membrane (<a href="GO:0071556" class="uri">GO:0071556</a>)</td>
+<td align="left">4/30</td>
+<td align="right">0.0000253</td>
+<td align="right">0.0011270</td>
+<td align="right">0.0000105</td>
+<td align="right">0.0004684</td>
+<td align="right">-1.952410</td>
+<td align="right">20.66364</td>
+<td align="left">HLA-C;HLA-DRB1;HLA-E;HLA-DQB1</td>
+</tr>
+<tr class="odd">
+<td align="left">COPII-coated ER to Golgi transport vesicle (<a href="GO:0030134" class="uri">GO:0030134</a>)</td>
+<td align="left">4/76</td>
+<td align="right">0.0009676</td>
+<td align="right">0.0215290</td>
+<td align="right">0.0003135</td>
+<td align="right">0.0069744</td>
+<td align="right">-2.099799</td>
+<td align="right">14.57406</td>
+<td align="left">HLA-C;HLA-DRB1;HLA-E;HLA-DQB1</td>
+</tr>
+<tr class="even">
+<td align="left">ER to Golgi transport vesicle membrane (<a href="GO:0012507" class="uri">GO:0012507</a>)</td>
+<td align="left">4/55</td>
+<td align="right">0.0002822</td>
+<td align="right">0.0083712</td>
+<td align="right">0.0000960</td>
+<td align="right">0.0028467</td>
+<td align="right">-1.747704</td>
+<td align="right">14.28395</td>
+<td align="left">HLA-C;HLA-DRB1;HLA-E;HLA-DQB1</td>
+</tr>
+<tr class="odd">
+<td align="left">MHC class II protein complex (<a href="GO:0042613" class="uri">GO:0042613</a>)</td>
+<td align="left">2/15</td>
+<td align="right">0.0032772</td>
+<td align="right">0.0583340</td>
+<td align="right">0.0021819</td>
+<td align="right">0.0323647</td>
+<td align="right">-2.382137</td>
+<td align="right">13.62766</td>
+<td align="left">HLA-DRB1;HLA-DQB1</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>m_pfoa_500 &lt;- getpathway_top(&quot;m_pfoa_DMP_500&quot;, dbs, top500_gene)</code></pre>
+<pre><code>## Uploading data to Enrichr... Done.
+##   Querying GO_Molecular_Function_2018... Done.
+##   Querying GO_Cellular_Component_2018... Done.
+##   Querying GO_Biological_Process_2018... Done.
+##   Querying KEGG_2019_Human... Done.
+## Parsing results... Done.</code></pre>
+<pre class="r"><code>kable(m_pfoa_500$KEGG_2019_Human[1:5, ], caption = &quot;Male pfoa Top500 DMP: KEGG_2019_Human&quot;)</code></pre>
+<table>
+<caption>Male pfoa Top500 DMP: KEGG_2019_Human</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Intestinal immune network for IgA production</td>
+<td align="left">3/48</td>
+<td align="right">0.0015381</td>
+<td align="right">0.0211493</td>
+<td align="right">0.0000715</td>
+<td align="right">0.0007459</td>
+<td align="right">-98.14419</td>
+<td align="right">635.6983</td>
+<td align="left">CCL25;HLA-DRB1;HLA-DQB1</td>
+</tr>
+<tr class="even">
+<td align="left">Autoimmune thyroid disease</td>
+<td align="left">3/53</td>
+<td align="right">0.0020479</td>
+<td align="right">0.0225269</td>
+<td align="right">0.0000947</td>
+<td align="right">0.0007459</td>
+<td align="right">-80.17552</td>
+<td align="right">496.3618</td>
+<td align="left">HLA-C;HLA-DRB1;HLA-DQB1</td>
+</tr>
+<tr class="odd">
+<td align="left">Graft-versus-host disease</td>
+<td align="left">3/41</td>
+<td align="right">0.0009710</td>
+<td align="right">0.0204684</td>
+<td align="right">0.0000458</td>
+<td align="right">0.0007459</td>
+<td align="right">-69.43358</td>
+<td align="right">481.6720</td>
+<td align="left">HLA-C;HLA-DRB1;HLA-DQB1</td>
+</tr>
+<tr class="even">
+<td align="left">Allograft rejection</td>
+<td align="left">3/38</td>
+<td align="right">0.0007764</td>
+<td align="right">0.0204684</td>
+<td align="right">0.0000370</td>
+<td align="right">0.0007459</td>
+<td align="right">-55.38210</td>
+<td align="right">396.5833</td>
+<td align="left">HLA-C;HLA-DRB1;HLA-DQB1</td>
+</tr>
+<tr class="odd">
+<td align="left">Asthma</td>
+<td align="left">2/31</td>
+<td align="right">0.0094919</td>
+<td align="right">0.0522054</td>
+<td align="right">0.0013101</td>
+<td align="right">0.0072058</td>
+<td align="right">-83.60399</td>
+<td align="right">389.3703</td>
+<td align="left">HLA-DRB1;HLA-DQB1</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfoa_500$GO_Biological_Process_2018[1:5, ], caption = &quot;Male pfoa Top500 DMP: GO_Biological_Process_2018&quot;)</code></pre>
+<table>
+<caption>Male pfoa Top500 DMP: GO_Biological_Process_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">cellular response to interferon-gamma (<a href="GO:0071346" class="uri">GO:0071346</a>)</td>
+<td align="left">5/117</td>
+<td align="right">0.0002395</td>
+<td align="right">0.0534838</td>
+<td align="right">0.0000040</td>
+<td align="right">0.0011681</td>
+<td align="right">-2.002399</td>
+<td align="right">16.69403</td>
+<td align="left">CCL25;HLA-C;TRIM31;HLA-DRB1;HLA-DQB1</td>
+</tr>
+<tr class="even">
+<td align="left">aromatic compound catabolic process (<a href="GO:0019439" class="uri">GO:0019439</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0327848</td>
+<td align="right">0.3402424</td>
+<td align="right">0.0159337</td>
+<td align="right">0.1450842</td>
+<td align="right">-3.648524</td>
+<td align="right">12.46989</td>
+<td align="left">PON1</td>
+</tr>
+<tr class="odd">
+<td align="left">positive regulation of triglyceride catabolic process (<a href="GO:0010898" class="uri">GO:0010898</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0373806</td>
+<td align="right">0.3402424</td>
+<td align="right">0.0179081</td>
+<td align="right">0.1450842</td>
+<td align="right">-3.443714</td>
+<td align="right">11.31812</td>
+<td align="left">APOC2</td>
+</tr>
+<tr class="even">
+<td align="left">positive regulation of T cell differentiation in thymus (<a href="GO:0033089" class="uri">GO:0033089</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0327848</td>
+<td align="right">0.3402424</td>
+<td align="right">0.0159337</td>
+<td align="right">0.1450842</td>
+<td align="right">-3.274153</td>
+<td align="right">11.19037</td>
+<td align="left">GLI2</td>
+</tr>
+<tr class="odd">
+<td align="left">spinal cord dorsal/ventral patterning (<a href="GO:0021513" class="uri">GO:0021513</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0327848</td>
+<td align="right">0.3402424</td>
+<td align="right">0.0159337</td>
+<td align="right">0.1450842</td>
+<td align="right">-3.147352</td>
+<td align="right">10.75699</td>
+<td align="left">GLI2</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfoa_500$GO_Molecular_Function_2018[1:5, ], caption = &quot;Male pfoa Top500 DMP: GO_Molecular_Function_2018&quot;)</code></pre>
+<table>
+<caption>Male pfoa Top500 DMP: GO_Molecular_Function_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">phospholipid scramblase activity (<a href="GO:0017128" class="uri">GO:0017128</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0327848</td>
+<td align="right">0.3062342</td>
+<td align="right">0.0166036</td>
+<td align="right">0.1289912</td>
+<td align="right">-5.374033</td>
+<td align="right">18.367323</td>
+<td align="left">PLSCR3</td>
+</tr>
+<tr class="even">
+<td align="left">phospholipase activator activity (<a href="GO:0016004" class="uri">GO:0016004</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0327848</td>
+<td align="right">0.3062342</td>
+<td align="right">0.0166036</td>
+<td align="right">0.1289912</td>
+<td align="right">-3.391542</td>
+<td align="right">11.591582</td>
+<td align="left">APOC2</td>
+</tr>
+<tr class="odd">
+<td align="left">arylesterase activity (<a href="GO:0004064" class="uri">GO:0004064</a>)</td>
+<td align="left">1/7</td>
+<td align="right">0.0327848</td>
+<td align="right">0.3062342</td>
+<td align="right">0.0166036</td>
+<td align="right">0.1289912</td>
+<td align="right">-3.360272</td>
+<td align="right">11.484708</td>
+<td align="left">PON1</td>
+</tr>
+<tr class="even">
+<td align="left">phospholipase binding (<a href="GO:0043274" class="uri">GO:0043274</a>)</td>
+<td align="left">1/8</td>
+<td align="right">0.0373806</td>
+<td align="right">0.3062342</td>
+<td align="right">0.0186604</td>
+<td align="right">0.1289912</td>
+<td align="right">-3.351184</td>
+<td align="right">11.014010</td>
+<td align="left">APOC2</td>
+</tr>
+<tr class="odd">
+<td align="left">calcium ion binding (<a href="GO:0005509" class="uri">GO:0005509</a>)</td>
+<td align="left">5/285</td>
+<td align="right">0.0116077</td>
+<td align="right">0.3062342</td>
+<td align="right">0.0002843</td>
+<td align="right">0.0221762</td>
+<td align="right">-2.103802</td>
+<td align="right">9.374729</td>
+<td align="left">CLEC3B;PLSCR3;PON1;SYT9;THBS4</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>kable(m_pfoa_500$GO_Cellular_Component_2018[1:5, ], caption = &quot;Male pfoa Top500 DMP: GO_Cellular_Component_2018&quot;)</code></pre>
+<table>
+<caption>Male pfoa Top500 DMP: GO_Cellular_Component_2018</caption>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="left">Overlap</th>
+<th align="right">P.value</th>
+<th align="right">Adjusted.P.value</th>
+<th align="right">Old.P.value</th>
+<th align="right">Old.Adjusted.P.value</th>
+<th align="right">Z.score</th>
+<th align="right">Combined.Score</th>
+<th align="left">Genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">MHC protein complex (<a href="GO:0042611" class="uri">GO:0042611</a>)</td>
+<td align="left">3/19</td>
+<td align="right">0.0000952</td>
+<td align="right">0.0045697</td>
+<td align="right">0.0000113</td>
+<td align="right">0.0005414</td>
+<td align="right">-2.111869</td>
+<td align="right">19.55485</td>
+<td align="left">HLA-C;HLA-DRB1;HLA-DQB1</td>
+</tr>
+<tr class="even">
+<td align="left">integral component of lumenal side of endoplasmic reticulum membrane (<a href="GO:0071556" class="uri">GO:0071556</a>)</td>
+<td align="left">3/30</td>
+<td align="right">0.0003841</td>
+<td align="right">0.0092176</td>
+<td align="right">0.0000394</td>
+<td align="right">0.0009455</td>
+<td align="right">-1.952410</td>
+<td align="right">15.35510</td>
+<td align="left">HLA-C;HLA-DRB1;HLA-DQB1</td>
+</tr>
+<tr class="odd">
+<td align="left">MHC class II protein complex (<a href="GO:0042613" class="uri">GO:0042613</a>)</td>
+<td align="left">2/15</td>
+<td align="right">0.0022517</td>
+<td align="right">0.0218671</td>
+<td align="right">0.0005432</td>
+<td align="right">0.0043456</td>
+<td align="right">-2.394704</td>
+<td align="right">14.59829</td>
+<td align="left">HLA-DRB1;HLA-DQB1</td>
+</tr>
+<tr class="even">
+<td align="left">spherical high-density lipoprotein particle (<a href="GO:0034366" class="uri">GO:0034366</a>)</td>
+<td align="left">2/9</td>
+<td align="right">0.0007865</td>
+<td align="right">0.0125836</td>
+<td align="right">0.0002213</td>
+<td align="right">0.0026556</td>
+<td align="right">-1.826542</td>
+<td align="right">13.05603</td>
+<td align="left">APOC2;PON1</td>
+</tr>
+<tr class="odd">
+<td align="left">COPII-coated ER to Golgi transport vesicle (<a href="GO:0030134" class="uri">GO:0030134</a>)</td>
+<td align="left">3/76</td>
+<td align="right">0.0056814</td>
+<td align="right">0.0454514</td>
+<td align="right">0.0005379</td>
+<td align="right">0.0043456</td>
+<td align="right">-2.063716</td>
+<td align="right">10.67056</td>
+<td align="left">HLA-C;HLA-DRB1;HLA-DQB1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 
 
 
