@@ -30,7 +30,9 @@ bedfile <- function(DMRcate_input){
   # bedforsave[,2:4] = mutate_all(bedforsave[,2:4], function(x) as.numeric(as.character(x)) )
   write.table(bedforsave, file= paste("~/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/", 
                                       Sys.Date(), "_", gender, "_",chemname, ".bed", sep = ""), 
-                                     quote=F, sep="\t", row.names=F, col.names=T)
+              # col.names F for bedtools sortBed
+              # but we will need the colnames later on for combp
+                                     quote=F, sep="\t", row.names=F, col.names=F)
 }
 ####################### sort by bedtools as command line tools ###############
 # sort by chromosome may not be enough
@@ -50,12 +52,25 @@ bedfile(m_pfhxs_DMP)
 bedfile(m_pfoa_DMP)
 bedfile(m_pfos_DMP)
 
+########### add column names to sorted .bed #####################3
+
+add_columnname <- function(sorted_bed){
+  dir = "/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/"
+  data = fread(paste(dir, sorted_bed, sep = ""), header = F) %>% as.data.frame()
+  colnames(data) = c("chrom",	"pos",	"end",	"rawp")
+  write.table(data, file= paste(dir, Sys.Date(), "_", sorted_bed, sep = ""), 
+              quote=F, sep="\t", row.names=F, col.names=T)
+}
+add_columnname("sorted_f_pfhxs.bed")
+
 ##################### run combp #############################
 # source activate python27
 # for combp https://github.com/brentp/combined-pvalues
 ##### combp commands
-# -c 4, means pvalue at 4th column
-# To calclulate autocorrelation from 1 to 500 bases
-# cd ~/Documents/gitlab/DMR_combp/combined-pvalues-master/
-# python cpv/acf.py -d 1:100000:50 -c 4 data/PFOA_OS_HXS/sorted_f_pfhxs.bed > data/PFOA_OS_HXS/2019-03-14_f_pfhxs_acf.txt
+# finally run settings 
+# -c 4 --seed 1e-1 --dist 750 -p f_pfhxs --anno hg19 sorted_f_pfhxs.bed
+# 
+# date: 2019-03-20 15:15:50.316587
+# version: 0.46
+
 max(f_pfhxs_DMP$pos)
