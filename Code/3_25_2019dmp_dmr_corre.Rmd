@@ -162,6 +162,7 @@ anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)
     n_probes = NULL
   
     for (i in 1:n_dmr) {
+      # this is to get cpgs names by their position 
       anno_probes = data.frame(anno) %>% dplyr::filter(chr == chrom[i]) %>%
                    dplyr::filter(pos >= start[i]) %>% dplyr::filter (pos <= stop[i]) %>% dplyr::select(Name)
       
