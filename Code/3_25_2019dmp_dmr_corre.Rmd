@@ -169,6 +169,11 @@ anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)
       probes_dmp = data.frame(dmp) %>% 
                    filter(ID %in% anno_probes$Name)  %>% 
                       select(ID, betafc, raw ) %>% dplyr::rename(beta = betafc, raw_p = raw)
+      # calculate the maximum and mean of betafold change of all cpgs across all cpgs within a DMR
+      # which.max and return the first for ties
+      max_beta = probes_dmp$beta[which.max(abs(probes_dmp$beta) )][1]
+      mean_beta = base::mean(probes_dmp$beta)
+      
       probes = merge(anno_probes, probes_dmp, by.x = "Name", by.y = "ID")
       probes_order = data.frame(probes) %>% dplyr::arrange(raw_p )
       n_probes = c( n_probes, nrow(probes_order) )
@@ -184,11 +189,15 @@ anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)
                                                      ##  beta means hyper or hypo direction
                                                      paste("direction", j, sep = ""),
                                 paste("raw_p", j, sep = "") )
-         }
+      }
+       # build a single row df
         dmrprobes = dmrprobes %>% dplyr::mutate(cpg1 = probes_order$Name[1],
                                      positive =  sum(probes_order$beta > 0)/n_probes[i],
-                                     No_probes = n_probes[i] ) %>%
-                             dplyr::select(cpg1, direction1, positive, No_probes, everything())
+                                     No_probes = n_probes[i] ,
+                                     maxbeta = max_beta,
+                                     meanbeta = mean_beta) %>%
+                             dplyr::select(cpg1, direction1, 
+                                           maxbeta, meanbeta, positive, No_probes, everything())
     # Convert a row of a data frame to vector
     dmrprobes = unlist(dmrprobes)
     # cbind or rbind different lengths vectors without repeating the elements of the shorter vectors
@@ -200,29 +209,30 @@ anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)
         # # cbind or rbind different lengths vectors without repeating the elements of the shorter vectors
         length(dmrprobes) = maxlength
       }
-      
+    # combine all dmrs together
     dmrprobes_all = data.frame(rbind(dmrprobes_all, dmrprobes))
     row.names(dmrprobes_all) = NULL
     }
   fulllist = cbind(dmr_sig, dmrprobes_all)
-  write.xlsx(fulllist, file =  paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/probesDMR/", sep = "_", name, pcutoff, "sigDMR.xlsx" ) )
+  write.xlsx(fulllist, file =  paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/probesDMR/", sep = "_", name, pcutoff, Sys.time(), "sigDMR.xlsx" ) )
   ####### list focus on top cpg
   cpg1 = data.frame(fulllist) %>% dplyr::mutate(methylation1 = ifelse(direction1 > 0, 1, -1)) %>%
                                   dplyr::select(c("No.", "chrom", "start", "end",
                                                   "n_probes", "z_sidak_p", "refGene_name", 
                                                   "cpg1", "direction1", "methylation1","positive", "No_probes"))
   
-    write.xlsx(cpg1, file =  paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/", sep = "_", pcutoff, name,"topCpG.xlsx" ) )
+    write.xlsx(cpg1, file =  paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/", sep = "_", pcutoff, name, Sys.time(),"topCpG.xlsx" ) )
     
 }
 
-getprobes_perDMR(f_pfhxs_dmr, f_pfhxs_DMP , anno, 1)
-getprobes_perDMR(f_pfos_dmr, f_pfos_DMP , anno, 1)
-getprobes_perDMR(f_pfoa_dmr, f_pfoa_DMP , anno, 1)
+p_cut <- 0.05
+getprobes_perDMR(f_pfhxs_dmr, f_pfhxs_DMP , anno, p_cut)
+getprobes_perDMR(f_pfos_dmr, f_pfos_DMP , anno, p_cut)
+getprobes_perDMR(f_pfoa_dmr, f_pfoa_DMP , anno, p_cut)
 
-getprobes_perDMR(m_pfhxs_dmr, m_pfhxs_DMP , anno, 1)
-getprobes_perDMR(m_pfos_dmr, m_pfos_DMP , anno, 1)
-getprobes_perDMR(m_pfoa_dmr, m_pfoa_DMP , anno, 1)
+getprobes_perDMR(m_pfhxs_dmr, m_pfhxs_DMP , anno, p_cut)
+getprobes_perDMR(m_pfos_dmr, m_pfos_DMP , anno, p_cut)
+getprobes_perDMR(m_pfoa_dmr, m_pfoa_DMP , anno, p_cut)
 
 ```
 
