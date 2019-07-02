@@ -409,3 +409,23 @@ bh_man_clean <- function(dmpresult_name){
   #  dev.off()
 }
 # bh_man_clean(input_names[6])
+
+
+fdr_anno <- function(dmpresult_name, fdr_cut){
+  ############ get names #############
+  g_name = unlist(strsplit( dmpresult_name, "_"))[2]
+  # from f, m to Female and Male 
+  gender = ifelse(g_name == "f", "Female", "Male")
+  # upper case
+  chem_name = toupper(unlist(strsplit( dmpresult_name, "_"))[3])
+  name = paste(gender, chem_name, fdr_cut, sep = "_")
+  ### load in dmp results ###
+  data = dmp_anno_read(dmpresult_name) %>% arrange(raw) %>% 
+    dplyr::mutate(fdr = p.adjust(raw, "BH")) %>%
+    select(CHR, pos, Name, betafc, raw, fdr, UCSC_RefGene_Name, Relation_to_Island, indfdr)
+  df =  data %>% dplyr::filter(fdr < 0.05)  
+  # save csv
+  dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/newdmps/" 
+  write.csv(df, paste(dir, Sys.time(), name, sep="_", "fdr_dmps.csv"),  row.names = F)
+  return(data)
+}
