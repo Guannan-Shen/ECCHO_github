@@ -429,3 +429,7 @@ fdr_anno <- function(dmpresult_name, fdr_cut){
   write.csv(df, paste(dir, Sys.time(), name, sep="_", "fdr_dmps.csv"),  row.names = F)
   return(data)
 }
+
+for(i in input_names){
+  fdr_anno(i , 0.05)
+}
