@@ -30,6 +30,7 @@ getpathway_top <- function(CpGtable, database, gene_col){
   ######## gene_col a string
   name = CpGtable
   # run enrichr
+  # the usage of call "$" and eval 
   pathways = enrichr( eval( call("$" ,as.name(CpGtable), gene_col) ), database)
   # data
   go_mol = data.frame( pathways[["GO_Molecular_Function_2018"]] ) 
