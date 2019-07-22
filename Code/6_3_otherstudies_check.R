@@ -30,11 +30,13 @@ rawp_fdr <- function(dmp, list, gender) {
   study = (strsplit(as.character(substitute(list)), "_", fixed = T) %>% unlist )[2]
   
   data = plyr::join( list, dmp, by = "ID") %>% column_to_rownames("ID") %>%
-    dplyr::select ( raw, fdr) %>% as.matrix() %>% round( ., 7) %>% as.data.frame() %>%
+    # beta fc is the direction of the study 
+    dplyr::select ( raw, fdr, betafc ) %>% as.matrix() %>% round( ., 7) %>% as.data.frame() %>%
     rownames_to_column("ID")
   
-  colnames(data)[2:3] = c( paste("Raw p-value in our study:", gender),
-                           paste("FDR (BH) in our study:", gender))
+  colnames(data)[2:4] = c( paste("Raw p-value in our study:", gender),
+                           paste("FDR (BH) in our study:", gender),
+                           paste("Beta value change in our study", gender))
   dir <- "~/Documents/gitlab/ECCHO_github/DataRaw/3chem_otherstudies/"
   write.csv(data.frame(data), paste(dir, chem, study, gender,".csv", sep = ""), row.names = F)
   return(data.frame(data) )
