@@ -46,3 +46,62 @@ getM(top_m_pfos, dtall_m)
 getM(top_m_pfoa, dtall_m)
 
 
+#################  get top cpg for fdr 005 dmps ##############
+library(data.table)
+library(tidyverse)
+# import cpgs which are fdr 005 from DMP analysis
+dir <- "~/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/fdr005_dmps/"
+top_f_pfhxs <- read.csv( paste0(dir, "Female_PFHXS_0.05_fdr_dmps.csv") )
+top_f_pfos <- read.csv( paste0(dir, "Female_PFOS_0.05_fdr_dmps.csv") )
+top_f_pfoa <- read.csv( paste0(dir, "Female_PFOA_0.05_fdr_dmps.csv") )
+
+# male female seperately
+top_m_pfhxs <- read.csv( paste0(dir, "Male_PFHXS_0.05_fdr_dmps.csv") )
+top_m_pfos <- read.csv( paste0(dir, "Male_PFOS_0.05_fdr_dmps.csv") )
+top_m_pfoa <- read.csv( paste0(dir, "Male_PFOA_0.05_fdr_dmps.csv") )
+
+
+## get mval 
+# mval
+dtall_f <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/dt_all_f.csv", header = T)
+
+getM <- function(top_chem, datatable){
+  cpgs = top_chem$Name
+  name = substitute(top_chem)
+  # – Select columns named in a variable using with = FALSE
+  topM = datatable[, cpgs, with = FALSE]
+  topM = data.frame(topM) %>% dplyr::mutate(pid = datatable$pid) %>% select(pid, everything())
+  write.csv(topM, paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/fdr005_dmps/Mval",
+                        sep = "_", name, ".csv"), row.names = F )
+}
+
+getM(top_f_pfhxs, dtall_f)
+getM(top_f_pfos, dtall_f)
+getM(top_f_pfoa, dtall_f)
+
+# double check 
+Mtop_f_pfhxs <- read.csv(paste0(dir, "Mval_top_f_pfhxs_.csv"))
+ncol(Mtop_f_pfhxs) == nrow(top_f_pfhxs) + 1
+
+# 
+# mval of male 
+clinchem <- read.csv( "/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem.csv",
+                      header = T)
+t_mval <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/t_mval.csv",
+                 header = T)
+dt_all <- merge(clinchem, t_mval, by = "pid")
+
+dim(dt_all)
+dt_all <- data.table(dt_all)
+dtall_m <-  dt_all[infant_sex == "Male"]
+dim(dtall_m)
+
+getM(top_m_pfhxs, dtall_m)
+getM(top_m_pfos, dtall_m)
+getM(top_m_pfoa, dtall_m)
+
+
+# double check 
+Mtop_m_pfhxs <- read.csv(paste0(dir, "Mval_top_m_pfhxs_.csv"))
+ncol(Mtop_m_pfhxs) == nrow(top_m_pfhxs) + 1
+

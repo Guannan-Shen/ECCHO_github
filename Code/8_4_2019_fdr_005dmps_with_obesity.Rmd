@@ -1,0 +1,90 @@
+---
+title: "fdr005 dmps with obesity outcomes"
+author: "Guannan Shen"
+date: "August 4, 2019"
+output: 
+  html_document:
+    number_sections: yes
+    theme: united
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+  word_document:
+    toc: yes
+    toc_depth: '5'
+  pdf_document:
+    latex_engine: lualatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 5
+---
+
+```{r setup, include=FALSE, cache = FALSE}
+require("knitr")
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+opts_chunk$set(engine = "R")
+knitr::opts_chunk$set(echo = T)
+knitr::opts_chunk$set(message = F)
+knitr::opts_chunk$set(warning = F)
+## setting wd in DELL
+## opts_knit$set(root.dir = "~/Stats/CIDA_OMICs/CIDA_OMICS/7659Stats_Genetics/HW5/")
+## setting working directory in asus 
+## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/Cario_RNASeq_Microbiom_Inte/DataRaw/") 
+## setting working directory in ubuntu
+opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/")
+                                                 
+## cache = F, if cache = T, will not revaluate code chunk everytime
+## double or more space to insert a line break
+```
+
+```{r libs, echo=FALSE }
+## set up workspace
+rm(list = ls())
+library(data.table)
+library(knitr)
+library(tidyverse)
+library(magrittr)
+library(stats)
+library(readxl)
+library(mutoss)
+options(stringsAsFactors = F)
+options(dplyr.width = Inf)
+getwd()
+## not in function
+'%nin%' <- Negate('%in%')
+
+# ######## clean memory ######################
+# rm(list = ls())
+# gc()
+# ls()
+# slotNames(x)
+# getSlots(x)
+
+```
+
+```{r importcpg_mval}
+# import cpgs which are fdr 005 from DMP analysis
+dir <- "~/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/fdr005_dmps/"
+Mtop_f_pfhxs <- read.csv(paste0(dir, "Mval_top_f_pfhxs_.csv"))
+Mtop_f_pfos <- read.csv(paste0(dir, "Mval_top_f_pfos_.csv"))
+Mtop_f_pfoa <- read.csv(paste0(dir, "Mval_top_f_pfoa_.csv"))
+
+Mtop_m_pfhxs <- read.csv(paste0(dir, "Mval_top_m_pfhxs_.csv"))
+Mtop_m_pfos <- read.csv(paste0(dir, "Mval_top_m_pfos_.csv"))
+Mtop_m_pfoa <- read.csv(paste0(dir, "Mval_top_m_pfoa_.csv"))
+
+########## get chem conc
+# all clinical data, chemical conc, obesity outcomes
+clinchem_f <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_f.csv")
+clinchem_m <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_m.csv")
+sum(Mtop_f_pfhxs$pid != clinchem_f$pid) == 0
+
+## read in data 
+pfas_cell_583 <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/11_05_pfas_cell_583.csv")
+Outcomes <- colnames(pfas_cell_583)[5:13]
+Outcomes
+
+```
+
+
+## Correlation
