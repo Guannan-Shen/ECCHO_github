@@ -123,6 +123,7 @@ doscatter <- function(mval, chem){
   }
   chemname = unlist( strsplit(deparse(substitute(mval)), "_", fixed = T))  [3]
   xname = paste("ln", chemname, sep = "")
+  # x is chemical 
   x = chem[, colnames(chem) == xname]
   ncpg = ncol(mval) - 1
   for (i in 1:ncpg) {

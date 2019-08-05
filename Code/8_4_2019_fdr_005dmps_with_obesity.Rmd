@@ -88,3 +88,127 @@ Outcomes
 
 
 ## Correlation
+
+```{r r corre}
+## equal length of outcomes and covariates
+cpg_FunRegSim <- function(outcome, CpGdataPid, Xs, Outcome_name, Topn, chemname){
+  ## get the gender 
+  gender1 = unlist(strsplit( deparse(substitute(Xs)), "_", fixed = T))[2]
+  gender2 = unlist(strsplit( deparse(substitute(CpGdataPid)), "_", fixed = T))[2]
+  if(gender1 != gender2)
+    stop("Should use data of the same gender!")
+  if(   sum(CpGdataPid$pid != Xs$pid) != 0  )
+    stop("Wrong pid order!")
+  Gender = ifelse(gender1 == "m", "male", "female")
+  # the first column of CpG data is pid 
+  CpGdata = as.matrix(as.matrix(CpGdataPid[,-1] ) )
+  ## number of CpG to test, also the number of multiple test
+  n_cpg = ncol(CpGdata) 
+  ## outcome lm
+  outcome_lm = lapply(1:n_cpg, function(i){
+  lmregress = lm(CpGdata[ ,i] ~ Bcell + CD4T + CD8T + Gran + Mono + NK + nRBC, data = Xs)
+  xcpg = resid(lmregress)
+  lm = lm(outcome ~ xcpg + Race, data = Xs)
+  coef = summary(lm)$coefficients[2, ]
+  return(coef)
+})
+   outcome_lm = data.frame(matrix(unlist(outcome_lm), ncol = 4, byrow = TRUE,
+                          dimnames = list(
+              # the first column of CpG data is pid
+                     c(colnames(CpGdata)),
+                        c("Estimate", "Std.Error", "t.statistic", "p.value"))))
+
+   # adjusted p-value
+    outcome_lm =  outcome_lm %>% 
+                              mutate(FDR = if(n_cpg >= 17)
+                                       {p.adjust(p.value, "BH", n_cpg )}
+                                     else { BL(p.value, 0.05, silent = TRUE )$adjPValues },
+                                     names = colnames(CpGdata)) %>% 
+                                               mutate(Estimate = round(Estimate ,4),
+                                                      Std.Error = round(Std.Error,4),
+                                                      t.statistic = round(t.statistic,4)
+                                                      )%>% 
+                                               select(names, everything()) %>% arrange(p.value)
+   # sort by p.value
+    outcome_lm = data.frame(outcome_lm)
+ 
+   ## sample size 
+    size = length(outcome) - sum(is.na(outcome))
+   ## save results per outcome 
+    dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/fdr005_dmps/obesity/"
+    write.csv(outcome_lm, paste( dir, Sys.Date(), Gender, Outcome_name, chemname, ".csv", sep="_"), row.names = F)
+   ## summary table 
+   kable(head(outcome_lm, Topn), 
+         caption = paste("Top CpGs from ", n_cpg," CpGs" ," for Outcome: ", Outcome_name, " of ", Gender, " ", chemname, " (Sample Size = ", size, ") ", sep = "" , collapse = ""))
+}
+
+```
+
+
+```{r runcorr}
+## # the regression summary table for log10 outcomes 
+# function(outcome, CpGdata, Xs, Outcome_name, Topn, chemname)
+n <- 10 
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfhxs, clinchem_f, x, n, "pfhxs")
+})
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfos, clinchem_f, x, n, "pfos")
+})
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfoa, clinchem_f, x, n, "pfoa")
+})
+
+####### male 
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfhxs, clinchem_m, x, n, "pfhxs")
+})
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfos, clinchem_m, x, n, "pfos")
+})
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfoa, clinchem_m, x, n, "pfoa")
+})
+```
+
+
+## validation
+
+```{r scatter}
+# ## mval vs chemical concentration, should be mval vs log10 outcome, obesity as the outcome
+# ## of the regression
+# doscatter <- function(mval, chem){
+#   if(sum(mval$pid != chem$pid) != 0)
+#   stop("Wrong pid order!")
+#   gender1 = unlist( strsplit(deparse(substitute(mval)), "_", fixed = T))  [2]
+#   gender2 = unlist( strsplit(deparse(substitute(chem)), "_", fixed = T))  [2]
+#   if(gender1 != gender2)
+#     {stop("Use same gender for both datasets")}
+#   else{
+#     gender = ifelse(gender1 == "f", "Female", "Male") 
+#   }
+#   chemname = unlist( strsplit(deparse(substitute(mval)), "_", fixed = T))  [3]
+#   xname = paste("ln", chemname, sep = "")
+#   x = chem[, colnames(chem) == xname]
+#   ncpg = ncol(mval) - 1
+#   for (i in 1:ncpg) {
+#     j = i+1
+#     cpg = colnames(mval)[j]
+#     ggplot( mval,aes(x, mval[, j]) ) +
+#           geom_point() +
+#             xlab(paste(xname,gender, sep = "_" ) ) +
+#             ylab(paste("M Values of ", sep = "", cpg) ) +
+#            geom_smooth(method = "lm", se = F) +
+#            theme_minimal()
+#     ggsave( paste("~/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/fdr005_dmps/plots/", xname, cpg, gender,sep = "_", ".png" ) )
+#   }
+# }
+# 
+# doscatter(Mtop_f_pfhxs, clinchem_f)
+# doscatter(Mtop_f_pfos, clinchem_f)
+# doscatter(Mtop_f_pfoa, clinchem_f)
+# 
+# doscatter(Mtop_m_pfhxs, clinchem_m)
+# doscatter(Mtop_m_pfos, clinchem_m)
+# doscatter(Mtop_m_pfoa, clinchem_m)
+```
