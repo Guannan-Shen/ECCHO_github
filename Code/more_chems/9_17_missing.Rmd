@@ -1,0 +1,111 @@
+---
+title: "Missingness"
+author: "Guannan Shen"
+date: "September 18, 2019"
+output: 
+  html_document:
+    number_sections: yes
+    theme: united
+    toc: yes
+    toc_depth: 5
+    toc_float: no
+  word_document:
+    toc: yes
+    toc_depth: '5'
+  pdf_document:
+    latex_engine: lualatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 5
+---
+
+```{r setup, include=FALSE, cache = FALSE}
+require("knitr")
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+opts_chunk$set(engine = "R")
+knitr::opts_chunk$set(echo = T)
+knitr::opts_chunk$set(message = F)
+knitr::opts_chunk$set(warning = F)
+## setting wd in DELL
+## opts_knit$set(root.dir = "~/Stats/CIDA_OMICs/CIDA_OMICS/7659Stats_Genetics/HW5/")
+## setting working directory in asus 
+## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/Cario_RNASeq_Microbiom_Inte/DataRaw/") 
+## setting working directory in ubuntu
+opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/more_chems/")
+                                                 
+## cache = F, if cache = T, will not revaluate code chunk everytime
+## double or more space to insert a line break
+```
+
+
+```{r libs, echo = FALSE, warning= F}
+######################
+## Set up workspace
+######################
+rm(list = ls())
+library(tidyverse)
+library(magrittr)
+library(BiocStyle)
+library(mice)
+
+options(stringsAsFactors = F)
+options(dplyr.width = Inf)
+getwd()
+
+# directory, Ubuntu 
+dir = "~/Documents/gitlab/Omics_Integration/"
+# small functions, %nin%, %||%, isnothing
+source( paste0(dir, "Code/small_fun.R") )
+
+# ######## clean memory ######################
+# rm(list = ls())
+# gc()
+# is(dds)
+# slotNames(dds)
+```
+
+
+# Preprocessing
+## Import data and Features
+$$N = 407$$ for both of phthalates and phenols.  
+Samples should set to missing based on the unadjusted measurements, which are the variables ending in “_ng_ml” (or “nmol_mL”).    
+ All other analyses should use the creatinine-adjusted measurements, which are the variables ending in “_ug_g_creat” (or “nmol_g_creat”).  
+There are 17 chemicals: 8 phenols and 9 phthalates.   
+
+
+```{r import}
+dir = "~/Documents/gitlab/ECCHO_github/"
+## reference plots 
+source( paste0(dir, "Code/more_chems/ref_plots.R") )
+source( paste0(dir, "Code/more_chems/sum_tables.R") )
+source( paste0(dir, "Code/more_chems/Dimen_reduc_clustering.R") )
+## import data
+phthal_di2_all <- read.csv(paste0(dir,"DataRaw/more_chems/phthal_di2_sep2019.csv"), 
+                            header=TRUE)
+## keep all chemical data, adjusted and unadjusted 
+all_chem <- phthal_di2_all[, -c(2:17)] 
+# colnames(all_chem)
+dim(all_chem)
+
+## unadjusted for missing 
+unadjusted_chem <- all_chem[, 1:19] %>% dplyr::select(-cr_low_flag)
+dim(unadjusted_chem)
+
+
+
+```
+
+## detection limits and missing 
+
+```{r dect_lim}
+colnames(unadjusted_chem)
+
+###### detection limits  #######
+dect_lim <- c(0.4, 0.4, 0.3, 0.2, 0.2, 0.2, 
+              0.6, 0.2, 0.2, 0.1, 0.1, 1.0,
+              0.1, 0.2, 0.1, 0.1, 1.0)
+
+lower_counts <- sapply(colnames(chems), function(x){
+  sum(chems[, x] < dect_lim[x])
+})
+```

@@ -1,0 +1,282 @@
+---
+title: "Phenols and Phthalates dimension reduction"
+author: "Guannan Shen"
+date: "September 4, 2019"
+output: 
+  html_document:
+    number_sections: yes
+    theme: united
+    toc: yes
+    toc_depth: 5
+    toc_float: no
+  word_document:
+    toc: yes
+    toc_depth: '5'
+  pdf_document:
+    latex_engine: lualatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 5
+---
+
+```{r setup, include=FALSE, cache = FALSE}
+require("knitr")
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+opts_chunk$set(engine = "R")
+knitr::opts_chunk$set(echo = T)
+knitr::opts_chunk$set(message = F)
+knitr::opts_chunk$set(warning = F)
+## setting wd in DELL
+## opts_knit$set(root.dir = "~/Stats/CIDA_OMICs/CIDA_OMICS/7659Stats_Genetics/HW5/")
+## setting working directory in asus 
+## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/Cario_RNASeq_Microbiom_Inte/DataRaw/") 
+## setting working directory in ubuntu
+opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/more_chems/")
+                                                 
+## cache = F, if cache = T, will not revaluate code chunk everytime
+## double or more space to insert a line break
+```
+
+
+```{r libs, echo = FALSE, warning= F}
+######################
+## Set up workspace
+######################
+rm(list = ls())
+library(tidyverse)
+library(magrittr)
+library(BiocStyle)
+library(mice)
+
+options(stringsAsFactors = F)
+options(dplyr.width = Inf)
+getwd()
+
+# directory, Ubuntu 
+dir = "~/Documents/gitlab/Omics_Integration/"
+# small functions, %nin%, %||%, isnothing
+source( paste0(dir, "Code/small_fun.R") )
+
+# ######## clean memory ######################
+# rm(list = ls())
+# gc()
+# is(dds)
+# slotNames(dds)
+```
+
+
+# Preprocessing
+## Import data and Features
+$$N = 407$$ for both of phthalates and phenols.  
+There are 17 chemicals: 8 phenols and 9 phthalates.  
+Anne have scaled all of the variables by creatinine concentration and also removed the chemicals that were reported as <75% detectable in the reports from the CDC lab that conducted the analyses (see attached).  
+DEHP (detection limits) consists of Mono-2-ethylhexyl phthalate (MEHP) (0.5), Mono-(2-ethyl-5-hydroxyhexyl) phthalate (MEHHP) (0.2), Mono-(2-ethyl-5-oxohexyl) phthalate (MEOHP) (0.2), Mono-(2-ethyl-5-carboxylpentyl) phthalate (MECPP) (0.2).  
+
+
+```{r import}
+dir = "~/Documents/gitlab/ECCHO_github/"
+## reference plots 
+source( paste0(dir, "Code/more_chems/ref_plots.R") )
+source( paste0(dir, "Code/more_chems/sum_tables.R") )
+source( paste0(dir, "Code/more_chems/Dimen_reduc_clustering.R") )
+## import data
+phthal_di2<- read.csv(paste0(dir,"DataRaw/more_chems/phthal_di2_aug2019.csv"), 
+                            header=TRUE)
+# 
+dim(phthal_di2)
+neonatal_clin <- phthal_di2[, 1:17]
+# two chemicals 
+phthalates <- phthal_di2[, c(1, 18:26)]
+head(phthalates)
+phenols <- phthal_di2[, c(1, 27:34)]
+head(phenols)
+##all together 
+chems <- merge(phthalates, phenols, by = "pid") %>% column_to_rownames("pid")
+
+############## save chems ########
+write.csv(chems, "~/Documents/gitlab/ECCHO_github/DataProcessed/more_chems/chems_adjusted.csv",
+          row.names = TRUE)
+
+```
+
+## Highly skewed data
+log transformation?
+
+```{r skewed}
+#
+print("There is no 0 in the data.")
+sum(chems == 0)
+######## right skewed raw data ######
+test <- chems %>% stack()
+dot_groupby(test, test$values, test$ind, 0.4, "Chemicals", "ug/(creatinine g)")
+# select if 
+test <- chems %>% select_if( ~max(., na.rm=TRUE) < 1000 ) %>% stack()
+dot_groupby(test, test$values, test$ind, 0.4, "Chemicals", "ug/(creatinine g)")
+# max < 150
+test <- chems %>% select_if( ~max(., na.rm=TRUE) < 150) %>% stack()
+density_values_group(test, "max < 150")
+
+######## the detection limits applied to non creatinine adjusted data #########
+###### detection limits  #######
+dect_lim <- c(0.4, 0.4, 0.3, 0.2, 0.2, 0.2,
+              0.6, 0.2, 0.2, 0.1, 0.1, 1.0,
+              0.1, 0.2, 0.1, 0.1, 1.0)
+names(dect_lim) <- colnames(chems)
+# 
+# lower_counts <- sapply(colnames(chems), function(x){
+#   sum(chems[, x] < dect_lim[x])
+# })
+# 
+# # summary tables
+# sum_chems <- cbind(lower_counts, dect_lim, sum_table(chems))
+# sum_chems %>% kable
+
+########## natural log transformation ########
+chems_log <- log(chems , base = exp(1))
+density_values_group(chems_log %>% stack(), 
+                     "8 phenols and 9 phthalates: log transformed")
+# log transformation of two chemical groups 
+phthalates_log <- log(phthalates %>% column_to_rownames("pid"), base = exp(1))
+phenols_log <- log(phenols %>% column_to_rownames("pid"), base = exp(1))
+density_values_group(phthalates_log %>% stack(), 
+                     "9 phthalates: log transformed")
+density_values_group(phenols_log %>% stack(), 
+                     "8 phenols: log transformed")
+
+### z-score standardization methods, but the rescale does not change the Pearson correlation ###
+source( paste0(dir, "Code/more_chems/Dimen_reduc_clustering.R") )
+density_values_group(chems_log %>% rescale0_1() %>% as.data.frame() %>% stack(), 
+                     "8 phenols and 9 phthalates: log transformed and standardized")
+
+################### save the detection limits, chems and chems_log datafile ###########
+
+write.csv(chems_log, "~/Documents/gitlab/ECCHO_github/DataProcessed/more_chems/chems_adjusted_log.csv",
+          row.names = TRUE)
+
+write.csv(dect_lim, "~/Documents/gitlab/ECCHO_github/DataProcessed/more_chems/dect_lim.csv",
+          row.names = TRUE)
+
+```
+
+## Missing Values (Below the limit of detection)
+
+```{r Missing, include= FALSE, eval=FALSE}
+## Do we need to treat this as missing values?
+## make lower than detect limits as NA
+lower_na <- sapply(colnames(chems), function(x){
+  chems[, x] < dect_lim[x]
+}) %>% as.matrix()
+chems_na <- chems
+chems_na[lower_na] <- NA
+allchems <- md.pattern(chems_na)
+# 
+no_BPS_TCS <- md.pattern(chems_na[, -c(16:17)], plot = FALSE)
+rownames(no_BPS_TCS)
+
+```
+
+## explore correlations 
+
+```{r correlation, fig.width = 8, fig.height= 10}
+# correlation heatmap 
+source( paste0(dir, "Code/more_chems/ref_plots.R") )
+# cor_heatmap <- function(df, method, reorder, hclust_method, text_size)
+chems_pearson <- cor_heatmap(chems %>% rescale0_1(), "pearson", TRUE, "complete", text_size = 3)
+# robust for outliers, rank-based correlation, log transformation won't change the correlation heatmap
+chems_spearman <- cor_heatmap(chems %>% rescale0_1(), "spearman", TRUE, "complete", text_size = 3)
+chems_kendall <- cor_heatmap(chems %>% rescale0_1(), "kendall", TRUE, "complete", text_size = 3)
+
+##### log transformed #####
+chems_log_pearson <- cor_heatmap(chems_log %>% rescale0_1(), 
+                                 "pearson", TRUE, "complete", text_size = 3)
+phthalates_log_pearson <- cor_heatmap(phthalates_log %>% rescale0_1(), 
+                                      "pearson", TRUE, "complete", text_size = 5)
+phenols_log_pearson <- cor_heatmap(phenols_log %>% rescale0_1(), 
+                                   "pearson", TRUE, "complete", text_size = 5)
+
+
+``` 
+
+
+# Dimension Reduction and/or feature Agglomeration
+Feature agglomeration (clustering):  This is a "bottom-up" approach, each feature starts in its own cluster, and pairs of clusters are merged as one moves up the hierarchy.  
+Dimension reduction: PCA, factor analysis.  
+
+## hierarchical clustering of features 
+In complete-link clustering or complete-linkage clustering , the similarity of two clusters is the similarity of their most dissimilar members. This complete-link merge criterion is non-local; the entire structure of the clustering can influence merge decisions.  
+In single-link clustering or single-linkage clustering , the similarity of two clusters is the similarity of their most similar members. This single-link merge criterion is local. We pay attention solely to the area where the two clusters come closest to each other. Other, more distant parts of the cluster and the clusters' overall structure are not taken into account.  
+
+## K-means
+Standardization and Its Effects on K-Means Clustering Algorithm: By comparing the results on infectious diseases datasets, it was found that the result obtained by the z-score standardization method is more effective and efficient than min-max and decimal scaling standardization methods.  
+Subset K-Means Approach for Handling Imbalanced-Distributed Data: However, the performance of k-means algorithm tends to be affected by skewed data distributions.  
+It also depends on the data. 
+
+```{r clustering}
+##### hierarchical clustering based on log transformed 
+source( paste0(dir, "Code/more_chems/Dimen_reduc_clustering.R") )
+# based on correlation distance matrix
+dist <- cor(chems_log %>% rescale0_1(), 
+            use = "pairwise.complete.obs", method = "pearson") %>% dist_cormat()
+hc <- my_h_clust(dist, "complete", "Pearson Complete linkage")
+hc <- my_h_clust(dist, "single", "Pearson Single linkage")
+hc <- my_h_clust(dist, "centroid", "Pearson Centroid linkage")
+
+# euclidean distance 
+
+dist <- dist( t(chems_log%>% rescale0_1()), method = "euclidean")
+hc <- my_h_clust(dist, "complete", "Euclidean Complete linkage")
+hc <- my_h_clust(dist, "single", "Euclidean Single linkage")
+hc <- my_h_clust(dist, "centroid", "Euclidean Centroid linkage")
+
+dist <- dist( t(chems_log), method = "euclidean")
+hc <- my_h_clust(dist, "complete", "Euclidean Centroid linkage")
+
+########## k means clustering ##############
+## kmeans cluster
+
+## kmeans and try k
+elbow_kmeans(t(chems), maxk = 10, iter.max = 10)
+km <- kmeans(t(chems), 4, iter.max = 10)
+km$cluster
+
+
+elbow_kmeans(t(chems_log), maxk = 10, iter.max = 10)
+km <- kmeans(t(chems_log), 5, iter.max = 10)
+km$cluster
+
+elbow_kmeans(t(chems_log %>% rescale0_1()), maxk = 10, iter.max = 10)
+km <- kmeans(t(chems_log %>% rescale0_1()), 6, iter.max = 10)
+km$cluster
+```
+
+## PCA 
+Robust PCA for skewed data and its outlier map: The outlier sensitivity of classical principal component analysis (PCA) has spurred the development of robust techniques.  
+PCA analysis by prcomp() is preferred over princomp() for numerical accuracy (difference in calculating the variance).  
+The data can be centered and scaled by the prcomp() function itself. The data is always z-score standardized for PCA analysis in my work. 
+
+## Factor analysis
+Factor analysis is a statistical method used to describe variability among observed, correlated variables in terms of a potentially lower number of unobserved variables called factors. For example, it is possible that variations in six observed variables mainly reflect the variations in two unobserved (underlying) variables. Factor analysis searches for such joint variations in response to unobserved latent variables. The observed variables are modelled as linear combinations of the potential factors, plus "error" terms. Factor analysis aims to find independent latent variables.  
+1. Exploratory factor analysis (EFA) is used to identify complex interrelationships among items and group items that are part of unified concepts.  
+2. Confirmatory factor analysis (CFA) is a more complex approach that tests the hypothesis that the items are associated with specific factors.  
+Principal component analysis (PCA) is a widely used method for factor extraction, which is the first phase of EFA.  
+
+```{r di_reduction}
+###### pca ########
+source( paste0(dir, "Code/more_chems/Dimen_reduc_clustering.R") )
+# the log transformation is necessary 
+pca_chems <- wrapper_prcomp(chems)
+pca_chems_log <-wrapper_prcomp(chems_log)
+
+## preliminary factor analysis ##
+n.factors <- 5
+
+fit <- factanal(chems_log, 
+                n.factors,                # number of factors to extract
+                scores=c("regression"),
+                rotation="none")
+
+print(fit, digits=4, cutoff=.3, sort=TRUE)
+```
+
+# Questions
+1. We also will include BPA, and mono (carboxynonyl) phthalate (MCNP), perfluorooctane sulfonic acid (PFOS), 2-(N-methyl-PFOSA) acetic acid, and perfluorodecanoic acid in our measurements to evaluate them as possible confounders. Based on the question of interests, clustering of chemicals? 
