@@ -15,6 +15,7 @@
 *.mdb
 DataRaw/
 DataProcessed/
+Background/
 .DS_Store
 # the history Rstudio Proj
 .Rhistory
