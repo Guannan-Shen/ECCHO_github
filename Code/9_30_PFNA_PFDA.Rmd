@@ -1,0 +1,154 @@
+---
+title: "PFNA PFDA"
+author: "Guannan Shen"
+date: "September 30, 2019"
+output: 
+  html_document:
+    number_sections: yes
+    theme: united
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+  word_document:
+    toc: yes
+    toc_depth: '5'
+  pdf_document:
+    latex_engine: lualatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 5
+---
+
+```{r setup, include=FALSE, cache = FALSE}
+require("knitr")
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+opts_chunk$set(engine = "R")
+knitr::opts_chunk$set(echo = T)
+knitr::opts_chunk$set(message = F)
+knitr::opts_chunk$set(warning = F)
+## setting wd in DELL
+## opts_knit$set(root.dir = "~/Stats/CIDA_OMICs/CIDA_OMICS/7659Stats_Genetics/HW5/")
+## setting working directory in asus 
+## opts_knit$set(root.dir = "C:/Users/hithr/Documents/Stats/gitlab/Cario_RNASeq_Microbiom_Inte/DataRaw/") 
+## setting working directory in ubuntu
+opts_knit$set(root.dir = "~/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/")
+                                                 
+## cache = F, if cache = T, will not revaluate code chunk everytime
+## double or more space to insert a line break
+```
+
+
+```{r libs}
+## set up workspace
+rm(list = ls())
+library(data.table)
+library(knitr)
+library(tidyverse)
+library(magrittr)
+library(stats)
+library(DMRcate)
+library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
+library(tibble)
+library(grid) # low-level grid functions are required
+options(stringsAsFactors = F)
+options(dplyr.width = Inf)
+getwd()
+## not in function
+'%nin%' <- Negate('%in%')
+
+# ######## clean memory ######################
+# rm(list = ls())
+# gc()
+# ls()
+# slotNames(x)
+# getSlots(x)
+
+```
+
+# Check pid and sex stratified exploratory
+
+```{r data}
+# PFNA and PFDA data
+pfna_da <- fread("pfas_methyl_di4.csv")
+## pid, pfoa concentration and cpg M values, and clinical gender information 
+pid583 <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/pid583.csv")
+pid583 <- as.vector(unlist(pid583))
+# check pid 
+sum(pfna_da$pid != pid583)
+# ln transform 
+pfna_da_ln <- pfna_da %>% dplyr::mutate(lnpfdea = log(PFDEA_ng_ml , base = exp(1)),
+                                        lnpfna = log(PFNA2_ng_ml , base = exp(1)))
+
+new_chem <- c("PFDEA_ng_ml", "PFNA2_ng_ml")
+##### Female data #####
+## infant_sex == 2 male infant_sex == 1 female 
+# get female data
+pfna_da_f <- pfna_da_ln %>% dplyr::filter(pid %in% pid583) %>% dplyr::filter(infant_sex == 1)
+dim(pfna_da_f)
+clin_chem_f <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_f.csv")
+sum(clin_chem_f$pid != pfna_da_f$pid)
+# get male data
+pfna_da_m <- pfna_da_ln %>% dplyr::filter(pid %in% pid583) %>% dplyr::filter(infant_sex == 2)
+dim(pfna_da_m)
+clin_chem_m <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_m.csv")
+sum(clin_chem_m$pid != pfna_da_m$pid)
+
+# attach new data to old data
+clin_chem_f_nada <- clin_chem_f %>% dplyr::mutate(lnpfdea = pfna_da_f$lnpfdea ,
+                                                  lnpfna = pfna_da_f$lnpfna  )
+
+clin_chem_m_nada <- clin_chem_m %>% dplyr::mutate(lnpfdea = pfna_da_m$lnpfdea ,
+                                                  lnpfna = pfna_da_m$lnpfna  )
+
+write.csv(clin_chem_f_nada, row.names = F,
+          "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/clin_chem_f_nada.csv")
+write.csv(clin_chem_m_nada, row.names = F,
+          "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/clin_chem_m_nada.csv")
+```
+
+```{r explo}
+new_chem <- c("PFDEA_ng_ml", "PFNA2_ng_ml")
+##### summary statistics of ###
+summary(pfna_da_ln[, new_chem])
+apply(pfna_da_ln[, new_chem], 2, function(x){
+  sum(x <= 0.1)
+})
+
+## dot plot 
+# PFDA
+ggplot(pfna_da_ln, aes(x = PFDEA_ng_ml)) +
+  geom_dotplot(method="histodot",  dotsize = 0.25) +
+  labs(title = "All")
+
+ggplot(pfna_da_f, aes(x = PFDEA_ng_ml)) +
+  geom_dotplot(method="histodot",  dotsize = 0.25) +
+  labs(title = "Female")
+
+ggplot(pfna_da_m, aes(x = PFDEA_ng_ml)) +
+  geom_dotplot(method="histodot",  dotsize = 0.25) +
+  labs(title = "Male")
+
+## PFNA
+ggplot(pfna_da_ln, aes(x = PFNA2_ng_ml)) +
+  geom_dotplot(method="histodot",  dotsize = 0.25) +
+  labs(title = "All")
+
+ggplot(pfna_da_f, aes(x = PFNA2_ng_ml)) +
+  geom_dotplot(method="histodot",  dotsize = 0.25) +
+  labs(title = "Female")
+
+ggplot(pfna_da_m, aes(x = PFNA2_ng_ml)) +
+  geom_dotplot(method="histodot",  dotsize = 0.25) +
+  labs(title = "Male")
+
+#333 ln transfomed 
+ggplot(pfna_da_ln, aes(x = lnpfdea)) +
+  geom_dotplot(method="histodot",  dotsize = 0.25) +
+  labs(title = "All ln")
+
+ggplot(pfna_da_ln, aes(x = lnpfna)) +
+  geom_dotplot(method="histodot",  dotsize = 0.25) +
+  labs(title = "All ln")
+
+
+```
