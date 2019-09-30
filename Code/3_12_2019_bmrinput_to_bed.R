@@ -63,6 +63,63 @@ add_columnname <- function(sorted_bed){
 }
 add_columnname("sorted_f_pfhxs.bed")
 
+###### for new chems PFNA, PFDA ##########
+# read in dmrcate input
+library(data.table)
+f_pfdea_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/2019-09-30_f_pfdea__CpGs_withChem.csv",
+                     header = T)
+f_pfna_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/2019-09-30_f_pfna__CpGs_withChem.csv",
+                     header = T)
+m_pfdea_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/2019-09-30_m_pfdea__CpGs_withChem.csv",
+                     header = T)
+m_pfna_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/2019-09-30_m_pfna__CpGs_withChem.csv",
+                    header = T)
+dim(f_pfna_DMP)
+
+# function for .bed file
+bedfile <- function(DMRcate_input){
+  # library
+  library(tidyverse)
+  # library(gtools) the mixedsort() is slow  
+  gender = unlist(strsplit( deparse(substitute(DMRcate_input )), "_"))[1]
+  chemname = unlist(strsplit( deparse(substitute(DMRcate_input )), "_"))[2]
+  # sort the chromosome 
+  # if there is 'chrM', using custom defined factor levels
+  # prevent scientific notation so bedtools can be used
+  options(scipen=999)
+  chrOrder = c(paste("chr",1:22,sep=""),"chrX","chrY","chrM")
+  bedforsave = DMRcate_input %>% dplyr::mutate(end = pos + 51,
+                                               chrom = factor(CHR, 
+                                                              levels=chrOrder)) %>% 
+    # mutate(chromStart = format(pos, scientific = F),
+    #        chromEnd = format(end, scientific = F)) %>% 
+    dplyr::select(chrom, pos, end, raw) %>% arrange(chrom)
+  # # as numeric, then the format is useless 
+  # bedforsave[,2:4] = mutate_all(bedforsave[,2:4], function(x) as.numeric(as.character(x)) )
+  write.table(bedforsave, file= paste("~/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/", 
+                                      Sys.Date(), "_", gender, "_",chemname, ".bed", sep = ""), 
+              # col.names F for bedtools sortBed
+              # but we will need the colnames later on for combp
+              quote=F, sep="\t", row.names=F, col.names=F)
+}
+
+bedfile(f_pfdea_DMP)
+bedfile(f_pfna_DMP)
+bedfile(m_pfdea_DMP)
+bedfile(m_pfna_DMP)
+
+add_columnname <- function(sorted_bed){
+  dir = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/bed_for_combp/"
+  data = fread(paste(dir, sorted_bed, sep = ""), header = F) %>% as.data.frame()
+  colnames(data) = c("chrom",	"pos",	"end",	"rawp")
+  write.table(data, file= paste(dir, Sys.Date(), "_", sorted_bed, sep = ""), 
+              quote=F, sep="\t", row.names=F, col.names=T)
+}
+add_columnname("sorted_f_pfdea.bed")
+add_columnname("sorted_f_pfna.bed")
+add_columnname("sorted_m_pfdea.bed")
+add_columnname("sorted_m_pfna.bed")
+
 ##################### run combp #############################
 # source activate python27
 # for combp https://github.com/brentp/combined-pvalues
