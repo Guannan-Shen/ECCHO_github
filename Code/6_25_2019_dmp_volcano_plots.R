@@ -12,7 +12,7 @@ require(ggrepel)
 options(stringsAsFactors = F)
 getwd()
 # notes
-print("Basically, using the fdr column from the dmrcate DMP analysis results!")
+print("Calculate my own BH p adjusted value by raw p value")
 input_names <- c("2019-03-07_f_pfhxs__CpGs_withChem.csv",
                  "2019-03-07_f_pfoa__CpGs_withChem.csv",
                  "2019-03-07_f_pfos__CpGs_withChem.csv",
@@ -30,6 +30,7 @@ dmp_read <- function(dmpresult_name){
   # Ubuntu
   dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/" 
   data = fread(paste0(dir, dmpresult_name), header = T) 
+  # BP is the counter of CpGs by chromosome 
   temp = data[, BP := seq_len(.N), by = CHR]
   # get chrom in order
   chrOrder = c(paste("chr",1:22,sep=""),"chrX","chrY")
@@ -47,6 +48,7 @@ dmp_read <- function(dmpresult_name){
 df = dmp_read(dmpresult_name = input_names[1])
 head(df)
 
+df[195000:195003,]
 # table(df$CHR)
 # df$CHR
 # test if the fdr column can be calculated from raw
@@ -79,6 +81,7 @@ dmp_anno_read <- function(dmpresult_name){
   return(df_anno)
 }
 
+######## volcano plots of CpGs #####3
 dmp_vol <- function(dmpresult_name, p_cutoff_label, fc_cutoff_label){
   ############ get names #############
   g_name = unlist(strsplit( dmpresult_name, "_"))[2]
@@ -122,7 +125,7 @@ dmp_vol <- function(dmpresult_name, p_cutoff_label, fc_cutoff_label){
 
 
 # table(gwasResults$BP)
-
+######3 volcano plot of annotated genes ###########
 gene_vol <- function(dmpresult_name, p_cutoff_label, fc_cutoff_label){
   ############ get names #############
   g_name = unlist(strsplit( dmpresult_name, "_"))[2]
