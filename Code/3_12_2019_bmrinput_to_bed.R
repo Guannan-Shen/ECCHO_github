@@ -111,7 +111,7 @@ bedfile(m_pfna_DMP)
 add_columnname <- function(sorted_bed){
   dir = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/bed_for_combp/"
   data = fread(paste(dir, sorted_bed, sep = ""), header = F) %>% as.data.frame()
-  colnames(data) = c("chrom",	"pos",	"end",	"rawp")
+  colnames(data) = c("chrom",	"start",	"end",	"rawp")
   write.table(data, file= paste(dir, Sys.Date(), "_", sorted_bed, sep = ""), 
               quote=F, sep="\t", row.names=F, col.names=T)
 }
