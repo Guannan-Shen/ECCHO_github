@@ -154,3 +154,60 @@ go_cell <- sig_m_pfoa_gocell %>%
 
 write.xlsx(go_cell, 
            paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/pathways_eccho_3chem/SigDMP/", sep = "_", sig_data[6], "go_cell_2018.xlsx" ) )
+
+
+
+
+######################### enrichment analysis and format #################
+library(readxl)
+library(knitr)
+
+########### significant dmps ################
+dir <- "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/rank_anno_sig/"
+  
+## Enrich R pathway analysis  
+library(enrichR)
+library(openxlsx)
+
+dbs <- c( "GO_Cellular_Component_2018", "KEGG_2019_Human")
+
+sig_gene <- c("UCSC_RefGene_Name")
+sig_data <- c("f_pfdea_sigDMP", "f_pfna_sigDMP", 
+              "m_pfdea_sigDMP", "m_pfna_sigDMP")
+
+f_pfdea_sigDMP <- read.csv(paste0(dir, "sigFDR_2019-09-30_f_pfdea__CpGs_withChem.csv"))
+f_pfna_sigDMP <- read.csv(paste0(dir, "sigFDR_2019-09-30_f_pfna__CpGs_withChem.csv"))
+
+m_pfdea_sigDMP <- read.csv(paste0(dir, "sigFDR_2019-09-30_m_pfdea__CpGs_withChem.csv"))
+m_pfna_sigDMP <- read.csv(paste0(dir, "sigFDR_2019-09-30_m_pfna__CpGs_withChem.csv"))
+
+
+getpathway_sig <- function(CpGtable, database, gene_col){
+  #########3 CpGtable a string and database a vector ############## 
+  ######## gene_col a string
+  name = CpGtable
+  # run enrichr
+  # the usage of call "$" and eval 
+  pathways = enrichr( eval( call("$" ,as.name(CpGtable), gene_col) ), database)
+  # data
+  go_cel = data.frame( pathways[["GO_Cellular_Component_2018"]] ) %>% 
+    dplyr::select(-Old.P.value, - Old.Adjusted.P.value) %>% plyr::arrange(P.value) %>%
+    dplyr::mutate(FDR_BH = p.adjust(P.value, "BH"))  %>% dplyr::select(-Adjusted.P.value)
+  write.csv(go_cel, 
+            paste0("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/enrichment/GO_CELL_",
+                   CpGtable, ".csv" ), row.names = F)
+  
+  
+  kegg = data.frame( pathways[["KEGG_2019_Human"]] ) %>% 
+         dplyr::select(-Old.P.value, - Old.Adjusted.P.value) %>% plyr::arrange(P.value) %>%
+                  dplyr::mutate(FDR_BH = p.adjust(P.value, "BH")) %>% dplyr::select(-Adjusted.P.value)
+  write.csv(kegg, 
+            paste0("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/enrichment/kegg_",
+            CpGtable, ".csv" ), row.names = F)
+  # return(kegg)
+}
+
+getpathway_sig ("f_pfdea_sigDMP", dbs, sig_gene)
+getpathway_sig ("f_pfna_sigDMP", dbs, sig_gene)
+getpathway_sig ("m_pfdea_sigDMP", dbs, sig_gene)
+getpathway_sig ("m_pfna_sigDMP", dbs, sig_gene)
