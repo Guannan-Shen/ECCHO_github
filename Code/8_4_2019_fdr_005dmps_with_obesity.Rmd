@@ -73,11 +73,21 @@ Mtop_m_pfhxs <- read.csv(paste0(dir, "Mval_top_m_pfhxs_.csv"))
 Mtop_m_pfos <- read.csv(paste0(dir, "Mval_top_m_pfos_.csv"))
 Mtop_m_pfoa <- read.csv(paste0(dir, "Mval_top_m_pfoa_.csv"))
 
+######
+dir <- "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/combp_DMR/Mval/"
+Mtop_f_pfdea <- read.csv(paste0(dir, "_top_f_pfdea_.csv"))
+Mtop_f_pfna <- read.csv(paste0(dir, "_top_f_pfna_.csv"))
+
+Mtop_m_pfdea <- read.csv(paste0(dir, "_top_m_pfdea_.csv"))
+Mtop_m_pfna <- read.csv(paste0(dir, "_top_m_pfna_.csv"))
+Mtop_m_pfdea %>% dim()
 ########## get chem conc
 # all clinical data, chemical conc, obesity outcomes
 clinchem_f <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_f.csv")
 clinchem_m <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_m.csv")
 sum(Mtop_f_pfhxs$pid != clinchem_f$pid) == 0
+
+sum(Mtop_f_pfdea$pid != clinchem_f$pid) == 0
 
 ## read in data 
 pfas_cell_583 <- read.csv("~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/11_05_pfas_cell_583.csv")
@@ -135,11 +145,11 @@ cpg_FunRegSim <- function(outcome, CpGdataPid, Xs, Outcome_name, Topn, chemname)
    ## sample size 
     size = length(outcome) - sum(is.na(outcome))
    ## save results per outcome 
-    dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/fdr005_dmps/obesity/"
+    dir = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/combp_DMR/obesity_corre/"
     write.csv(outcome_lm, paste( dir, Sys.Date(), Gender, Outcome_name, chemname, ".csv", sep="_"), row.names = F)
    ## summary table 
-   kable(head(outcome_lm, Topn), 
-         caption = paste("Top CpGs from ", n_cpg," CpGs" ," for Outcome: ", Outcome_name, " of ", Gender, " ", chemname, " (Sample Size = ", size, ") ", sep = "" , collapse = ""))
+   # kable(head(outcome_lm, Topn), 
+   #       caption = paste("Top CpGs from ", n_cpg," CpGs" ," for Outcome: ", Outcome_name, " of ", Gender, " ", chemname, " (Sample Size = ", size, ") ", sep = "" , collapse = ""))
 }
 
 ```
@@ -149,6 +159,25 @@ cpg_FunRegSim <- function(outcome, CpGdataPid, Xs, Outcome_name, Topn, chemname)
 ## # the regression summary table for log10 outcomes 
 # function(outcome, CpGdata, Xs, Outcome_name, Topn, chemname)
 n <- 10 
+###############
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfdea, clinchem_f, x, n, "pfdea")
+})
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfna, clinchem_f, x, n, "pfna")
+})
+
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfdea, clinchem_m, x, n, "pfdea")
+})
+lapply(Outcomes, function(x){
+  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfna, clinchem_m, x, n, "pfna")
+})
+
+Mtop_m_pfdea %>% dim()
+
+
+###########3
 lapply(Outcomes, function(x){
   cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfhxs, clinchem_f, x, n, "pfhxs")
 })
