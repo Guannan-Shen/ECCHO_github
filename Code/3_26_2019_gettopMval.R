@@ -12,6 +12,14 @@ top_m_pfhxs <- read_excel("/home/guanshim/Documents/gitlab/ECCHO_github/DataProc
 top_m_pfos <- read_excel("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/_m_pfos_dmr_0.05_topCpG.xlsx")
 top_m_pfoa <- read_excel("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/_m_pfoa_dmr_0.05_topCpG.xlsx")
 dim(top_m_pfos)
+
+######### get top1 cpg per DMR ############
+dir2 <- "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/combp_DMR/output_combp/"
+top_f_pfdea <- read_excel(paste0(dir2, "_0.05_f_pfdea_dmr_0.05_top1CpG.xlsx"))
+top_f_pfna <- read_excel(paste0(dir2, "_0.05_f_pfna_dmr_0.05_top1CpG.xlsx"))
+
+top_m_pfdea <- read_excel(paste0(dir2, "_0.05_m_pfdea_dmr_0.05_top1CpG.xlsx"))
+top_m_pfna <- read_excel(paste0(dir2, "_0.05_m_pfna_dmr_0.05_top1CpG.xlsx"))
 ########## m val #############
 ## get mval 
 # mval
@@ -34,9 +42,10 @@ getM <- function(top_chem, datatable){
   name = substitute(top_chem)
   topM = datatable[, cpgs, with = FALSE]
   topM = data.frame(topM) %>% dplyr::mutate(pid = datatable$pid) %>% select(pid, everything())
-  write.csv(topM, paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/topProbeDMR/Mval",
+  write.csv(topM, paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/combp_DMR/Mval/",
                         sep = "_", name, ".csv"), row.names = F )
 }
+
 getM(top_f_pfhxs, dtall_f)
 getM(top_f_pfos, dtall_f)
 getM(top_f_pfoa, dtall_f)
@@ -45,6 +54,12 @@ getM(top_m_pfhxs, dtall_m)
 getM(top_m_pfos, dtall_m)
 getM(top_m_pfoa, dtall_m)
 
+######## two more chems , mval of top1 CpG per DMR ##########
+getM(top_f_pfdea, dtall_f)
+getM(top_f_pfna, dtall_f)
+
+getM(top_m_pfdea, dtall_m)
+getM(top_m_pfna, dtall_m)
 
 #################  get top cpg for fdr 005 dmps ##############
 library(data.table)
