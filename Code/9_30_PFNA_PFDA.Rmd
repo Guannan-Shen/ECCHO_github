@@ -111,9 +111,10 @@ new_chem <- c("PFDEA_ng_ml", "PFNA2_ng_ml")
 ##### summary statistics of ###
 summary(pfna_da_ln[, new_chem])
 apply(pfna_da_ln[, new_chem], 2, function(x){
-  sum(x <= 0.1)
+  # 0.1 is the detection limits 
+  sum(x < 0.1)
 })
-
+pfna_da_ln %>% dim()
 ## dot plot 
 # PFDA
 ggplot(pfna_da_ln, aes(x = PFDEA_ng_ml)) +
