@@ -327,12 +327,31 @@ summary(pfna_da_ln[, new_chem])</code></pre>
 ##  Mean   :0.1697   Mean   :0.4793  
 ##  3rd Qu.:0.2000   3rd Qu.:0.6000  
 ##  Max.   :3.5000   Max.   :4.3000</code></pre>
-<pre class="r"><code>apply(pfna_da_ln[, new_chem], 2, function(x) {
+<pre class="r"><code>## missingness check below the detection limit
+apply(pfna_da_ln[, new_chem], 2, function(x) {
     # 0.1 is the detection limits
     sum(x &lt; 0.1)
 })</code></pre>
 <pre><code>## PFDEA_ng_ml PFNA2_ng_ml 
 ##          45           3</code></pre>
+<pre class="r"><code>apply(pfna_da_f[, new_chem], 2, function(x) {
+    # 0.1 is the detection limits
+    sum(x &lt; 0.1)
+})</code></pre>
+<pre><code>## PFDEA_ng_ml PFNA2_ng_ml 
+##          21           2</code></pre>
+<pre class="r"><code>apply(pfna_da_m[, new_chem], 2, function(x) {
+    # 0.1 is the detection limits
+    sum(x &lt; 0.1)
+})</code></pre>
+<pre><code>## PFDEA_ng_ml PFNA2_ng_ml 
+##          24           1</code></pre>
+<pre class="r"><code>pfna_da_ln %&gt;% dim()</code></pre>
+<pre><code>## [1] 583  30</code></pre>
+<pre class="r"><code>pfna_da_f %&gt;% dim()</code></pre>
+<pre><code>## [1] 278  30</code></pre>
+<pre class="r"><code>pfna_da_m %&gt;% dim()</code></pre>
+<pre><code>## [1] 305  30</code></pre>
 <pre class="r"><code>## dot plot PFDA
 ggplot(pfna_da_ln, aes(x = PFDEA_ng_ml)) + geom_dotplot(method = &quot;histodot&quot;, 
     dotsize = 0.25) + labs(title = &quot;All&quot;)</code></pre>
