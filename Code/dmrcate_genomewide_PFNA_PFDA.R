@@ -77,13 +77,13 @@ DMRcate_wrapper <- function(formula, clindat, mval){
   ## save dmrcate results
   write.csv(dmrcoutput$results, 
             row.names = F,
-            paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate/",  
+            paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate/more_",  
                   Sys.Date(),"_", 
                   prefix_name,"__DMRcate_DMR", ".csv", sep= ""))
   ## save genomewide results
   write.csv(dmrcoutput$input, 
             row.names = F,
-            paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/",  
+            paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/more_",  
                   Sys.Date(),"_", 
                   prefix_name,"__CpGs_withChem", ".csv", sep= ""))
   ########### get detailed DMR level results ############### 
@@ -106,7 +106,7 @@ DMRcate_wrapper <- function(formula, clindat, mval){
   names(readme_sheet) = "README"
   openxlsx::write.xlsx(c(readme_sheet, 
                          DMRprobes),
-                       paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate/",  
+                       paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate/more_",  
                              Sys.Date(),"_", 
                              prefix_name,"_DMR", ".xlsx", sep= ""))
   
@@ -127,26 +127,35 @@ DMRcate_wrapper <- function(formula, clindat, mval){
     stop("wrong number of top1 cpgs in each dmr")
   write.csv(cpg_sum, 
             row.names = F,
-            paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate/",  
+            paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate/more_",  
                   Sys.Date(),"_", 
                   prefix_name,"_DMR_allCpGs", ".csv", sep= ""))
   write.csv(cpg_min, 
             row.names = F,
-            paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate/",  
+            paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate/more_",  
                   Sys.Date(),"_", 
                   prefix_name,"_DMR_top1_CpG", ".csv", sep= ""))
 }
 
 #################### RUN #########################
 ## formula
-formula_pfdea <-  ~as.numeric(lnpfdea) + Race +  Bcell + CD4T + CD8T + Gran + Mono + NK + nRBC
-formula_pfna <-  ~as.numeric(lnpfna) + Race +  Bcell + CD4T + CD8T + Gran + Mono + NK + nRBC
+#### more covariates 
+formula_pfoa <-  ~as.numeric(lnpfoa) + Race +  Bcell + CD4T + CD8T + Gran + Mono + NK + nRBC + maternal_age + edu + prev_preg + prev_preg_bmi_ln + smoke
+
+formula_pfos <-  ~as.numeric(lnpfos) + Race +  Bcell + CD4T + CD8T + Gran + Mono + NK + nRBC + maternal_age + edu + prev_preg + prev_preg_bmi_ln + smoke
+
+formula_pfhxs <-  ~as.numeric(lnpfhxs) + Race +  Bcell + CD4T + CD8T + Gran + Mono + NK + nRBC + maternal_age + edu + prev_preg + prev_preg_bmi_ln + smoke
+
+formula_pfdea <-  ~as.numeric(lnpfdea) + Race +  Bcell + CD4T + CD8T + Gran + Mono + NK + nRBC  + maternal_age + edu + prev_preg + prev_preg_bmi_ln + smoke
+
+formula_pfna <-  ~as.numeric(lnpfna) + Race +  Bcell + CD4T + CD8T + Gran + Mono + NK + nRBC + maternal_age + edu + prev_preg + prev_preg_bmi_ln + smoke
 
 
 #### all female
 # all clinical data, chemical conc, obesity outcomes
-clinchem_f <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/clin_chem_f_nada.csv")
+clinchem_f <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/clin_pfas_f_co.csv")
 dim(clinchem_f)
+
 # mval
 dtall_f <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/dt_all_f.csv", header = T)
 dim(dtall_f)
@@ -161,33 +170,49 @@ tdtall_f <- t(dtall_f[,-c(1:26)])
 sum(tdtall_f[11, ] != dtall_f[,37])
 
 ########## run #########3
+DMRcate_wrapper(formula_pfoa, clinchem_f, tdtall_f)
+DMRcate_wrapper(formula_pfos, clinchem_f, tdtall_f)
+DMRcate_wrapper(formula_pfhxs, clinchem_f, tdtall_f)
+
 DMRcate_wrapper(formula_pfdea, clinchem_f, tdtall_f)
 
 DMRcate_wrapper(formula_pfna, clinchem_f, tdtall_f)
 
 ######### all male 
-clinchem_m <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/clin_chem_m_nada.csv")
+clinchem_m <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/clin_pfas_m_co.csv")
 dim(clinchem_m)
 # all clinchem
-clinchem <- read.csv( "/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem.csv",
-                      header = T)
-t_mval <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/t_mval.csv",
-                 header = T)
-dt_all <- merge(clinchem, t_mval, by = "pid")
+ # clinchem <- read.csv( "/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem.csv",
+ #                      header = T)
+# t_mval <- fread( "~/Documents/gitlab/ECCHO_github/DataProcessed/for_obesity/t_mval.csv",
+#                  header = T)
+# dt_all <- merge(clinchem, t_mval, by = "pid")
+# 
+# dim(dt_all)
+# dt_all <- data.table(dt_all)
+# dtall_m <-  dt_all[infant_sex == "Male"]
+# dim(dtall_m)
+# ##
+# ##
+# tdtall_m <- t(dtall_m[,-c(1:26)])
+# dim(tdtall_m)
+# ## check pid
+# sum(tdtall_m[11, ] != dtall_m[,37])
+# ##
+# fwrite(tdtall_m, file = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/tdtall_m.csv")
+tdtall_m <- fread( "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/tdtall_m.csv",
+                   header = T) %>% as.matrix()
+dim(tdtall_m)
 
-dim(dt_all)
-dt_all <- data.table(dt_all)
-dtall_m <-  dt_all[infant_sex == "Male"]
-dim(dtall_m)
-
-##
-##
-tdtall_m <- t(dtall_m[,-c(1:26)])
-## check pid
-sum(tdtall_m[11, ] != dtall_m[,37])
-##
 colnames(tdtall_m) <- clinchem_m$pid
+
+rownames(tdtall_m) <- cpgs
+
 ########## run #########3
+DMRcate_wrapper(formula_pfoa, clinchem_m, tdtall_m)
+DMRcate_wrapper(formula_pfos, clinchem_m, tdtall_m)
+DMRcate_wrapper(formula_pfhxs, clinchem_m, tdtall_m)
+
 DMRcate_wrapper(formula_pfdea, clinchem_m, tdtall_m)
 
 DMRcate_wrapper(formula_pfna, clinchem_m, tdtall_m)
