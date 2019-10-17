@@ -23,6 +23,18 @@ file_name2 <- c("2019-09-30_f_pfdea__CpGs_withChem.csv",
 
 dir2 <- "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/"
 
+file_name3 <- c("more_2019-10-17_f_pfdea__CpGs_withChem.csv",
+                "more_2019-10-17_f_pfna__CpGs_withChem.csv",
+                "more_2019-10-17_f_pfoa__CpGs_withChem.csv",
+                "more_2019-10-17_f_pfos__CpGs_withChem.csv",
+                "more_2019-10-17_f_pfhxs__CpGs_withChem.csv",
+               
+                "more_2019-10-17_m_pfdea__CpGs_withChem.csv",
+                "more_2019-10-17_m_pfna__CpGs_withChem.csv",
+                "more_2019-10-17_m_pfoa__CpGs_withChem.csv",
+                "more_2019-10-17_m_pfos__CpGs_withChem.csv",
+                "more_2019-10-17_m_pfhxs__CpGs_withChem.csv")
+
 ########### read rank anno fdr cutoff of DMPs ##################
 dmp_read_rank_anno_save <- function(file, dir, fdrcut){
   # read
@@ -52,11 +64,87 @@ dmp_read_rank_anno_save <- function(file, dir, fdrcut){
   write.csv(df_sig, paste0(dir, "rank_anno_sig/sigFDR_", file), row.names = F)
   # return(list (DMP = df, DMP_ANNO = df_anno, DMP_sig = df_sig) )
 }
-for (i in 1:length(file_name1)){
-  dmp_read_rank_anno_save(file_name1[i], dir1, fdrcut = 0.05) 
+# for (i in 1:length(file_name1)){
+#   dmp_read_rank_anno_save(file_name1[i], dir1, fdrcut = 0.05) 
+# }
+# for (i in 1:length(file_name2)){
+#   dmp_read_rank_anno_save(file_name2[i], dir2, fdrcut = 0.05) 
+# }
+
+for (i in 1:length(file_name3)){
+  dmp_read_rank_anno_save(file_name3[i], dir2, fdrcut = 0.05)
 }
-for (i in 1:length(file_name2)){
-  dmp_read_rank_anno_save(file_name2[i], dir2, fdrcut = 0.05) 
+
+##########################  fetch corresponding cpg beta coef and p of another gender ########3#
+# "rank_anno_sig/sigFDR_"
+# "rank_anno_sig/anno_"
+
+join_sig_dmp <- function(dir, sig_filename, full_filename){
+  chem1 = unlist(strsplit(full_filename, split = "_" ,fixed = TRUE) )[5]
+  chem2 = unlist(strsplit(sig_filename, split = "_" ,fixed = TRUE) )[5]
+  gen1 = unlist(strsplit(full_filename, split = "_" ,fixed = TRUE) )[4]
+  gen2 = unlist(strsplit(sig_filename, split = "_" ,fixed = TRUE) )[4]
+  
+  if(chem1 != chem2)stop("Compare the same chemical!")
+  if(gen1 == gen2)stop("Compare different Genders!")
+  
+  sig_list = read.csv(paste0(dir, sig_filename ))
+  full_list = read.csv(paste0(dir, full_filename ))
+  
+  full_gender = ifelse(gen1 == "m", "Male", "Female")
+  sub_full_list = full_list %>% dplyr::select(Name, beta_coef, raw, fdr_BH) %>%
+    set_colnames(c("Name", 
+                   paste0("beta_coef_", full_gender), 
+                   paste0("raw_", full_gender), 
+                   paste0("fdr_BH_", full_gender) )) 
+  
+  # plyr join Unlike merge, preserves the order of x no matter what join type is used.
+  df = plyr::join(sig_list, sub_full_list, type = "inner", by = "Name")
+  write.csv(df, paste0(dir, "join_", sig_filename), row.names = F)
+  # return(df)
+  
 }
+
+dir <- "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/rank_anno_sig/"
+
+############ sig female #############333
+join_sig_dmp(dir, 
+             sig_filename = "sigFDR_more_2019-10-17_f_pfoa__CpGs_withChem.csv",
+             full_filename = "anno_more_2019-10-17_m_pfoa__CpGs_withChem.csv"    )
+join_sig_dmp(dir, 
+             sig_filename = "sigFDR_more_2019-10-17_f_pfos__CpGs_withChem.csv",
+             full_filename = "anno_more_2019-10-17_m_pfos__CpGs_withChem.csv"    )
+
+join_sig_dmp(dir, 
+             sig_filename = "sigFDR_more_2019-10-17_f_pfhxs__CpGs_withChem.csv",
+             full_filename = "anno_more_2019-10-17_m_pfhxs__CpGs_withChem.csv"    )
+
+join_sig_dmp(dir, 
+             sig_filename = "sigFDR_more_2019-10-17_f_pfdea__CpGs_withChem.csv",
+             full_filename = "anno_more_2019-10-17_m_pfdea__CpGs_withChem.csv"    )
+join_sig_dmp(dir, 
+             sig_filename = "sigFDR_more_2019-10-17_f_pfna__CpGs_withChem.csv",
+             full_filename = "anno_more_2019-10-17_m_pfna__CpGs_withChem.csv"    )
+############# sig male #################
+
+join_sig_dmp(dir, 
+             sig_filename = "sigFDR_more_2019-10-17_m_pfoa__CpGs_withChem.csv",
+             full_filename = "anno_more_2019-10-17_f_pfoa__CpGs_withChem.csv"    )
+join_sig_dmp(dir, 
+             sig_filename = "sigFDR_more_2019-10-17_m_pfos__CpGs_withChem.csv",
+             full_filename = "anno_more_2019-10-17_f_pfos__CpGs_withChem.csv"    )
+
+join_sig_dmp(dir, 
+             sig_filename = "sigFDR_more_2019-10-17_m_pfhxs__CpGs_withChem.csv",
+             full_filename = "anno_more_2019-10-17_f_pfhxs__CpGs_withChem.csv"    )
+
+join_sig_dmp(dir, 
+             sig_filename = "sigFDR_more_2019-10-17_m_pfdea__CpGs_withChem.csv",
+             full_filename = "anno_more_2019-10-17_f_pfdea__CpGs_withChem.csv"    )
+join_sig_dmp(dir, 
+             sig_filename = "sigFDR_more_2019-10-17_m_pfna__CpGs_withChem.csv",
+             full_filename = "anno_more_2019-10-17_f_pfna__CpGs_withChem.csv"    )
+
+
 
 
