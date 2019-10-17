@@ -66,15 +66,28 @@ add_columnname("sorted_f_pfhxs.bed")
 ###### for new chems PFNA, PFDA ##########
 # read in dmrcate input
 library(data.table)
-f_pfdea_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/2019-09-30_f_pfdea__CpGs_withChem.csv",
+f_pfoa_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/more_2019-10-17_f_pfoa__CpGs_withChem.csv",
                      header = T)
-f_pfna_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/2019-09-30_f_pfna__CpGs_withChem.csv",
-                     header = T)
-m_pfdea_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/2019-09-30_m_pfdea__CpGs_withChem.csv",
-                     header = T)
-m_pfna_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/2019-09-30_m_pfna__CpGs_withChem.csv",
+f_pfos_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/more_2019-10-17_f_pfos__CpGs_withChem.csv",
                     header = T)
-dim(f_pfna_DMP)
+f_pfhxs_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/more_2019-10-17_f_pfhxs__CpGs_withChem.csv",
+                    header = T)
+f_pfdea_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/more_2019-10-17_f_pfdea__CpGs_withChem.csv",
+                     header = T)
+f_pfna_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/more_2019-10-17_f_pfna__CpGs_withChem.csv",
+                     header = T)
+
+m_pfoa_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/more_2019-10-17_m_pfoa__CpGs_withChem.csv",
+                    header = T)
+m_pfos_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/more_2019-10-17_m_pfos__CpGs_withChem.csv",
+                    header = T)
+m_pfhxs_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/more_2019-10-17_m_pfhxs__CpGs_withChem.csv",
+                     header = T)
+m_pfdea_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/more_2019-10-17_m_pfdea__CpGs_withChem.csv",
+                     header = T)
+m_pfna_DMP <- fread("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/more_2019-10-17_m_pfna__CpGs_withChem.csv",
+                    header = T)
+dim(m_pfna_DMP)
 
 # function for .bed file
 bedfile <- function(DMRcate_input){
@@ -96,17 +109,29 @@ bedfile <- function(DMRcate_input){
     dplyr::select(chrom, pos, end, raw) %>% arrange(chrom)
   # # as numeric, then the format is useless 
   # bedforsave[,2:4] = mutate_all(bedforsave[,2:4], function(x) as.numeric(as.character(x)) )
-  write.table(bedforsave, file= paste("~/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/", 
+  write.table(bedforsave, file= paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/bed_for_combp/", 
                                       Sys.Date(), "_", gender, "_",chemname, ".bed", sep = ""), 
               # col.names F for bedtools sortBed
               # but we will need the colnames later on for combp
               quote=F, sep="\t", row.names=F, col.names=F)
 }
-
+###### run ####333
+bedfile(f_pfhxs_DMP)
+bedfile(f_pfoa_DMP)
+bedfile(f_pfos_DMP)
 bedfile(f_pfdea_DMP)
 bedfile(f_pfna_DMP)
+
 bedfile(m_pfdea_DMP)
 bedfile(m_pfna_DMP)
+bedfile(m_pfhxs_DMP)
+bedfile(m_pfoa_DMP)
+bedfile(m_pfos_DMP)
+
+####################### sort by bedtools as command line tools ###############
+# sort by chromosome may not be enough
+# sudo apt-get install bedtools
+# sortBed -i 2019-03-14_f_pfhxs.bed  > sorted_f_pfhxs.bed   # the default sort by chromsome and start position
 
 add_columnname <- function(sorted_bed){
   dir = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/bed_for_combp/"
@@ -115,8 +140,15 @@ add_columnname <- function(sorted_bed){
   write.table(data, file= paste(dir, Sys.Date(), "_", sorted_bed, sep = ""), 
               quote=F, sep="\t", row.names=F, col.names=T)
 }
+add_columnname("sorted_f_pfoa.bed")
+add_columnname("sorted_f_pfos.bed")
+add_columnname("sorted_f_pfhxs.bed")
 add_columnname("sorted_f_pfdea.bed")
 add_columnname("sorted_f_pfna.bed")
+
+add_columnname("sorted_m_pfoa.bed")
+add_columnname("sorted_m_pfos.bed")
+add_columnname("sorted_m_pfhxs.bed")
 add_columnname("sorted_m_pfdea.bed")
 add_columnname("sorted_m_pfna.bed")
 
