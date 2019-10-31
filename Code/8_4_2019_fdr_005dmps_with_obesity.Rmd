@@ -47,6 +47,7 @@ library(magrittr)
 library(stats)
 library(readxl)
 library(mutoss)
+library(IlluminaHumanMethylation450kanno.ilmn12.hg19)
 options(stringsAsFactors = F)
 options(dplyr.width = Inf)
 getwd()
@@ -65,9 +66,19 @@ getwd()
 ```{r importcpg_mval}
 # import cpgs which are fdr 005 from DMP analysis
 dir <- "~/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/fdr005_dmps/"
-Mtop_f_pfhxs <- read.csv(paste0(dir, "Mval_top_f_pfhxs_.csv"))
-Mtop_f_pfos <- read.csv(paste0(dir, "Mval_top_f_pfos_.csv"))
-Mtop_f_pfoa <- read.csv(paste0(dir, "Mval_top_f_pfoa_.csv"))
+
+dir <- "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/rank_anno_sig/"
+Mtop_f_pfhxs <- read.csv(paste0(dir, "Mval_f_pfhxs_sigDMP_.csv"))
+Mtop_f_pfos <- read.csv(paste0(dir, "Mval_f_pfos_sigDMP_.csv"))
+Mtop_f_pfoa <- read.csv(paste0(dir, "Mval_f_pfoa_sigDMP_.csv"))
+Mtop_f_pfdea <- read.csv(paste0(dir, "Mval_f_pfdea_sigDMP_.csv"))
+Mtop_f_pfna <- read.csv(paste0(dir, "Mval_f_pfna_sigDMP_.csv"))
+
+Mtop_m_pfhxs <- read.csv(paste0(dir, "Mval_m_pfhxs_sigDMP_.csv"))
+Mtop_m_pfos <- read.csv(paste0(dir, "Mval_m_pfos_sigDMP_.csv"))
+Mtop_m_pfoa <- read.csv(paste0(dir, "Mval_m_pfoa_sigDMP_.csv"))
+Mtop_m_pfdea <- read.csv(paste0(dir, "Mval_m_pfdea_sigDMP_.csv"))
+Mtop_m_pfna <- read.csv(paste0(dir, "Mval_m_pfna_sigDMP_.csv"))
 
 Mtop_m_pfhxs <- read.csv(paste0(dir, "Mval_top_m_pfhxs_.csv"))
 Mtop_m_pfos <- read.csv(paste0(dir, "Mval_top_m_pfos_.csv"))
@@ -83,8 +94,15 @@ Mtop_m_pfna <- read.csv(paste0(dir, "_top_m_pfna_.csv"))
 Mtop_m_pfdea %>% dim()
 ########## get chem conc
 # all clinical data, chemical conc, obesity outcomes
-clinchem_f <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_f.csv")
-clinchem_m <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_m.csv")
+# all clinical data, chemical conc, obesity outcomes
+clinchem_f <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/clin_pfas_f_co.csv")
+dim(clinchem_f)
+
+## clinchem_f <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_f.csv")
+## clinchem_m <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataProcessed/clin_chem_m.csv")
+######### all male 
+clinchem_m <- read.csv("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/clin_pfas_m_co.csv")
+dim(clinchem_m)
 sum(Mtop_f_pfhxs$pid != clinchem_f$pid) == 0
 
 sum(Mtop_f_pfdea$pid != clinchem_f$pid) == 0
@@ -101,7 +119,7 @@ Outcomes
 
 ```{r r corre}
 ## equal length of outcomes and covariates
-cpg_FunRegSim <- function(outcome, CpGdataPid, Xs, Outcome_name, Topn, chemname){
+cpg_FunRegSim <- function(outcome, CpGdataPid, Xs, Outcome_name, Topn, chemname, FDR_cut){
   ## get the gender 
   gender1 = unlist(strsplit( deparse(substitute(Xs)), "_", fixed = T))[2]
   gender2 = unlist(strsplit( deparse(substitute(CpGdataPid)), "_", fixed = T))[2]
@@ -118,7 +136,8 @@ cpg_FunRegSim <- function(outcome, CpGdataPid, Xs, Outcome_name, Topn, chemname)
   outcome_lm = lapply(1:n_cpg, function(i){
   lmregress = lm(CpGdata[ ,i] ~ Bcell + CD4T + CD8T + Gran + Mono + NK + nRBC, data = Xs)
   xcpg = resid(lmregress)
-  lm = lm(outcome ~ xcpg + Race, data = Xs)
+  ########### new model #################
+  lm = lm(outcome ~ xcpg + Race + maternal_age + edu + prev_preg + prev_preg_bmi_ln + smoke, data = Xs)
   coef = summary(lm)$coefficients[2, ]
   return(coef)
 })
@@ -133,20 +152,37 @@ cpg_FunRegSim <- function(outcome, CpGdataPid, Xs, Outcome_name, Topn, chemname)
                               mutate(FDR = if(n_cpg >= 17)
                                        {p.adjust(p.value, "BH", n_cpg )}
                                      else { BL(p.value, 0.05, silent = TRUE )$adjPValues },
-                                     names = colnames(CpGdata)) %>% 
+                                     Name = colnames(CpGdata)) %>% 
                                                mutate(Estimate = round(Estimate ,4),
                                                       Std.Error = round(Std.Error,4),
                                                       t.statistic = round(t.statistic,4)
                                                       )%>% 
-                                               select(names, everything()) %>% arrange(p.value)
-   # sort by p.value
+                                               select(Name, everything()) %>% plyr::arrange(p.value)
+    # sort by p.value
     outcome_lm = data.frame(outcome_lm)
- 
+    
+   # the full df of annotation
+  anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19)) %>% as.data.table() 
+  sub_anno = anno[, list(Name, pos, UCSC_RefGene_Name, Relation_to_Island)] %>% as.data.frame()
+  # merge
+  annooutcome_lm = base::merge(outcome_lm, sub_anno,  by = "Name")
+  
+   # sort by p.value
+  annooutcome_lm = annooutcome_lm %>% plyr::arrange(p.value)
    ## sample size 
-    size = length(outcome) - sum(is.na(outcome))
+    size = length(annooutcome_lm) - sum(is.na(outcome))
    ## save results per outcome 
-    dir = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/combp_DMR/obesity_corre/"
-    write.csv(outcome_lm, paste( dir, Sys.Date(), Gender, Outcome_name, chemname, ".csv", sep="_"), row.names = F)
+    dir = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/obesity_corre/"
+    # dir = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/combp_DMR/obesity_corre/"
+    write.csv(annooutcome_lm, paste( dir, Sys.Date(), Gender, Outcome_name, chemname, ".csv", sep="_"), row.names = F)
+  
+    # results filtered by fdr
+     dir2 = "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/obesity_corre/fdr_0.02/"
+    anno_result = annooutcome_lm %>% dplyr::filter(FDR < FDR_cut)
+    if (nrow(anno_result) != 0){
+      write.csv(anno_result, paste( dir2, Sys.Date(), Gender, Outcome_name, chemname, ".csv", sep="_"), row.names = F)
+    }
+    
    ## summary table 
    # kable(head(outcome_lm, Topn), 
    #       caption = paste("Top CpGs from ", n_cpg," CpGs" ," for Outcome: ", Outcome_name, " of ", Gender, " ", chemname, " (Sample Size = ", size, ") ", sep = "" , collapse = ""))
@@ -161,17 +197,17 @@ cpg_FunRegSim <- function(outcome, CpGdataPid, Xs, Outcome_name, Topn, chemname)
 n <- 10 
 ###############
 lapply(Outcomes, function(x){
-  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfdea, clinchem_f, x, n, "pfdea")
+  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfdea, clinchem_f, x, n, "pfdea", FDR_cut = 0.2)
 })
 lapply(Outcomes, function(x){
-  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfna, clinchem_f, x, n, "pfna")
+  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfna, clinchem_f, x, n, "pfna", FDR_cut = 0.2)
 })
 
 lapply(Outcomes, function(x){
-  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfdea, clinchem_m, x, n, "pfdea")
+  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfdea, clinchem_m, x, n, "pfdea", FDR_cut = 0.2)
 })
 lapply(Outcomes, function(x){
-  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfna, clinchem_m, x, n, "pfna")
+  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfna, clinchem_m, x, n, "pfna", FDR_cut = 0.2)
 })
 
 Mtop_m_pfdea %>% dim()
@@ -179,24 +215,24 @@ Mtop_m_pfdea %>% dim()
 
 ###########3
 lapply(Outcomes, function(x){
-  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfhxs, clinchem_f, x, n, "pfhxs")
+  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfhxs, clinchem_f, x, n, "pfhxs", FDR_cut = 0.2)
 })
 lapply(Outcomes, function(x){
-  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfos, clinchem_f, x, n, "pfos")
+  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfos, clinchem_f, x, n, "pfos", FDR_cut = 0.2)
 })
 lapply(Outcomes, function(x){
-  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfoa, clinchem_f, x, n, "pfoa")
+  cpg_FunRegSim(log10(clinchem_f[, x]), Mtop_f_pfoa, clinchem_f, x, n, "pfoa", FDR_cut = 0.2)
 })
 
 ####### male 
 lapply(Outcomes, function(x){
-  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfhxs, clinchem_m, x, n, "pfhxs")
+  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfhxs, clinchem_m, x, n, "pfhxs", FDR_cut = 0.2)
 })
 lapply(Outcomes, function(x){
-  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfos, clinchem_m, x, n, "pfos")
+  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfos, clinchem_m, x, n, "pfos", FDR_cut = 0.2)
 })
 lapply(Outcomes, function(x){
-  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfoa, clinchem_m, x, n, "pfoa")
+  cpg_FunRegSim(log10(clinchem_m[, x]), Mtop_m_pfoa, clinchem_m, x, n, "pfoa", FDR_cut = 0.2)
 })
 ```
 
