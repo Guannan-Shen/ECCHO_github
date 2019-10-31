@@ -157,7 +157,7 @@ write.xlsx(go_cell,
 
 
 
-
+########################## More pfas ###########################################
 ######################### enrichment analysis and format #################
 library(readxl)
 library(knitr)
@@ -168,21 +168,30 @@ dir <- "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_g
 ## Enrich R pathway analysis  
 library(enrichR)
 library(openxlsx)
+library(tidyverse)
+library(magrittr)
 
 dbs <- c( "GO_Cellular_Component_2018", "KEGG_2019_Human")
 
 sig_gene <- c("UCSC_RefGene_Name")
-sig_data <- c("f_pfdea_sigDMP", "f_pfna_sigDMP", 
-              "m_pfdea_sigDMP", "m_pfna_sigDMP")
+sig_data <- c("f_pfdea_sigDMP", "f_pfna_sigDMP", "f_pfhxs_sigDMP", "f_pfos_sigDMP", "f_pfoa_sigDMP",
+              "m_pfdea_sigDMP", "m_pfna_sigDMP","m_pfhxs_sigDMP", "m_pfos_sigDMP", "m_pfoa_sigDMP")
 
-f_pfdea_sigDMP <- read.csv(paste0(dir, "sigFDR_2019-09-30_f_pfdea__CpGs_withChem.csv"))
-f_pfna_sigDMP <- read.csv(paste0(dir, "sigFDR_2019-09-30_f_pfna__CpGs_withChem.csv"))
+f_pfdea_sigDMP <- read.csv(paste0(dir, "sigFDR_more_2019-10-17_f_pfdea__CpGs_withChem.csv"))
+f_pfna_sigDMP <- read.csv(paste0(dir, "sigFDR_more_2019-10-17_f_pfna__CpGs_withChem.csv"))
+f_pfhxs_sigDMP <- read.csv(paste0(dir, "sigFDR_more_2019-10-17_f_pfhxs__CpGs_withChem.csv"))
+f_pfos_sigDMP <- read.csv(paste0(dir, "sigFDR_more_2019-10-17_f_pfos__CpGs_withChem.csv"))
+f_pfoa_sigDMP <- read.csv(paste0(dir, "sigFDR_more_2019-10-17_f_pfoa__CpGs_withChem.csv"))
 
-m_pfdea_sigDMP <- read.csv(paste0(dir, "sigFDR_2019-09-30_m_pfdea__CpGs_withChem.csv"))
-m_pfna_sigDMP <- read.csv(paste0(dir, "sigFDR_2019-09-30_m_pfna__CpGs_withChem.csv"))
+
+m_pfdea_sigDMP <- read.csv(paste0(dir, "sigFDR_more_2019-10-17_m_pfdea__CpGs_withChem.csv"))
+m_pfna_sigDMP <- read.csv(paste0(dir, "sigFDR_more_2019-10-17_m_pfna__CpGs_withChem.csv"))
+m_pfhxs_sigDMP <- read.csv(paste0(dir, "sigFDR_more_2019-10-17_m_pfhxs__CpGs_withChem.csv"))
+m_pfos_sigDMP <- read.csv(paste0(dir, "sigFDR_more_2019-10-17_m_pfos__CpGs_withChem.csv"))
+m_pfoa_sigDMP <- read.csv(paste0(dir, "sigFDR_more_2019-10-17_m_pfoa__CpGs_withChem.csv"))
 
 
-getpathway_sig <- function(CpGtable, database, gene_col){
+getpathway_sig <- function(CpGtable, database, gene_col, fdrcut, overlap_cut){
   #########3 CpGtable a string and database a vector ############## 
   ######## gene_col a string
   name = CpGtable
@@ -197,6 +206,16 @@ getpathway_sig <- function(CpGtable, database, gene_col){
             paste0("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/enrichment/GO_CELL_",
                    CpGtable, ".csv" ), row.names = F)
   
+  overlap_go_cel = matrix(unlist(strsplit(go_cel$Overlap, "/", fixed = TRUE)), ncol = 2, byrow = T) [ , 1]
+  go_cel2 = go_cel[ overlap_go_cel >= overlap_cut, ]
+  
+  go_cel_3 = go_cel2 %>%  dplyr::filter(FDR_BH <= fdrcut) 
+  
+  if (nrow(go_cel_3) != 0){
+  write.csv(go_cel_3, 
+            paste0("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/enrichment/Filtered_GO_CELL_",
+                   CpGtable, ".csv" ), row.names = F)
+  }
   
   kegg = data.frame( pathways[["KEGG_2019_Human"]] ) %>% 
          dplyr::select(-Old.P.value, - Old.Adjusted.P.value) %>% plyr::arrange(P.value) %>%
@@ -204,10 +223,32 @@ getpathway_sig <- function(CpGtable, database, gene_col){
   write.csv(kegg, 
             paste0("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/enrichment/kegg_",
             CpGtable, ".csv" ), row.names = F)
+  
+  overlap_kegg = matrix(unlist(strsplit(kegg$Overlap, "/", fixed = TRUE)), ncol = 2, byrow = T) [ , 1]
+  kegg2 = kegg[ overlap_kegg >= overlap_cut, ]
+  kegg_3 = kegg2 %>%  dplyr::filter(FDR_BH <= fdrcut) 
+  
+  if (nrow(kegg_3) != 0){
+  write.csv(kegg_3, 
+            paste0("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/enrichment/Filtered_KEGG_",
+                   CpGtable, ".csv" ), row.names = F)
+  }
   # return(kegg)
 }
 
-getpathway_sig ("f_pfdea_sigDMP", dbs, sig_gene)
-getpathway_sig ("f_pfna_sigDMP", dbs, sig_gene)
-getpathway_sig ("m_pfdea_sigDMP", dbs, sig_gene)
-getpathway_sig ("m_pfna_sigDMP", dbs, sig_gene)
+# test
+eval( call("$" ,as.name("f_pfdea_sigDMP"), "UCSC_RefGene_Name") )
+enrichr(f_pfhxs_sigDMP$UCSC_RefGene_Name , dbs)
+
+getpathway_sig ("f_pfdea_sigDMP", dbs, sig_gene, fdrcut = 0.2, overlap_cut = 2)
+getpathway_sig ("f_pfna_sigDMP", dbs, sig_gene, fdrcut = 0.2, overlap_cut = 2)
+getpathway_sig ("f_pfhxs_sigDMP", dbs, sig_gene, fdrcut = 0.2, overlap_cut = 2)
+getpathway_sig ("f_pfoa_sigDMP", dbs, sig_gene, fdrcut = 0.2, overlap_cut = 2)
+getpathway_sig ("f_pfos_sigDMP", dbs, sig_gene, fdrcut = 0.2, overlap_cut = 2)
+
+
+getpathway_sig ("m_pfdea_sigDMP", dbs, sig_gene, fdrcut = 0.2, overlap_cut = 2)
+getpathway_sig ("m_pfna_sigDMP", dbs, sig_gene, fdrcut = 0.2, overlap_cut = 2)
+getpathway_sig ("m_pfhxs_sigDMP", dbs, sig_gene, fdrcut = 0.2, overlap_cut = 2)
+getpathway_sig ("m_pfoa_sigDMP", dbs, sig_gene, fdrcut = 0.2, overlap_cut = 2)
+getpathway_sig ("m_pfos_sigDMP", dbs, sig_gene, fdrcut = 0.2, overlap_cut = 2)
