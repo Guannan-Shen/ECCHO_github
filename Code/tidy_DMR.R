@@ -81,6 +81,9 @@ m_pfhxs_dmr <- read.delim(paste0(dir2, "m_pfhxs.anno.hg19.bed"),
 
 anno = as.data.frame(getAnnotation(IlluminaHumanMethylation450kanno.ilmn12.hg19))
 
+###################################################################
+####### get individual probes and mean and max beta fold change ###
+###################################################################
 
 getprobes_perDMR = function(dmr, dmp, anno, pcutoff){
   # name contains pcutoff
@@ -186,8 +189,8 @@ getprobes_perDMR = function(dmr, dmp, anno, pcutoff){
   ####### list focus on top cpg
   cpg1 = data.frame(fulllist) %>% dplyr::mutate(methylation1 = ifelse(direction1 > 0, 1, -1)) %>%
     dplyr::select(c("No.", "chrom", "start", "end",
-                    "n_probes", "z_sidak_p", "refGene_name", 
-                    "cpg1", "direction1", "methylation1","positive", "No_probes"))
+                    "n_probes", "z_sidak_p", "maxbeta", "meanbeta", "refGene_name", 
+                    "positive","cpg1"))
   
   write.xlsx(cpg1, 
              file =  paste("/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/combp_DMR/output_combp/", 
