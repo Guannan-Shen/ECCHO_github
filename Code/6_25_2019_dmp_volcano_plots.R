@@ -28,7 +28,8 @@ dmp_read <- function(dmpresult_name){
   # asus
   # dir = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_github/DataProcessed/genomewide_chem/"
   # Ubuntu
-  dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/" 
+  #  dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/" 
+  dir =  "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/"
   data = fread(paste0(dir, dmpresult_name), header = T) 
   # BP is the counter of CpGs by chromosome 
   temp = data[, BP := seq_len(.N), by = CHR]
@@ -60,7 +61,8 @@ dmp_anno_read <- function(dmpresult_name){
   # asus
   # dir = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_github/DataProcessed/genomewide_chem/"
   # Ubuntu
-  dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/" 
+ #  dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/" 
+ dir =  "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/"
   data = fread(paste0(dir, dmpresult_name), header = T) 
   temp = data[, BP := seq_len(.N), by = CHR]
   # get chrom in order
@@ -338,13 +340,63 @@ for(i in input_names){
 top500_anno(i )
 }
 
+####################################################################################
+########################## manhattan plot and volcano plot with BH FDR ##############
+###################################################################################
+
+dmp_read <- function(dmpresult_name){
+  # asus
+  # dir = "C:/Users/hithr/Documents/Stats/gitlab/ECCHO_github/DataProcessed/genomewide_chem/"
+  # Ubuntu
+  #  dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/genomewide_chem/" 
+  dir =  "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/"
+  data = fread(paste0(dir, dmpresult_name), header = T) 
+  # BP is the counter of CpGs by chromosome 
+  temp = data[, BP := seq_len(.N), by = CHR]
+  # get chrom in order
+  chrOrder = c(paste("chr",1:22,sep=""),"chrX","chrY")
+  df = data[, list(ID, CHR, betafc, raw, BP)] %>% as.data.frame() %>% 
+    dplyr::mutate(beta10 = 10*betafc,
+                  CHR = factor(CHR, levels=chrOrder, labels = 1:24),
+                  fdr = p.adjust(raw, "BH") ) %>% 
+    arrange(CHR) %>% 
+    # the qqman package requires numeric CHR not x, y, 
+    dplyr::mutate(CHR = as.numeric(CHR))
+  
+  return(df)
+}
+
+######### test ##########
+# notes
+print("Calculate my own BH p adjusted value by raw p value")
+
+dir2 <- "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/"
+
+file_name3 <- c("more_2019-10-17_f_pfdea__CpGs_withChem.csv",
+                "more_2019-10-17_f_pfna__CpGs_withChem.csv",
+                "more_2019-10-17_f_pfoa__CpGs_withChem.csv",
+                "more_2019-10-17_f_pfos__CpGs_withChem.csv",
+                "more_2019-10-17_f_pfhxs__CpGs_withChem.csv",
+                
+                "more_2019-10-17_m_pfdea__CpGs_withChem.csv",
+                "more_2019-10-17_m_pfna__CpGs_withChem.csv",
+                "more_2019-10-17_m_pfoa__CpGs_withChem.csv",
+                "more_2019-10-17_m_pfos__CpGs_withChem.csv",
+                "more_2019-10-17_m_pfhxs__CpGs_withChem.csv")
+
+dmp_read(file_name3[1]) %>% head()
+
+
 bh_vol_clean <- function(dmpresult_name){
   ############ get names #############
-  g_name = unlist(strsplit( dmpresult_name, "_"))[2]
+  # previously "2019-03-07_f_pfhxs__CpGs_withChem.csv"
+  ## g_name here
+  ## "more_2019-10-17_f_pfdea__CpGs_withChem.csv"
+  g_name = unlist(strsplit( dmpresult_name, "_"))[3]
   # from f, m to Female and Male 
   gender = ifelse(g_name == "f", "Female", "Male")
   # upper case
-  chem_name = toupper(unlist(strsplit( dmpresult_name, "_"))[3])
+  chem_name = toupper(unlist(strsplit( dmpresult_name, "_"))[4])
   name = paste(gender, chem_name)
   ### load in dmp results ###
   df = dmp_read(dmpresult_name)
@@ -358,8 +410,10 @@ bh_vol_clean <- function(dmpresult_name){
   # ID, betafc, raw
   p = ggplot(df, aes(beta10, -log10(raw) )) +
     geom_point(colour = "gray70") + 
-    geom_point(data = subset(df, raw < 5e-2 & beta10 > 0 ),  aes(beta10, -log10(raw) ), colour="black") +
-    geom_point(data = subset(df, raw < 5e-2 & beta10 < 0 ),  aes(beta10, -log10(raw) ), colour="gray40") +
+    geom_point(data = subset(df, raw < p_sup & beta10 > 0 ), 
+               aes(beta10, -log10(raw) ), colour="black") +
+    geom_point(data = subset(df, raw < p_sup & beta10 < 0 ),  
+               aes(beta10, -log10(raw) ), colour="gray40") +
     labs(x = paste0("Fold Change in Beta-values per 10 units increase of ", chem_name ),
          y =  expression(paste("-",log[10]," Raw p-value" )),
          caption =  paste0("Genomewide test of associations between ", 
@@ -375,11 +429,15 @@ bh_vol_clean <- function(dmpresult_name){
     theme_bw()
   print(p)
   # save plots
-  dir = "~/Documents/gitlab/ECCHO_github/DataProcessed/3chems_results_data/plots/genome_wide/" 
+  dir = 
+    "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/" 
   ## ggsave with 
   ggsave(paste0(dir, name, "_cpgs_BH_clean.tiff"), dpi=300, compression = "lzw")
 }
-for(i in input_names){
+
+
+######### volcano plots #########
+for(i in file_name3){
 bh_vol_clean(i)
 }
 dev.off()
@@ -388,11 +446,11 @@ dev.off()
 
 bh_man_clean <- function(dmpresult_name){
   ############ get names #############
-  g_name = unlist(strsplit( dmpresult_name, "_"))[2]
+  g_name = unlist(strsplit( dmpresult_name, "_"))[3]
   # from f, m to Female and Male
   gender = ifelse(g_name == "f", "Female", "Male")
   # upper case
-  chem_name = toupper(unlist(strsplit( dmpresult_name, "_"))[3])
+  chem_name = toupper(unlist(strsplit( dmpresult_name, "_"))[4])
   name = paste(gender, chem_name)
   ### load in dmp results ###
   df = dmp_read(dmpresult_name)
@@ -402,16 +460,50 @@ bh_man_clean <- function(dmpresult_name){
   n_sig = nrow(test1)
   # the supreme of p 
   p_sup = df[n_sig + 1, 4]
-
+  # save plots
+  dir = 
+    "/home/guanshim/Documents/gitlab/ECCHO_github/DataRaw/more_pfas/dmrcate_genome/plots_vol_man/" 
+  par(mar=c(1,1,1,1))
+  tiff(filename = paste0(dir, name, "_manhattan.tiff"),
+       res = 300,  width = 5, height = 4, units = 'in',
+       compression = c( "lzw") )
   manhattan(df, chr="CHR",bp="BP", snp="ID", p="raw", cex = 0.6, ymax = 14,
             suggestiveline = F, genomewideline = F,
             chrlabs = c(1:22, "X", "Y"))
   title(sub = paste0("Genomewide test of associations between ",
                      chem_name, " and DNA methylation for ", gender))
   abline(h= -log10(p_sup), col = "black")
-  #  dev.off()
+  dev.off()
+  
+  tiff(filename = paste0(dir, name, "_qq.tiff"),
+       res = 300,  width = 5, height = 4, units = 'in',
+       compression = c( "lzw") )
+  qqman::qq(df$raw, 
+            main = paste("Q-Q plot of GWAS p-values for", chem_name, "of", gender, 
+                         sep = " ")
+                          , cex = .3)
+  dev.off()
+  
 }
 # bh_man_clean(input_names[6])
+for(i in file_name3){
+  bh_man_clean(i)
+}
+
+
+### test q-q plot #########
+
+####### Error in plot.new() : figure margins too large
+
+#### 
+# df = dmp_read(file_name3[1]) 
+# par(mar=c(1,1,1,1))
+# tiff(filename = paste0(dir, "qq.tiff"),
+#      res = 300,  width = 5, height = 4, units = 'in',
+#      compression = c( "lzw") )
+# qqman::qq(df$raw, main = "Q-Q plot of GWAS p-values", cex = .3)
+
+
 
 
 fdr_anno <- function(dmpresult_name, fdr_cut){
