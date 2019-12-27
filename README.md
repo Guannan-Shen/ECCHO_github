@@ -29,6 +29,7 @@ $log10(Obesity outcomes) = Mvalue of individual CpG + race (Binary) + CellType1 
 2. The 2nd project more_chem.proj is only a preliminary of chemicals clustering using factor analysis, K-means and etc.  
 3. Raw data in DataRaw contains initial datasets, more chemicals data and more pfas related chemical datasets.  
 4. The workflow in Code/ are all scripts without dates in name.  
+5. Raw data, especially the 450K results was in compressed form as dmr.tar.gz in DataRaw/.
 
 
 
