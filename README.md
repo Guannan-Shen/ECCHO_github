@@ -24,3 +24,11 @@ DMR was done by DMRcate package in R, pcutoff=0.05 was set as the thresholding. 
 **Obesity Parameters**  
 $log10(Obesity outcomes) = Mvalue of individual CpG + race (Binary) + CellType1 +  CellType2 ... + CellType7$  
 
+## Two R projects
+1. code.proj and more_chem.proj.  
+2. The 2nd project more_chem.proj is only a preliminary of chemicals clustering using factor analysis, K-means and etc.  
+3. Raw data in DataRaw contains initial datasets, more chemicals data and more pfas related chemical datasets.  
+4. The workflow in Code/ are all scripts without dates in name.  
+
+
+
